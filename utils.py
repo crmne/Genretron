@@ -5,10 +5,9 @@ from jobman.tools import DD
 
 def results_extractor(train_obj):
     channels = train_obj.model.monitor.channels
-    train_y_misclass = channels['train_y_misclass'].val_record[-1]
-    train_y_nll = channels['train_y_nll'].val_record[-1]
+    valid_y_misclass = channels['valid_y_misclass'].val_record[-1]
 
-    return DD(train_y_misclass=train_y_misclass, train_y_nll=train_y_nll)
+    return DD(valid_y_misclass=valid_y_misclass)
 
 
 def log_uniform(low, high):
