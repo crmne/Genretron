@@ -55,3 +55,4 @@ target/
 
 # Saved results
 *.pkl
+jobman_*/
