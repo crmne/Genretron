@@ -8,7 +8,7 @@
                  !obj:pylearn2.models.mlp.RectifiedLinear {
                      irange: .005,
                      layer_name: 'h0',
-                     dim: %(h0_hidden_units)i,
+                     dim: 50,
                  },
                  !obj:pylearn2.models.mlp.Softmax {
                      irange: .005,
