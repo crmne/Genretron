@@ -1,0 +1,3 @@
+[submodule "pylearn2"]
+	path = pylearn2
+	url = git://github.com/lisa-lab/pylearn2.git
