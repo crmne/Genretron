@@ -6,11 +6,10 @@ Installation
 
 	git submodule init
 	git submodule update
-
 	virtualenv env
 	. env/bin/activate
     pip install -r requirements.txt
-    echo "`pwd`" > env/lib/python2.7/site-packages/genretron.pth
+    echo "`pwd`" > env/lib/*/site-packages/genretron.pth
     echo "`pwd`/pylearn2" > env/lib/*/site-packages/pylearn2.pth
     . env/bin/activate
 
