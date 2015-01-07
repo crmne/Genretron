@@ -17,7 +17,7 @@
                  }
                 ],
         input_space: !obj:pylearn2.space.Conv2DSpace {
-            shape: [512, 623],
+            shape: [512, 1247],
             num_channels: 1,
             axes: ['b', 0, 1, 'c'],
         },

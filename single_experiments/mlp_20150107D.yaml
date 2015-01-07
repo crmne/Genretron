@@ -17,14 +17,14 @@
                  }
                 ],
         input_space: !obj:pylearn2.space.Conv2DSpace {
-            shape: [512, 623],
+            shape: [512, 1247],
             num_channels: 1,
             axes: ['b', 0, 1, 'c'],
         },
     },
     algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
         learning_rate: 0.01,
-        batch_size: 10,
+        batch_size: 1000,
         # learning_rule: !obj:pylearn2.training_algorithms.learning_rule.Momentum {
         #     init_momentum: init_momentum,
         # },
