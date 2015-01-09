@@ -22,6 +22,13 @@ from pylearn2.utils.rng import make_np_rng
 from spectrogram import Spectrogram
 from kfold import KFold
 
+# TODOs:
+# 1. add an option to treat frames as independent examples
+# 2. write code for other features such as mfcc
+# 3. change x_eq_time in inv_spectrogram, inv_mfcc
+# 4. center and scale
+# 5. preprocessing
+
 
 class GTZAN(object):
     """
