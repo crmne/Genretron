@@ -11,10 +11,6 @@ import os
 import sys
 import warnings
 import gc
-try:
-    import tables
-except ImportError:
-    warnings.warn("Couldn't import PyTables.")
 import numpy
 from theano import config
 from collections import OrderedDict
@@ -25,140 +21,6 @@ from pylearn2.utils import string_utils
 from pylearn2.utils.rng import make_np_rng
 from spectrogram import Spectrogram
 from kfold import KFold
-
-
-class GTZAN_PyTables(dense_design_matrix.DenseDesignMatrixPyTables):
-    def __init__(self, which_set, feature="spectrogram", path=None,
-                 center=False, scale=False, start=None, stop=None,
-                 axes=('b', 0, 1, 'c'), preprocessor=None):
-
-        if path is None:
-            path = self.data_path
-            mode = 'r'
-        else:
-            mode = 'r+'
-            warnings.warn("Because path is not same as PYLEARN2_DATA_PATH "
-                          "be aware that data might have been "
-                          "modified or pre-processed.")
-
-        if mode == 'r' and (scale or
-                            center or
-                            (start is not None) or
-                            (stop is not None)):
-            raise ValueError("Only for speed there is a copy of hdf5 file in "
-                             "PYLEARN2_DATA_PATH but it meant to be only "
-                             "readable. If you wish to modify the data, you "
-                             "should pass a local copy to the path argument.")
-
-        path = string_utils.preprocess(path)
-        file_n = os.path.join(path, "%s_%s.h5" % (feature, which_set))
-        if not os.path.isfile(file_n):
-            self.filters = tables.Filters(complib='blosc:lz4', complevel=5)
-            self.make_data(which_set, path, feature)
-
-        self.h5file = tables.open_file(file_n, mode=mode)
-        data = self.h5file.root.Data
-
-        if start is not None or stop is not None:
-            self.h5file, data = self.resize(self.h5file, start, stop)
-
-        # import ipdb; ipdb.set_trace()
-        # TODO: center and scale
-        # if center and scale:
-        #     data.X[:] -= 127.5
-        #     data.X[:] /= 127.5
-        # elif center:
-        #     data.X[:] -= 127.5
-        # elif scale:
-        #     data.X[:] /= 255.
-
-        # super(GTZAN, self).__init__(topo_view=data.X, y=data.y,
-        #                             axes=axes)
-        super(GTZAN_PyTables, self).__init__(X=data.X, y=data.y,
-                                             view_converter=view_converter)
-
-        if preprocessor:
-            if which_set in ['train']:
-                can_fit = True
-            preprocessor.apply(self, can_fit)
-
-        self.h5file.flush()
-
-    def get_test_set(self):
-        """
-        .. todo::
-
-            WRITEME
-        """
-        return GTZAN_PyTables(which_set='test', feature=self.feature,
-                              path=self.path, center=self.center,
-                              scale=self.scale, start=self.start,
-                              stop=self.stop, axes=self.axes,
-                              preprocessor=self.preprocessor)
-
-    def make_data(self, which_set, path, feature,
-                  shuffle=True, n_folds=4):
-        """
-        .. todo::
-
-            WRITEME
-        """
-        sizes = {'train': 500, 'test': 250, 'valid': 250}
-        h_file_n = os.path.join(path, "%s_%s.h5" % (feature, which_set))
-        h5file, node = self.init_hdf5(h_file_n,
-                                      ([sizes[which_set], self.image_size],
-                                       [sizes[which_set], len(self.genres)]))
-
-        rng = make_np_rng(None, 322, which_method="shuffle")
-
-        def list_audio_files_and_genres(audio_folder, extensions):
-            files = OrderedDict()
-            for root, dirnames, filenames in os.walk(audio_folder):
-                for f in filenames:
-                    for x in extensions:
-                        if f.endswith(x):
-                            filename = os.path.join(root, f)
-                            genre = os.path.basename(root)
-                            files[filename] = genre
-            return files
-
-        def load_raw_data(path, indexes):
-            """Loads data from the genres folder"""
-            window_type = 'square'
-
-            extensions = available_file_formats()
-            audiofiles = list_audio_files_and_genres(path, extensions).items()
-            data_x = numpy.zeros((len(indexes), self.bins_per_track * self.wins_per_track), dtype=config.floatX)
-            data_y = numpy.zeros((len(indexes), len(self.genres)), dtype=numpy.int8)
-
-            for data_i, index in enumerate(indexes):
-                filename = audiofiles[index][0]
-                genre = audiofiles[index][1]
-                f = Sndfile(filename, mode='r')
-                print("Reading %s" % filename)
-                raw_audio = f.read_frames(self.seconds * self.sample_rate)
-                spectrogram = Spectrogram.from_waveform(raw_audio, self.window_size,
-                                                        self.step_size, window_type,
-                                                        self.fft_resolution).spectrogram
-                data_x[data_i] = spectrogram.T.reshape(spectrogram.shape[0] * spectrogram.shape[1])
-                data_y[data_i][self.genres.index(genre)] = 1
-
-            return data_x, data_y
-
-        tracks = numpy.arange(self.number_of_tracks)
-        if shuffle:
-            rng.shuffle(tracks)
-        kf = KFold(tracks, n_folds=n_folds)
-        run = kf.runs[0]
-        data_x, data_y = load_raw_data(path, run[which_set])
-
-        assert data_x.shape[0] == sizes[which_set]
-        assert data_x.shape[1] == self.wins_per_track * self.bins_per_track
-        assert data_y.shape[0] == sizes[which_set]
-        assert data_y.shape[1] == len(self.genres)
-
-        GTZAN.fill_hdf5(h5file, data_x, data_y, node)
-        h5file.close()
 
 
 class GTZAN(object):
@@ -205,7 +67,12 @@ class GTZAN(object):
         del self.self
 
         self.step_size = self.window_size / 2
-        self.wins_per_track = len(Spectrogram.wins(self.window_size, self.seconds * self.sample_rate, self.step_size))
+        self.wins_per_track = len(
+            Spectrogram.wins(
+                self.window_size,
+                self.seconds * self.sample_rate,
+                self.step_size)
+            )
         self.window_length_in_ms = self.seconds * 1000 / self.wins_per_track
         self.bins_per_track = Spectrogram.bins(self.fft_resolution)
         self.image_size = self.wins_per_track * self.bins_per_track
@@ -232,7 +99,8 @@ class GTZAN(object):
                              "should pass a local copy to the path argument.")
 
         path = string_utils.preprocess(path)
-        self.data_x, self.data_y = self.make_data(which_set, path, feature, seed, x_eq_time)
+        self.data_x, self.data_y = self.make_data(
+            which_set, path, feature, seed, x_eq_time)
 
         # import ipdb; ipdb.set_trace()
         # TODO: center and scale
@@ -244,7 +112,9 @@ class GTZAN(object):
         # elif scale:
         #     data.X[:] /= 255.
 
-        self.view_converter = dense_design_matrix.DefaultViewConverter((self.bins_per_track, self.wins_per_track, 1), axes)
+        self.view_converter = dense_design_matrix.DefaultViewConverter(
+            (self.bins_per_track, self.wins_per_track, 1), axes
+            )
 
         if preprocessor:
             if which_set in ['train']:
@@ -294,8 +164,12 @@ class GTZAN(object):
 
             extensions = available_file_formats()
             audiofiles = list_audio_files_and_genres(path, extensions).items()
-            data_x = numpy.zeros((len(indexes), self.bins_per_track * self.wins_per_track), dtype=config.floatX)
-            data_y = numpy.zeros((len(indexes), len(self.genres)), dtype=numpy.int8)
+            data_x = numpy.zeros(
+                (len(indexes), self.bins_per_track * self.wins_per_track),
+                dtype=config.floatX)
+            data_y = numpy.zeros(
+                (len(indexes), len(self.genres)),
+                dtype=numpy.int8)
 
             sys.stdout.write("Reading audio files")
             for data_i, index in enumerate(indexes):
@@ -305,11 +179,9 @@ class GTZAN(object):
                 sys.stdout.write(".")
                 sys.stdout.flush()
                 raw_audio = f.read_frames(self.seconds * self.sample_rate)
-                spectrogram = Spectrogram.from_waveform(raw_audio,
-                                                        self.window_size,
-                                                        self.step_size,
-                                                        window_type,
-                                                        self.fft_resolution).spectrogram
+                spectrogram = Spectrogram.from_waveform(
+                    raw_audio, self.window_size, self.step_size, window_type,
+                    self.fft_resolution).spectrogram
                 if x_eq_time:
                     spectrogram = spectrogram.T
                 data_x[data_i] = spectrogram.reshape(
@@ -344,9 +216,11 @@ class GTZAN_On_Memory(dense_design_matrix.DenseDesignMatrix):
                       axes, preprocessor, seconds, window_size, fft_resolution,
                       seed, x_eq_time)
 
-        super(GTZAN_On_Memory, self).__init__(X=gtzan.data_x, y=gtzan.data_y,
-                                              view_converter=gtzan.view_converter)
+        super(GTZAN_On_Memory, self).__init__(
+            X=gtzan.data_x,
+            y=gtzan.data_y,
+            view_converter=gtzan.view_converter
+            )
 
         del gtzan
         gc.collect()
-
