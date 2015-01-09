@@ -18,11 +18,17 @@ module load c/intel
 # request that threads should remain on the same core:
 module load paffinity
 # check if environment variables are correctly set
-if [ "x" == "x$GENRETRON_PATH" || "x" == "x$EXPERIMENT" ]
+if [ "x" == "x$GENRETRON_PATH" || "x" == "x$EXPERIMENT" || "x" == "x$EXPERIMENTS_PATH" ]
 then echo "One or more variable are not set!! Quitting!"
 exit 1
 fi
 # activate the python virtualenv
-. ${GENRETRON_PATH}/env/bin/activate
+. "${GENRETRON_PATH}"/env/bin/activate
 # launch the learning procedure
-${GENRETRON_PATH}/pylearn2/pylearn2/scripts/train.py $EXPERIMENT
+"${GENRETRON_PATH}"/pylearn2/pylearn2/scripts/train.py "$EXPERIMENT"
+# move the results of the experiment in the proper folder
+exp_dirname=$(dirname "$EXPERIMENT")
+exp_filename=$(basename "$EXPERIMENT")
+exp_name="${exp_filename%.*}"
+mv "${exp_dirname}/${exp_name}.pkl" "$EXPERIMENTS_PATH"
+mv "${exp_dirname}/${exp_name}_best.pkl" "$EXPERIMENTS_PATH"
