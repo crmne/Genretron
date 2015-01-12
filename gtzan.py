@@ -24,6 +24,7 @@ from kfold import KFold
 
 # TODOs:
 # 1. add an option to treat frames as independent examples
+#   1a. report both error by frame and error by song (by taking a vote)
 # 2. write code for other features such as mfcc
 # 3. change x_eq_time in inv_spectrogram, inv_mfcc
 # 4. center and scale
@@ -51,6 +52,7 @@ class GTZAN(object):
     fft_resolution: WRITEME
     seed: WRITEME
     x_eq_time: WRITEME
+    frame_is_example: WRITEME
 
 
     """
@@ -65,7 +67,7 @@ class GTZAN(object):
 
     def __init__(self, which_set, feature, path, center, scale, start, stop,
                  axes, preprocessor, seconds, window_size, fft_resolution,
-                 seed, x_eq_time):
+                 seed, x_eq_time, frame_is_example):
 
         assert which_set in self.sets
         assert feature in self.features
@@ -107,7 +109,7 @@ class GTZAN(object):
 
         path = string_utils.preprocess(path)
         self.data_x, self.data_y = self.make_data(
-            which_set, path, feature, seed, x_eq_time)
+            which_set, path, feature, seed, x_eq_time, frame_is_example)
 
         # import ipdb; ipdb.set_trace()
         # TODO: center and scale
@@ -141,10 +143,11 @@ class GTZAN(object):
                      scale=self.scale, start=self.start,
                      stop=self.stop, axes=self.axes,
                      preprocessor=self.preprocessor,
+                     frame_is_example=self.frame_is_example
                      )
 
     def make_data(self, which_set, path, feature,
-                  seed, x_eq_time,
+                  seed, x_eq_time, frame_is_example,
                   shuffle=True, n_folds=4):
         """
         .. todo::
@@ -165,14 +168,14 @@ class GTZAN(object):
                             files[filename] = genre
             return files
 
-        def load_raw_data(path, indexes, x_eq_time):
+        def load_raw_data(path, indexes, x_eq_time, frame_is_example):
             """Loads data from the genres folder"""
             window_type = 'square'
 
             extensions = available_file_formats()
             audiofiles = list_audio_files_and_genres(path, extensions).items()
             data_x = numpy.zeros(
-                (len(indexes), self.bins_per_track * self.wins_per_track),
+                (len(indexes), self.wins_per_track, self.bins_per_track),
                 dtype=config.floatX)
             data_y = numpy.zeros(
                 (len(indexes), len(self.genres)),
@@ -189,12 +192,23 @@ class GTZAN(object):
                 spectrogram = Spectrogram.from_waveform(
                     raw_audio, self.window_size, self.step_size, window_type,
                     self.fft_resolution).spectrogram
-                if x_eq_time:
-                    spectrogram = spectrogram.T
-                data_x[data_i] = spectrogram.reshape(
-                    spectrogram.shape[0] * spectrogram.shape[1])
+                data_x[data_i] = spectrogram
                 data_y[data_i][self.genres.index(genre)] = 1
             print("")
+
+            if frame_is_example:
+                data_y = numpy.repeat(data_y, data_x.shape[1], axis=0)
+                data_x = numpy.reshape(
+                    data_x,
+                    (data_x.shape[0] * data_x.shape[1], data_x.shape[2])
+                )
+            else:
+                if x_eq_time:
+                    data_x = numpy.transpose(data_x, axes=[0, 2, 1])
+                data_x = numpy.reshape(
+                    data_x,
+                    (data_x.shape[0], data_x.shape[1] * data_x.shape[2])
+                )
 
             return data_x, data_y
 
@@ -203,12 +217,23 @@ class GTZAN(object):
             rng.shuffle(tracks)
         kf = KFold(tracks, n_folds=n_folds)
         run = kf.runs[0]
-        data_x, data_y = load_raw_data(path, run[which_set], x_eq_time)
+        data_x, data_y = load_raw_data(
+            path,
+            run[which_set],
+            x_eq_time,
+            frame_is_example
+        )
 
-        assert data_x.shape[0] == len(run[which_set])
-        assert data_x.shape[1] == self.wins_per_track * self.bins_per_track
-        assert data_y.shape[0] == len(run[which_set])
-        assert data_y.shape[1] == len(self.genres)
+        if frame_is_example:
+            assert data_x.shape[0] == len(run[which_set]) * self.wins_per_track
+            assert data_x.shape[1] == self.bins_per_track
+            assert data_y.shape[0] == len(run[which_set]) * self.wins_per_track
+            assert data_y.shape[1] == len(self.genres)
+        else:
+            assert data_x.shape[0] == len(run[which_set])
+            assert data_x.shape[1] == self.wins_per_track * self.bins_per_track
+            assert data_y.shape[0] == len(run[which_set])
+            assert data_y.shape[1] == len(self.genres)
 
         return data_x, data_y
 
@@ -218,10 +243,10 @@ class GTZAN_On_Memory(dense_design_matrix.DenseDesignMatrix):
                  center=False, scale=False, start=None, stop=None,
                  axes=('b', 0, 1, 'c'), preprocessor=None,
                  seconds=29.0, window_size=1024, fft_resolution=1024,
-                 seed=1234, x_eq_time=True):
+                 seed=1234, x_eq_time=True, frame_is_example=False):
         gtzan = GTZAN(which_set, feature, path, center, scale, start, stop,
                       axes, preprocessor, seconds, window_size, fft_resolution,
-                      seed, x_eq_time)
+                      seed, x_eq_time, frame_is_example)
 
         super(GTZAN_On_Memory, self).__init__(
             X=gtzan.data_x,

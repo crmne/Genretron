@@ -1,0 +1,53 @@
+# Similar to mlp_20150112A, but the layer h0 has 500 units
+!obj:pylearn2.train.Train {
+    dataset: &train !obj:gtzan.GTZAN_On_Memory {
+        which_set: 'train',
+        window_size: 2048,
+        frame_is_example: true,
+    },
+    model: !obj:pylearn2.models.mlp.MLP {
+        layers: [
+                    !obj:pylearn2.models.mlp.RectifiedLinear {
+                        irange: .005,
+                        layer_name: 'h0',
+                        dim: 500,
+                    },
+                    !obj:pylearn2.models.mlp.Softmax {
+                        irange: .005,
+                        layer_name: 'y',
+                        n_classes: 10,
+                    }
+                ],
+        input_space: !obj:pylearn2.space.VectorSpace {
+            dim: 512,
+        },
+    },
+    algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
+        learning_rate: 0.01,
+        batch_size: 62300,
+        monitoring_dataset:
+            {
+                'train' : *train,
+                'valid' : !obj:gtzan.GTZAN_On_Memory {
+                            which_set: 'valid',
+                            window_size: 2048,
+                            frame_is_example: true,
+                        },
+                'test'  : !obj:gtzan.GTZAN_On_Memory {
+                            which_set: 'test',
+                            window_size: 2048,
+                            frame_is_example: true,
+                        }
+            },
+        termination_criterion: !obj:pylearn2.termination_criteria.EpochCounter {
+            max_epochs: 10000,
+        },
+    },
+    extensions: [
+        !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
+            channel_name: 'valid_y_misclass',
+            save_path: "${PYLEARN2_TRAIN_FILE_FULL_STEM}_best.pkl"
+        },
+    ],
+    save_freq: 1,
+}
