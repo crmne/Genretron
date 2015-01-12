@@ -1,3 +1,6 @@
+# Similar to conv_20150110A, but with different pool shapes and strides,
+# in order to make the second convolutional layer learn more about the song structure
+
 !obj:pylearn2.train.Train {
     dataset: &train !obj:gtzan.GTZAN_On_Memory {
         which_set: "train",
@@ -15,8 +18,8 @@
                         output_channels: 64,
                         irange: .05,
                         kernel_shape: [512, 5],
-                        pool_shape: [1, 8],
-                        pool_stride: [1, 4],
+                        pool_shape: [1, 4],
+                        pool_stride: [1, 2],
                         max_kernel_norm: 1.9365,
                     },
                     !obj:pylearn2.models.mlp.ConvRectifiedLinear {
@@ -24,8 +27,8 @@
                         output_channels: 64,
                         irange: .05,
                         kernel_shape: [1, 80],
-                        pool_shape: [1, 8],
-                        pool_stride: [1, 4],
+                        pool_shape: [1, 16],
+                        pool_stride: [1, 8],
                         max_kernel_norm: 1.9365,
                     },
                     !obj:pylearn2.models.mlp.Softmax {

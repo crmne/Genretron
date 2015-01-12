@@ -1,3 +1,5 @@
+# Baseline convolution experiment
+
 !obj:pylearn2.train.Train {
     dataset: &train !obj:gtzan.GTZAN_On_Memory {
         which_set: "train",

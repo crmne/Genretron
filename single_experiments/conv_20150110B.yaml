@@ -1,3 +1,6 @@
+# Identical to conv_20150110A, but the kernel shapes are different,
+# dividing the spectrogram in 4 different frenquency regions.
+
 !obj:pylearn2.train.Train {
     dataset: &train !obj:gtzan.GTZAN_On_Memory {
         which_set: "train",
@@ -14,7 +17,7 @@
                         layer_name: 'h2',
                         output_channels: 64,
                         irange: .05,
-                        kernel_shape: [512, 5],
+                        kernel_shape: [128, 5],
                         pool_shape: [1, 8],
                         pool_stride: [1, 4],
                         max_kernel_norm: 1.9365,
@@ -23,7 +26,7 @@
                         layer_name: 'h3',
                         output_channels: 64,
                         irange: .05,
-                        kernel_shape: [1, 80],
+                        kernel_shape: [4, 80],
                         pool_shape: [1, 8],
                         pool_stride: [1, 4],
                         max_kernel_norm: 1.9365,
