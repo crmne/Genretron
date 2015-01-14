@@ -18,6 +18,7 @@
                         output_channels: 64,
                         irange: .05,
                         kernel_shape: [128, 5],
+                        kernel_stride: [1, 5],
                         pool_shape: [1, 8],
                         pool_stride: [1, 4],
                         max_kernel_norm: 1.9365,
@@ -27,6 +28,7 @@
                         output_channels: 64,
                         irange: .05,
                         kernel_shape: [4, 80],
+                        kernel_stride: [4, 80],
                         pool_shape: [1, 8],
                         pool_stride: [1, 4],
                         max_kernel_norm: 1.9365,
@@ -53,10 +55,13 @@
                             window_size: 2048,
                           }
             },
-        termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
-            channel_name: "valid_y_misclass",
-            prop_decrease: 0.01,
-            N: 20
+        # termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
+        #     channel_name: "valid_y_misclass",
+        #     prop_decrease: 0.01,
+        #     N: 20
+        # },
+        termination_criterion: !obj:pylearn2.termination_criteria.EpochCounter {
+            max_epochs: 10000,
         },
     },
     extensions: [

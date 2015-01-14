@@ -45,10 +45,13 @@
                             window_size: 2048,
                         },
             },
-        termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
-            channel_name: "valid_y_misclass",
-            prop_decrease: 0.01,
-            N: 20,
+        # termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
+        #     channel_name: "valid_y_misclass",
+        #     prop_decrease: 0.01, # TODO: do a minimum amount of many times
+        #     N: 20,
+        # },
+        termination_criterion: !obj:pylearn2.termination_criteria.EpochCounter {
+            max_epochs: 10000,
         },
     },
     extensions: [

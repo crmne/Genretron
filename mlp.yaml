@@ -2,6 +2,7 @@
     dataset: &train !obj:gtzan.GTZAN_On_Memory {
         which_set: 'train',
         window_size: 2048,
+        frame_is_example: true,
     },
     model: !obj:pylearn2.models.mlp.MLP {
         layers: [
@@ -16,15 +17,18 @@
                      n_classes: 10,
                  }
                 ],
-        input_space: !obj:pylearn2.space.Conv2DSpace {
-            shape: [512, 623],
-            num_channels: 1,
-            axes: ['b', 0, 1, 'c'],
+        input_space: !obj:pylearn2.space.VectorSpace {
+            dim: 512,
         },
+        # input_space: !obj:pylearn2.space.Conv2DSpace {
+        #     shape: [512, 623],
+        #     num_channels: 1,
+        #     axes: ['b', 0, 1, 'c'],
+        # },
     },
     algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
-        learning_rate: %(learning_rate)f,
-        batch_size: %(batch_size)i,
+        learning_rate: 0.01,
+        batch_size: 62300,
         # learning_rule: !obj:pylearn2.training_algorithms.learning_rule.Momentum {
         #     init_momentum: init_momentum,
         # },
@@ -38,20 +42,22 @@
                 'valid' : !obj:gtzan.GTZAN_On_Memory {
                             which_set: 'valid',
                             window_size: 2048,
+                            frame_is_example: true,
                           },
                 'test'  : !obj:gtzan.GTZAN_On_Memory {
                             which_set: 'test',
                             window_size: 2048,
+                            frame_is_example: true,
                           }
             },
-        # termination_criterion: !obj:pylearn2.termination_criteria.EpochCounter {
-        #     max_epochs: 50
-        # },
-        termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
-            channel_name: "valid_y_misclass",
-            prop_decrease: 0.01,
-            N: 20,
+        termination_criterion: !obj:pylearn2.termination_criteria.EpochCounter {
+            max_epochs: 10000,
         },
+        # termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
+        #     channel_name: "valid_y_misclass",
+        #     prop_decrease: 0.01,
+        #     N: 20,
+        # },
     },
     extensions: [
         !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
