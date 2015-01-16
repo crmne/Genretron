@@ -7,7 +7,7 @@
     model: !obj:pylearn2.models.mlp.MLP {
         batch_size: 10,
         input_space: !obj:pylearn2.space.Conv2DSpace {
-            shape: [512, 623],
+            shape: [512, 1247],
             num_channels: 1,
         },
         layers: [
