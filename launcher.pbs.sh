@@ -11,6 +11,7 @@
 #PBS -S /bin/bash
 # job uses one 16-core node:
 #PBS -lnodes=1:cores16
+echo "Job $PBS_JOBID started at `date`" | mail $USER -s "Job $PBS_JOBID"
 # load the Intel Compilers and Math Kernel Library
 module load fortran mkl
 module load fortran/intel
@@ -32,3 +33,4 @@ exp_filename=$(basename "$EXPERIMENT")
 exp_name="${exp_filename%.*}"
 mv "${exp_dirname}/${exp_name}.pkl" "$EXPERIMENTS_PATH"
 mv "${exp_dirname}/${exp_name}_best.pkl" "$EXPERIMENTS_PATH"
+echo "Job $PBS_JOBID completed at `date`" | mail $USER -s "Job $PBS_JOBID"
