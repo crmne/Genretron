@@ -3,12 +3,13 @@
 !obj:pylearn2.train.Train {
     dataset: &train !obj:gtzan.GTZAN_On_Memory {
         which_set: "train",
-        window_size: 2048,
+        window_size: 175986,
+        seconds: 25.0,
     },
     model: !obj:pylearn2.models.mlp.MLP {
         batch_size: 10,
         input_space: !obj:pylearn2.space.Conv2DSpace {
-            shape: [512, 623],
+            shape: [512, 5],
             num_channels: 1,
         },
         layers: [
@@ -16,11 +17,11 @@
                         layer_name: 'h2',
                         output_channels: 2,
                         irange: .05,
-                        kernel_shape: [512, 5],
+                        kernel_shape: [512, 1],
                         # W_lr_scale: .01,
                         # kernel_stride: [1, 5],
-                        pool_shape: [1, 8],
-                        pool_stride: [1, 4],
+                        pool_shape: [1, 2],
+                        pool_stride: [1, 1],
                         max_kernel_norm: 1.9365,
                     },
                     !obj:pylearn2.models.mlp.Softmax {
@@ -38,34 +39,35 @@
                 'train' : *train,
                 'valid' : !obj:gtzan.GTZAN_On_Memory {
                             which_set: "valid",
-                            window_size: 2048,
+                            window_size: 175986,
+                            seconds: 25.0,
                           },
                 'test'  : !obj:gtzan.GTZAN_On_Memory {
                             which_set: "test",
-                            window_size: 2048,
+                            window_size: 175986,
+                            seconds: 25.0,
                           }
             },
-        cost: !obj:pylearn2.costs.cost.SumOfCosts {
-            costs: [
-                !obj:pylearn2.costs.mlp.Default {},
-                !obj:pylearn2.costs.mlp.L1WeightDecay {
-                    coeffs: { 'h2': 0.005 },
-                }
-            ]
-        
-        },
+        # cost: !obj:pylearn2.costs.cost.SumOfCosts {
+        #     costs: [
+        #         !obj:pylearn2.costs.mlp.Default {},
+        #         !obj:pylearn2.costs.mlp.L1WeightDecay {
+        #             coeffs: { 'h2': 0.003 },
+        #         }
+        #     ]
+        # },
         # cost: !obj:pylearn2.costs.mlp.dropout.Dropout {
         #     input_include_probs: { 'h2' : .1 },
         #     input_scales: { 'h2' : 1.01 }
         # },
-        # termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
-        #     channel_name: "valid_y_misclass",
-        #     prop_decrease: 0.01,
-        #     N: 20
-        # },
-        termination_criterion: !obj:pylearn2.termination_criteria.EpochCounter {
-            max_epochs: 5000,
+        termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
+            channel_name: "valid_y_misclass",
+            prop_decrease: 0.01,
+            N: 100,
         },
+        # termination_criterion: !obj:pylearn2.termination_criteria.EpochCounter {
+        #     max_epochs: 5000,
+        # },
     },
     extensions: [
         !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {

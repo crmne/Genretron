@@ -49,23 +49,22 @@
             costs: [
                 !obj:pylearn2.costs.mlp.Default {},
                 !obj:pylearn2.costs.mlp.L1WeightDecay {
-                    coeffs: { 'h2': 1.0E-3 },
+                    coeffs: { 'h2': 0.002 },
                 }
             ]
-        
         },
         # cost: !obj:pylearn2.costs.mlp.dropout.Dropout {
         #     input_include_probs: { 'h2' : .1 },
         #     input_scales: { 'h2' : 1.01 }
         # },
-        # termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
-        #     channel_name: "valid_y_misclass",
-        #     prop_decrease: 0.01,
-        #     N: 20
-        # },
-        termination_criterion: !obj:pylearn2.termination_criteria.EpochCounter {
-            max_epochs: 5000,
+        termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
+            channel_name: "train_y_misclass",
+            prop_decrease: 0.01,
+            N: 20
         },
+        # termination_criterion: !obj:pylearn2.termination_criteria.EpochCounter {
+        #     max_epochs: 5000,
+        # },
     },
     extensions: [
         !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
