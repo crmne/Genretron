@@ -1,13 +1,18 @@
 import numpy
 import sys
-from jobman.tools import DD
+# from jobman.tools import DD
 
 
-def results_extractor(train_obj):
-    channels = train_obj.model.monitor.channels
-    valid_y_misclass = channels['valid_y_misclass'].val_record[-1]
+def filter_keys_from_dict(keys, dict):
+    key_set = set(dict) - set(list(keys))
+    return {k: dict[k] for k in key_set}
 
-    return DD(valid_y_misclass=valid_y_misclass)
+
+# def results_extractor(train_obj):
+#     channels = train_obj.model.monitor.channels
+#     valid_y_misclass = channels['valid_y_misclass'].val_record[-1]
+
+#     return DD(valid_y_misclass=valid_y_misclass)
 
 
 def log_uniform(low, high):
