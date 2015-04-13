@@ -10,7 +10,7 @@ gtzan_base_path = os.path.join(os.environ["PYLEARN2_DATA_PATH"], "GTZAN")
 
 if __name__ == '__main__':
     if os.path.isdir(gtzan_base_path):
-        if utils.query_yes_no("GTZAN base path %s exists. Do you want to overwrite it?" % gtzan_base_path):
+        if utils.query_yes_no("GTZAN base path %s exists. Do you want to overwrite it? (this will delete all the contents)" % gtzan_base_path):
             shutil.rmtree(gtzan_base_path)
             os.makedirs(gtzan_base_path)
     else:
