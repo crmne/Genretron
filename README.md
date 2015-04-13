@@ -4,17 +4,19 @@ Genretron-Pylearn2
 Installation
 ------------
 
-	git submodule init
-	git submodule update
+Make sure you have python 2.7+ installed and then:
+
+	git submodule update --init
 	virtualenv env
 	. env/bin/activate
+    pip install numexpr numpy cython
     pip install -r requirements.txt
-    echo "`pwd`" > env/lib/*/site-packages/genretron.pth
-    echo "`pwd`/pylearn2" > env/lib/*/site-packages/pylearn2.pth
+    echo "`pwd`" > env/lib/python2.7/site-packages/genretron.pth
+    echo "`pwd`/pylearn2" > env/lib/python2.7/site-packages/pylearn2.pth
     . env/bin/activate
 
 Training
 --------
 
 	. env/bin/activate
-    jobman cmdline pylearn2.scripts.jobman.experiment.train_experiment mlp.conf
+    pylearn2/pylearn2/scripts/train.py conv.yaml
