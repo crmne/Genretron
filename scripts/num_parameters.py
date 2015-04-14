@@ -1,0 +1,1 @@
+pylearn2/pylearn2/scripts/num_parameters.py

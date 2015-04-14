@@ -1,0 +1,1 @@
+pylearn2/pylearn2/scripts/show_weights.py

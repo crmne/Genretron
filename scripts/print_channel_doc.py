@@ -1,0 +1,1 @@
+pylearn2/pylearn2/scripts/print_channel_doc.py

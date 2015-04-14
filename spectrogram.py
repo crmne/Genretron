@@ -42,8 +42,39 @@ class Spectrogram(object):
 
         return cls(spectrogram)
 
-    def plot(self):
+    # def aggregate_features(self, win_size, step_size):
+    #     """
+    #     Calculate the texture windows as described in Tzanetakis and Cook 2002
+
+    #     Parameters
+    #     ----------
+
+    #     win_size: the window size in fft windows
+    #     step_size: the stride in fft windows
+    #     """
+    #     # get the number of frames
+    #     n_frames = self.spectrogram.shape[0]
+    #     wins = Spectrogram.wins(win_size, n_frames, step_size)
+    #     bins = self.spectrogram.shape[1]
+
+    #     self.aggregated = numpy.zeros(Spectrogram.shape(wins, bins))
+
+    # def plot_aggregated_features(self):
+    #     if not self.aggregated:
+    #         return
+    #     import matplotlib.pyplot as plt
+    #     plt.imshow(
+    #         self.aggregated.T,
+    #         interpolation='nearest',
+    #         origin='lower',
+    #         aspect='auto'
+    #     )
+    #     plt.show()
+
+    # TODO: use time scale
+    def plot(self, title):
         import matplotlib.pyplot as plt
+        plt.title(title)
         plt.imshow(
             self.spectrogram.T,
             interpolation='nearest',
