@@ -20,7 +20,7 @@ class GTZAN(AudioDataset):
                  path="${PYLEARN2_DATA_PATH}/GTZAN",
                  feature="spectrogram",
                  preprocess=True,
-                 seconds=30.0,
+                 seconds=29.0,
                  window_size=1024,
                  window_type='square',
                  step_size=None,
