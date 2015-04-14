@@ -1,1 +1,1 @@
-pylearn2/pylearn2/scripts/browse_conv_weights.py
+../pylearn2/pylearn2/scripts/browse_conv_weights.py

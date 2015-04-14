@@ -1,1 +1,1 @@
-pylearn2/pylearn2/scripts/print_model.py
+../pylearn2/pylearn2/scripts/print_model.py

@@ -1,1 +1,1 @@
-pylearn2/pylearn2/scripts/diff_monitor.py
+../pylearn2/pylearn2/scripts/diff_monitor.py

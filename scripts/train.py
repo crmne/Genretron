@@ -1,1 +1,1 @@
-pylearn2/pylearn2/scripts/train.py
+../pylearn2/pylearn2/scripts/train.py

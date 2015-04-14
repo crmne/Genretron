@@ -1,1 +1,1 @@
-pylearn2/pylearn2/scripts/yaml_dryrun.py
+../pylearn2/pylearn2/scripts/yaml_dryrun.py

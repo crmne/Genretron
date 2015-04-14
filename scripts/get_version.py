@@ -1,1 +1,1 @@
-pylearn2/pylearn2/scripts/get_version.py
+../pylearn2/pylearn2/scripts/get_version.py

@@ -1,1 +1,1 @@
-pylearn2/pylearn2/scripts/gsn_example.py
+../pylearn2/pylearn2/scripts/gsn_example.py
