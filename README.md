@@ -8,11 +8,11 @@ Genretron-Pylearn2 is part of Carmine Paolino's Master Thesis at Universiteit va
 Installation
 ------------
 
-Make sure you have python 2.7+ installed and then:
+Make sure you have python 2.7+, HDF5, and libsndfile installed and then:
 
-	git submodule update --init
-	virtualenv env
-	. env/bin/activate
+    git submodule update --init
+    virtualenv env
+    . env/bin/activate
     pip install -r requirements.txt
     echo "`pwd`/src" > env/lib/python2.7/site-packages/genretron.pth
     echo "`pwd`/pylearn2" > env/lib/python2.7/site-packages/pylearn2.pth
