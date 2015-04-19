@@ -11,7 +11,7 @@ __email__ = "carmine@paolino.me"
 class GTZAN(AudioDataset):
     def __init__(self, path="${PYLEARN2_DATA_PATH}/GTZAN",
                  seconds=29.0, **kwargs):
-        super(GTZAN, self).__init__(path, **kwargs)
+        super(GTZAN, self).__init__(path, seconds=seconds, **kwargs)
 
 
 class GTZAN_On_Memory(dense_design_matrix.DenseDesignMatrix):
