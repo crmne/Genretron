@@ -5,6 +5,7 @@ from scikits.audiolab import Sndfile
 from scikits.audiolab import available_file_formats
 from sklearn.preprocessing import StandardScaler
 from pylearn2.utils.rng import make_np_rng
+from pylearn2.utils import string_utils
 from spectrogram import Spectrogram
 from kfold import KFold
 import utils
@@ -23,11 +24,31 @@ class AudioDataset(object):
         'params_filter',
         'files_and_genres',
         'data_x',
-        'data_y'
+        'data_y',
+        'valid_features',
     ]
 
-    def __init__(self, path):
+    def __init__(self, path, which_set,
+                 feature="spectrogram",
+                 preprocess=True,
+                 seconds=30.0,
+                 window_size=1024,
+                 window_type='square',
+                 step_size=None,
+                 fft_resolution=1024,
+                 seed=1234,
+                 n_folds=4,
+                 run_n=0):
         super(AudioDataset, self).__init__()
+
+        valid_features = {
+            "spectrogram": self.get_spectrogram_data,
+            "inv_spectrogram": self.get_spectrogram_data,
+            "signal": self.get_signal_data
+        }
+
+        path = string_utils.preprocess(path)
+        step_size = step_size if step_size is not None else window_size / 2
 
         # init dynamic params
         files_and_genres = self.list_audio_files_and_genres(path)
@@ -40,6 +61,25 @@ class AudioDataset(object):
 
         self.__dict__.update(locals())
         del self.self
+
+        if preprocess:
+            all_tracks = self.get_indexes('all', n_folds, run_n, seed)
+            self.data_x, self.data_y = \
+                valid_features[feature](
+                    all_tracks, seconds, window_size, step_size,
+                    window_type, fft_resolution
+                )
+            self.scale(self.data_x)
+            set_tracks = self.get_indexes(which_set, n_folds, run_n, seed)
+            self.data_x, self.data_y = \
+                self.filter_indexes(set_tracks, self.data_x, self.data_y)
+        else:
+            set_tracks = self.get_indexes(which_set, n_folds, run_n, seed)
+            self.data_x, self.data_y = \
+                valid_features[feature](
+                    set_tracks, seconds, window_size, step_size,
+                    window_type, fft_resolution
+                )
 
     @staticmethod
     def read_sample_rate(filename):
