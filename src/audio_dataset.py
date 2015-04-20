@@ -278,7 +278,11 @@ class AudioDataset(object):
     def plot_spectrogram(self, spectrogram, title="Spectrogram"):
         spectrogram.plot(title)
 
-    def get_indexes(self, set, nfolds=4, run_n=0, seed=1234):
+    def get_indexes(self, set, nfolds, run_n, seed):
+        """
+        Returns the indexes of the tracks if the space is Conv2D,
+        the indexes of the frames if the space is Vector
+        """
         tracks = numpy.arange(self.number_of_tracks)
         if set == 'all':
             return tracks
@@ -286,4 +290,12 @@ class AudioDataset(object):
             rng = make_np_rng(None, seed, which_method="shuffle")
             rng.shuffle(tracks)
             kf = KFold(tracks, n_folds=nfolds)
-            return kf.runs[run_n][set]
+            tracks_idxs = kf.runs[run_n][set]
+            if self.space == "conv2d":
+                return tracks_idxs
+            elif self.space == "vector":
+                return numpy.array(
+                    [numpy.arange(
+                        x * self.wins_per_track,
+                        (x * self.wins_per_track) + self.wins_per_track
+                    ) for x in tracks_idxs]).flatten()
