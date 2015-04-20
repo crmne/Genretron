@@ -40,7 +40,9 @@ class AudioDataset(object):
                  fft_resolution=1024,
                  seed=1234,
                  n_folds=4,
-                 run_n=0):
+                 run_n=0,
+                 verbose=False,
+                 print_params=True):
         super(AudioDataset, self).__init__()
 
         valid_features = {
@@ -76,6 +78,9 @@ class AudioDataset(object):
 
         self.__dict__.update(locals())
         del self.self
+
+        if print_params:
+            print(self)
 
         if preprocess:
             all_tracks = self.get_indexes('all', n_folds, run_n, seed)
@@ -149,7 +154,8 @@ class AudioDataset(object):
         for data_i, index in enumerate(indexes):
             filename = files_and_genres_by_index[index][0]
             genre = files_and_genres_by_index[index][1]
-            print("calculating spectrogram of " + filename)
+            if self.verbose:
+                print("calculating spectrogram of " + filename)
             data_x[data_i] = Spectrogram.from_waveform(
                 self.read_raw_audio(filename, seconds),
                 window_size, step_size, window_type,
@@ -217,7 +223,8 @@ class AudioDataset(object):
         return files_and_genres
 
     def read_raw_audio(self, file, seconds):
-        print("reading " + file)
+        if self.verbose:
+            print("reading " + file)
         sndfile = Sndfile(file, mode='r')
         return sndfile.read_frames(
             seconds * self.sample_rate,
