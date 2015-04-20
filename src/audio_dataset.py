@@ -54,7 +54,11 @@ class AudioDataset(object):
         valid_spaces = {
             "conv2d": AudioDataset.song_to_conv2dspace,
             "vector": AudioDataset.song_to_vectorspace,
+            "thru": lambda x: x,
         }
+
+        if feature == "signal":
+            space = "thru"
 
         path = string_utils.preprocess(path)
         step_size = step_size if step_size is not None else window_size / 2
