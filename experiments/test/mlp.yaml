@@ -3,7 +3,7 @@
         which_set: 'train',
         window_size: 2048,
         space: 'vector',
-        preprocess: False,
+        preprocess: True,
         seconds: 4.0
     },
     model: !obj:pylearn2.models.mlp.MLP {
@@ -33,30 +33,25 @@
                             which_set: 'valid',
                             window_size: 2048,
                             space: 'vector',
-                            preprocess: False,
+                            preprocess: True,
                             seconds: 4.0
                           },
                 'test'  : !obj:gtzan.GTZAN_On_Memory {
                             which_set: 'test',
                             window_size: 2048,
                             space: 'vector',
-                            preprocess: False,
+                            preprocess: True,
                             seconds: 4.0
                           }
             },
         termination_criterion: !obj:pylearn2.termination_criteria.EpochCounter {
-            max_epochs: 10000,
+            max_epochs: 100,
         },
-        # termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
-        #     channel_name: "valid_y_misclass",
-        #     prop_decrease: 0.01,
-        #     N: 20,
-        # },
     },
     extensions: [
         !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
              channel_name: 'valid_y_misclass',
-             save_path: "mlp_best.pkl"
+             save_path: "${PYLEARN2_TRAIN_FILE_FULL_STEM}_best.pkl"
         },
     ],
     save_freq: 1,
