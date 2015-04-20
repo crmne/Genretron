@@ -1,9 +1,7 @@
 # New features
 ## GTZAN
 
-1. Frame as example
-2. Inverted spectrograms
-3. MFCC
-4. Texture Windows
-5. Save features in HDF5
-6. Load features from HDF5
+* MFCC
+* Texture Windows
+* Save features in HDF5
+* Load features from HDF5

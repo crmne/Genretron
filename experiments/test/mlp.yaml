@@ -2,7 +2,7 @@
     dataset: &train !obj:gtzan.GTZAN_On_Memory {
         which_set: 'train',
         window_size: 2048,
-        example: 'frame',
+        space: 'vector',
         preprocess: False,
         seconds: 4.0
     },
@@ -32,14 +32,14 @@
                 'valid' : !obj:gtzan.GTZAN_On_Memory {
                             which_set: 'valid',
                             window_size: 2048,
-                            example: 'frame',
+                            space: 'vector',
                             preprocess: False,
                             seconds: 4.0
                           },
                 'test'  : !obj:gtzan.GTZAN_On_Memory {
                             which_set: 'test',
                             window_size: 2048,
-                            example: 'frame',
+                            space: 'vector',
                             preprocess: False,
                             seconds: 4.0
                           }

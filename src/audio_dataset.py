@@ -26,10 +26,12 @@ class AudioDataset(object):
         'data_x',
         'data_y',
         'valid_features',
+        'valid_spaces'
     ]
 
     def __init__(self, path, which_set,
                  feature="spectrogram",
+                 space="conv2d",
                  preprocess=True,
                  seconds=30.0,
                  window_size=1024,
@@ -43,8 +45,13 @@ class AudioDataset(object):
 
         valid_features = {
             "spectrogram": self.get_spectrogram_data,
-            "inv_spectrogram": self.get_spectrogram_data,
+            "inv_spectrogram": self.get_inv_spectrogram_data,
             "signal": self.get_signal_data
+        }
+
+        valid_spaces = {
+            "conv2d": AudioDataset.song_to_conv2dspace,
+            "vector": AudioDataset.song_to_vectorspace,
         }
 
         path = string_utils.preprocess(path)
@@ -57,6 +64,14 @@ class AudioDataset(object):
         first_song = next(iter(files_and_genres))
         sample_rate = AudioDataset.read_sample_rate(first_song)
         channels = AudioDataset.read_channels(first_song)
+        wins_per_track = len(
+            Spectrogram.wins(
+                window_size,
+                seconds * sample_rate,
+                step_size
+            )
+        )
+        bins_per_track = Spectrogram.bins(fft_resolution)
         del first_song
 
         self.__dict__.update(locals())
@@ -65,9 +80,11 @@ class AudioDataset(object):
         if preprocess:
             all_tracks = self.get_indexes('all', n_folds, run_n, seed)
             self.data_x, self.data_y = \
-                valid_features[feature](
-                    all_tracks, seconds, window_size, step_size,
-                    window_type, fft_resolution
+                valid_spaces[space](
+                    valid_features[feature](
+                        all_tracks, seconds, window_size, step_size,
+                        window_type, fft_resolution
+                    )
                 )
             self.scale(self.data_x)
             set_tracks = self.get_indexes(which_set, n_folds, run_n, seed)
@@ -76,9 +93,11 @@ class AudioDataset(object):
         else:
             set_tracks = self.get_indexes(which_set, n_folds, run_n, seed)
             self.data_x, self.data_y = \
-                valid_features[feature](
-                    set_tracks, seconds, window_size, step_size,
-                    window_type, fft_resolution
+                valid_spaces[space](
+                    valid_features[feature](
+                        set_tracks, seconds, window_size, step_size,
+                        window_type, fft_resolution
+                    )
                 )
 
     @staticmethod
@@ -117,17 +136,9 @@ class AudioDataset(object):
             data_y[data_i][self.genres.index(genre)] = 1
         return data_x, data_y
 
-    def get_spectrogram_data(self, indexes, seconds, window_size=1024,
-                             step_size=512, window_type='square',
-                             fft_resolution=1024):
-        self.wins_per_track = len(
-            Spectrogram.wins(
-                window_size,
-                seconds * self.sample_rate,
-                step_size
-            )
-        )
-        self.bins_per_track = Spectrogram.bins(fft_resolution)
+    def get_spectrogram_data(self, indexes, seconds, window_size,
+                             step_size, window_type,
+                             fft_resolution):
         data_x = numpy.zeros(
             (len(indexes), self.wins_per_track, self.bins_per_track),
             dtype=numpy.float32)
@@ -144,11 +155,37 @@ class AudioDataset(object):
                 window_size, step_size, window_type,
                 fft_resolution).spectrogram
             data_y[data_i][self.genres.index(genre)] = 1
-        data_x = numpy.reshape(
-            data_x,
-            (data_x.shape[0], data_x.shape[1] * data_x.shape[2])
-        )
         return data_x, data_y
+
+    @staticmethod
+    def invert_wins_bins(data):
+        return data[0].transpose((0, 2, 1)), data[1]
+
+    @staticmethod
+    def song_to_conv2dspace(data):
+        print("reshaping data for Conv2DSpace...")
+        data_x = numpy.reshape(
+            data[0],
+            (data[0].shape[0], data[0].shape[1] * data[0].shape[2])
+        )
+        data_y = data[1]
+        return data_x, data_y
+
+    @staticmethod
+    def song_to_vectorspace(data):
+        print("reshaping data for VectorSpace...")
+        data_x = numpy.reshape(
+            data[0],
+            (data[0].shape[0] * data[0].shape[1], data[0].shape[2])
+        )
+        data_y = numpy.repeat(data[1], data[0].shape[1], axis=0)
+        return data_x, data_y
+
+    def get_inv_spectrogram_data(self, **kwargs):
+        print("transposing spectrograms...")
+        return AudioDataset.invert_wins_bins(
+                self.get_spectrogram_data(**kwargs)
+            )
 
     def filter_indexes(self, indexes, data_x, data_y):
         print("filtering indexes...")

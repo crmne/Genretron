@@ -26,7 +26,8 @@ class Spectrogram(object):
         self.spectrogram = spectrogram
 
     @classmethod
-    def from_waveform(cls, frames, win_size, step_size, window_type, fft_resolution):
+    def from_waveform(cls, frames, win_size, step_size, window_type,
+                      fft_resolution):
         window = Spectrogram.windows[window_type](win_size)
 
         wins = Spectrogram.wins(win_size, len(frames), step_size)
