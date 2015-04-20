@@ -54,6 +54,10 @@ class AudioDataset(object):
             space = "vector"
             converter = "signal"
 
+        # inverting a spectrogram if the space is a vector doesn't make sense
+        if space == "vector" and feature == "inv_spectrogram":
+            feature == "spectrogram"
+
         feature_extractors = {
             "spectrogram": self.get_spectrogram_data,
             "inv_spectrogram": self.get_inv_spectrogram_data,
