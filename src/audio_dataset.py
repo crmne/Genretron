@@ -25,8 +25,10 @@ class AudioDataset(object):
         'files_and_genres',
         'data_x',
         'data_y',
-        'valid_features',
-        'valid_spaces'
+        'feature_extractors',
+        'spaces_converters',
+        'index_converters',
+        'converter'
     ]
 
     def __init__(self, path, which_set,
@@ -45,20 +47,30 @@ class AudioDataset(object):
                  print_params=True):
         super(AudioDataset, self).__init__()
 
-        valid_features = {
+        converter = space
+
+        # signal is 1D
+        if feature == "signal":
+            space = "vector"
+            converter = "signal"
+
+        feature_extractors = {
             "spectrogram": self.get_spectrogram_data,
             "inv_spectrogram": self.get_inv_spectrogram_data,
             "signal": self.get_signal_data
         }
 
-        valid_spaces = {
-            "conv2d": AudioDataset.song_to_conv2dspace,
-            "vector": AudioDataset.song_to_vectorspace,
-            "thru": lambda x: x,
+        spaces_converters = {
+            "conv2d": AudioDataset.twod_to_conv2dspaces,
+            "vector": AudioDataset.twod_to_vectorspaces,
+            "signal": lambda x: x
         }
 
-        if feature == "signal":
-            space = "thru"
+        index_converters = {
+            "conv2d": lambda x: x,
+            "vector": self.track_ids_to_frame_ids,
+            "signal": lambda x: x
+        }
 
         path = string_utils.preprocess(path)
         step_size = step_size if step_size is not None else window_size / 2
@@ -89,8 +101,8 @@ class AudioDataset(object):
         if preprocess:
             all_tracks = self.get_indexes('all', n_folds, run_n, seed)
             self.data_x, self.data_y = \
-                valid_spaces[space](
-                    valid_features[feature](
+                spaces_converters[converter](
+                    feature_extractors[feature](
                         all_tracks, seconds, window_size, step_size,
                         window_type, fft_resolution
                     )
@@ -102,8 +114,8 @@ class AudioDataset(object):
         else:
             set_tracks = self.get_indexes(which_set, n_folds, run_n, seed)
             self.data_x, self.data_y = \
-                valid_spaces[space](
-                    valid_features[feature](
+                spaces_converters[converter](
+                    feature_extractors[feature](
                         set_tracks, seconds, window_size, step_size,
                         window_type, fft_resolution
                     )
@@ -172,7 +184,7 @@ class AudioDataset(object):
         return data[0].transpose((0, 2, 1)), data[1]
 
     @staticmethod
-    def song_to_conv2dspace(data):
+    def twod_to_conv2dspaces(data):
         print("reshaping data for Conv2DSpace...")
         data_x = numpy.reshape(
             data[0],
@@ -182,7 +194,7 @@ class AudioDataset(object):
         return data_x, data_y
 
     @staticmethod
-    def song_to_vectorspace(data):
+    def twod_to_vectorspaces(data):
         print("reshaping data for VectorSpace...")
         data_x = numpy.reshape(
             data[0],
@@ -290,12 +302,12 @@ class AudioDataset(object):
             rng = make_np_rng(None, seed, which_method="shuffle")
             rng.shuffle(tracks)
             kf = KFold(tracks, n_folds=nfolds)
-            tracks_idxs = kf.runs[run_n][set]
-            if self.space == "conv2d":
-                return tracks_idxs
-            elif self.space == "vector":
-                return numpy.array(
+            track_ids = kf.runs[run_n][set]
+            return self.index_converters[self.converter](track_ids)
+
+    def track_ids_to_frame_ids(self, track_ids):
+        return numpy.array(
                     [numpy.arange(
                         x * self.wins_per_track,
                         (x * self.wins_per_track) + self.wins_per_track
-                    ) for x in tracks_idxs]).flatten()
+                    ) for x in track_ids]).flatten()
