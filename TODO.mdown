@@ -1,6 +1,9 @@
 # New features
 ## GTZAN
 
+* Predictions
+* Random Forest
+* Maximum voting
 * MFCC
 * Texture Windows
 * Save features in HDF5
