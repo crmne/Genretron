@@ -1,14 +1,12 @@
 import os
 import numpy
-from collections import OrderedDict
-from scikits.audiolab import Sndfile
-from scikits.audiolab import available_file_formats
 from sklearn.preprocessing import StandardScaler
 from pylearn2.utils.rng import make_np_rng
 from pylearn2.utils import string_utils
 from spectrogram import Spectrogram
 from kfold import KFold
 import utils
+from audio_track import AudioTrack
 
 __authors__ = "Carmine Paolino"
 __copyright__ = "Copyright 2015, Vrije Universiteit Amsterdam"
@@ -22,7 +20,7 @@ class AudioDataset(object):
 
     params_filter = [
         'params_filter',
-        'files_and_genres',
+        'tracks',
         'data_x',
         'data_y',
         'feature_extractors',
@@ -80,21 +78,16 @@ class AudioDataset(object):
         step_size = step_size if step_size is not None else window_size / 2
 
         # init dynamic params
-        files_and_genres = self.list_audio_files_and_genres(path)
-        number_of_tracks = len(files_and_genres)
-        genres = numpy.unique(files_and_genres.values()).tolist()
-        first_song = next(iter(files_and_genres))
-        sample_rate = AudioDataset.read_sample_rate(first_song)
-        channels = AudioDataset.read_channels(first_song)
+        tracks, genres = self.tracks_and_genres(path, seconds)
+        samplerate = tracks[0].samplerate
         wins_per_track = len(
             Spectrogram.wins(
                 window_size,
-                seconds * sample_rate,
+                seconds * samplerate,
                 step_size
             )
         )
         bins_per_track = Spectrogram.bins(fft_resolution)
-        del first_song
 
         self.__dict__.update(locals())
         del self.self
@@ -125,16 +118,6 @@ class AudioDataset(object):
                     )
                 )
 
-    @staticmethod
-    def read_sample_rate(filename):
-        sndfile = Sndfile(filename, mode='r')
-        return sndfile.samplerate
-
-    @staticmethod
-    def read_channels(filename):
-        sndfile = Sndfile(filename, mode='r')
-        return sndfile.channels
-
     def __repr__(self):
         from pprint import pformat
         return "{}(\n{}\n)".format(
@@ -149,16 +132,15 @@ class AudioDataset(object):
 
     def get_signal_data(self, indexes, seconds, **kwargs):
         data_x = numpy.zeros(
-            (len(indexes), seconds * self.sample_rate),
+            (len(indexes), seconds * self.samplerate),
             dtype=numpy.float32)
         data_y = numpy.zeros(
             (len(indexes), len(self.genres)),
             dtype=numpy.int8)
         for data_i, index in enumerate(indexes):
-            filename = self.files_and_genres[index][0]
-            genre = self.files_and_genres[index][1]
-            data_x[data_i] = self.read_raw_audio(filename)
-            data_y[data_i][self.genres.index(genre)] = 1
+            track = self.tracks[index]
+            data_x[data_i] = track.signal
+            data_y[data_i][self.genres.index(track.genre)] = 1
         return data_x, data_y
 
     def get_spectrogram_data(self, indexes, seconds, window_size,
@@ -170,17 +152,15 @@ class AudioDataset(object):
         data_y = numpy.zeros(
             (len(indexes), len(self.genres)),
             dtype=numpy.int8)
-        files_and_genres_by_index = self.files_and_genres.items()
         for data_i, index in enumerate(indexes):
-            filename = files_and_genres_by_index[index][0]
-            genre = files_and_genres_by_index[index][1]
+            track = self.tracks[index]
             if self.verbose:
-                print("calculating spectrogram of " + filename)
-            data_x[data_i] = Spectrogram.from_waveform(
-                self.read_raw_audio(filename, seconds),
+                print("calculating spectrogram of " + track.path)
+            data_x[data_i] = track.calc_spectrogram(
                 window_size, step_size, window_type,
                 fft_resolution).spectrogram
-            data_y[data_i][self.genres.index(genre)] = 1
+            data_y[data_i][self.genres.index(track.genre)] = 1
+            del track._signal
         return data_x, data_y
 
     @staticmethod
@@ -223,89 +203,39 @@ class AudioDataset(object):
         preprocessor = StandardScaler(copy=False)
         preprocessor.fit_transform(data_x)
 
-    # @abstractmethod
-    def list_audio_files_and_genres(self, audio_folder):
+    def tracks_and_genres(self, audio_folder, seconds):
         """
-        Returns an OrderedDict of { filename: genre }.
+        Returns a list of tracks and a list of genres.
         Assumes that audio_folder contains genre-named folders, which
         contain audio files in that genre.
         """
-        extensions = available_file_formats()
-        files_and_genres = OrderedDict()
+        tracks = []
+        genres = set()
         audio_folder = os.path.expanduser(audio_folder)
         for root, dirnames, filenames in os.walk(audio_folder):
             for f in filenames:
-                for x in extensions:
+                for x in AudioTrack.extensions:
                     if f.endswith(x):
                         filename = os.path.join(root, f)
                         genre = os.path.basename(root)
-                        files_and_genres[filename] = genre
-        return files_and_genres
-
-    def read_raw_audio(self, file, seconds):
-        if self.verbose:
-            print("reading " + file)
-        sndfile = Sndfile(file, mode='r')
-        return sndfile.read_frames(
-            seconds * self.sample_rate,
-            dtype=numpy.float32)
-
-    def read_all_raw_audio(self):
-        """
-        Returns an array of songs represented in raw audio data.
-        """
-        raw_audio_data = []
-        for file in self.files_and_genres.iterkeys():
-            raw_audio_data.append(self.read_raw_audio(file))
-        return raw_audio_data
-
-    def __get_time_dimension(self, signal_length):
-        return numpy.linspace(
-            0, signal_length/self.sample_rate, num=signal_length)
-
-    def plot_raw_audio(self, raw_audio, title="Audio signal"):
-        import matplotlib.pyplot as plt
-        plt.title(title)
-        plt.plot(self.__get_time_dimension(len(raw_audio)), raw_audio)
-        plt.show()
-
-    def raws_to_spectrograms(self, raw_audio_data, window_size, step_size,
-                             window_type, fft_resolution):
-        """
-        Returns an array of spectrograms from the raw audio data.
-
-        Parameters
-        ----------
-
-        raw_audio_data: an array of raw audio data read using libsndfile
-        window_size: the window size for the spectrogram calculation
-        step_size: the step size for the spectrogram calculation
-        window_type: the window type for the spectrogram calculation
-        fft_resolution: the resolution of the Fourier Transform
-        """
-        spectrogram_data = []
-        for raw_audio in raw_audio_data:
-            spectrogram_data.append(
-                Spectrogram.from_waveform(
-                    raw_audio, window_size, step_size, window_type,
-                    fft_resolution))
-        return spectrogram_data
-
-    def plot_spectrogram(self, spectrogram, title="Spectrogram"):
-        spectrogram.plot(title)
+                        tracks.append(
+                            AudioTrack(filename, genre=genre, seconds=seconds)
+                        )
+                        genres.add(genre)
+        return tracks, sorted(genres)
 
     def get_indexes(self, set, nfolds, run_n, seed):
         """
         Returns the indexes of the tracks if the space is Conv2D,
         the indexes of the frames if the space is Vector
         """
-        tracks = numpy.arange(self.number_of_tracks)
+        track_ids = numpy.arange(len(self.tracks))
         if set == 'all':
-            return tracks
+            return track_ids
         else:
             rng = make_np_rng(None, seed, which_method="shuffle")
-            rng.shuffle(tracks)
-            kf = KFold(tracks, n_folds=nfolds)
+            rng.shuffle(track_ids)
+            kf = KFold(track_ids, n_folds=nfolds)
             track_ids = kf.runs[run_n][set]
             return self.index_converters[self.converter](track_ids)
 
