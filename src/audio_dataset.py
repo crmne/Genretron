@@ -178,13 +178,18 @@ class AudioDataset(object):
         return data_x, data_y
 
     @staticmethod
+    def x_to_vectorspace(x):
+        return numpy.reshape(x, (x.shape[0] * x.shape[1], x.shape[2]))
+
+    @staticmethod
+    def y_to_vectorspace(x, y):
+        return numpy.repeat(y, x.shape[1], axis=0)
+
+    @staticmethod
     def twod_to_vectorspaces(data):
         print("reshaping data for VectorSpace...")
-        data_x = numpy.reshape(
-            data[0],
-            (data[0].shape[0] * data[0].shape[1], data[0].shape[2])
-        )
-        data_y = numpy.repeat(data[1], data[0].shape[1], axis=0)
+        data_x = AudioDataset.x_to_vectorspace(data[0])
+        data_y = AudioDataset.y_to_vectorspace(data[0], data[1])
         return data_x, data_y
 
     def get_inv_spectrogram_data(self, **kwargs):
