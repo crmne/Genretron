@@ -73,7 +73,7 @@ class Spectrogram(object):
     #     plt.show()
 
     # TODO: use time scale
-    def plot(self, title):
+    def plot(self, title="Spectrogram"):
         import matplotlib.pyplot as plt
         plt.title(title)
         plt.imshow(
