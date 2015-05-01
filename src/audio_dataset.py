@@ -96,7 +96,7 @@ class AudioDataset(object):
             print(self)
 
         if preprocess:
-            all_tracks = self.get_indexes('all', n_folds, run_n, seed)
+            all_tracks = self.get_track_ids('all', n_folds, run_n, seed)
             self.data_x, self.data_y = \
                 spaces_converters[converter](
                     feature_extractors[feature](
@@ -105,11 +105,12 @@ class AudioDataset(object):
                     )
                 )
             self.scale(self.data_x)
-            set_tracks = self.get_indexes(which_set, n_folds, run_n, seed)
+            set_tracks = self.get_track_ids(which_set, n_folds, run_n, seed)
+            set_indexes = self.index_converters[self.converter](set_tracks)
             self.data_x, self.data_y = \
-                self.filter_indexes(set_tracks, self.data_x, self.data_y)
+                self.filter_indexes(set_indexes, self.data_x, self.data_y)
         else:
-            set_tracks = self.get_indexes(which_set, n_folds, run_n, seed)
+            set_tracks = self.get_track_ids(which_set, n_folds, run_n, seed)
             self.data_x, self.data_y = \
                 spaces_converters[converter](
                     feature_extractors[feature](
@@ -229,20 +230,18 @@ class AudioDataset(object):
                         genres.add(genre)
         return tracks, sorted(genres)
 
-    def get_indexes(self, set, nfolds, run_n, seed):
+    def get_track_ids(self, set, nfolds, run_n, seed):
         """
         Returns the indexes of the tracks if the space is Conv2D,
         the indexes of the frames if the space is Vector
         """
         track_ids = numpy.arange(len(self.tracks))
-        if set == 'all':
-            return track_ids
-        else:
+        if set != 'all':
             rng = make_np_rng(None, seed, which_method="shuffle")
             rng.shuffle(track_ids)
             kf = KFold(track_ids, n_folds=nfolds)
             track_ids = kf.runs[run_n][set]
-            return self.index_converters[self.converter](track_ids)
+        return track_ids
 
     def track_ids_to_frame_ids(self, track_ids):
         return numpy.array(
