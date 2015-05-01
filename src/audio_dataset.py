@@ -169,12 +169,13 @@ class AudioDataset(object):
         return data[0].transpose((0, 2, 1)), data[1]
 
     @staticmethod
+    def x_to_conv2dspace(x):
+        return numpy.reshape(x, (x.shape[0], x.shape[1] * x.shape[2]))
+
+    @staticmethod
     def twod_to_conv2dspaces(data):
         print("reshaping data for Conv2DSpace...")
-        data_x = numpy.reshape(
-            data[0],
-            (data[0].shape[0], data[0].shape[1] * data[0].shape[2])
-        )
+        data_x = AudioDataset.x_to_conv2dspace(data[0])
         data_y = data[1]
         return data_x, data_y
 
