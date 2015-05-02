@@ -174,7 +174,6 @@ class AudioDataset(object):
 
     @staticmethod
     def twod_to_conv2dspaces(data):
-        print("reshaping data for Conv2DSpace...")
         data_x = AudioDataset.x_to_conv2dspace(data[0])
         data_y = data[1]
         return data_x, data_y
@@ -189,24 +188,26 @@ class AudioDataset(object):
 
     @staticmethod
     def twod_to_vectorspaces(data):
-        print("reshaping data for VectorSpace...")
         data_x = AudioDataset.x_to_vectorspace(data[0])
         data_y = AudioDataset.y_to_vectorspace(data[0], data[1])
         return data_x, data_y
 
     def get_inv_spectrogram_data(self, **kwargs):
-        print("transposing spectrograms...")
+        if self.verbose:
+            print("transposing spectrograms...")
         return AudioDataset.invert_wins_bins(
                 self.get_spectrogram_data(**kwargs)
             )
 
     def filter_indexes(self, indexes, data_x, data_y):
-        print("filtering indexes...")
+        if self.verbose:
+            print("filtering indexes...")
         return numpy.take(data_x, indexes, axis=0), \
             numpy.take(data_y, indexes, axis=0)
 
     def scale(self, data_x):
-        print("preprocessing...")
+        if self.verbose:
+            print("preprocessing...")
         preprocessor = StandardScaler(copy=False)
         preprocessor.fit_transform(data_x)
 
