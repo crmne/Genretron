@@ -1,6 +1,7 @@
 import os
 import numpy
 from sklearn.preprocessing import StandardScaler
+from pylearn2.datasets import dense_design_matrix
 from pylearn2.utils.rng import make_np_rng
 from pylearn2.utils import string_utils
 from spectrogram import Spectrogram
@@ -26,18 +27,20 @@ class AudioDataset(object):
         'feature_extractors',
         'spaces_converters',
         'index_converters',
-        'converter'
+        'view_converters',
+        'view_converter',
     ]
 
     def __init__(self, path, which_set,
                  feature="spectrogram",
                  space="conv2d",
+                 axes=('b', 0, 1, 'c'),
                  preprocess=True,
-                 seconds=30.0,
-                 window_size=1024,
-                 window_type='square',
+                 seconds=None,
+                 window_size=None,
+                 window_type=None,
                  step_size=None,
-                 fft_resolution=1024,
+                 fft_resolution=None,
                  seed=1234,
                  n_folds=4,
                  run_n=0,
@@ -75,11 +78,12 @@ class AudioDataset(object):
         }
 
         path = string_utils.preprocess(path)
-        step_size = step_size if step_size is not None else window_size / 2
 
         # init dynamic params
         tracks, genres = self.tracks_and_genres(path, seconds)
         samplerate = tracks[0].samplerate
+        seconds = tracks[0].seconds
+
         wins_per_track = len(
             Spectrogram.wins(
                 window_size,
@@ -87,7 +91,18 @@ class AudioDataset(object):
                 step_size
             )
         )
+
         bins_per_track = Spectrogram.bins(fft_resolution)
+
+        view_converters = {
+            "conv2d": dense_design_matrix.DefaultViewConverter(
+                (bins_per_track, wins_per_track, 1), axes
+            ),
+            "vector": None,
+            "signal": None
+        }
+
+        view_converter = view_converters[converter]
 
         self.__dict__.update(locals())
         del self.self
@@ -95,27 +110,31 @@ class AudioDataset(object):
         if print_params:
             print(self)
 
-        if preprocess:
-            all_tracks = self.get_track_ids('all', n_folds, run_n, seed)
+    def process(self):
+        if self.preprocess:
+            all_tracks = self.get_track_ids(
+                'all', self.n_folds, self.run_n, self.seed)
             self.data_x, self.data_y = \
-                spaces_converters[converter](
-                    feature_extractors[feature](
-                        all_tracks, seconds, window_size, step_size,
-                        window_type, fft_resolution
+                self.spaces_converters[self.converter](
+                    self.feature_extractors[self.feature](
+                        all_tracks, self.seconds, self.window_size,
+                        self.step_size, self.window_type, self.fft_resolution
                     )
                 )
             self.scale(self.data_x)
-            set_tracks = self.get_track_ids(which_set, n_folds, run_n, seed)
+            set_tracks = self.get_track_ids(
+                self.which_set, self.n_folds, self.run_n, self.seed)
             set_indexes = self.index_converters[self.converter](set_tracks)
             self.data_x, self.data_y = \
                 self.filter_indexes(set_indexes, self.data_x, self.data_y)
         else:
-            set_tracks = self.get_track_ids(which_set, n_folds, run_n, seed)
+            set_tracks = self.get_track_ids(
+                self.which_set, self.n_folds, self.run_n, self.seed)
             self.data_x, self.data_y = \
-                spaces_converters[converter](
-                    feature_extractors[feature](
-                        set_tracks, seconds, window_size, step_size,
-                        window_type, fft_resolution
+                self.spaces_converters[self.converter](
+                    self.feature_extractors[self.feature](
+                        set_tracks, self.seconds, self.window_size,
+                        self.step_size, self.window_type, self.fft_resolution
                     )
                 )
 

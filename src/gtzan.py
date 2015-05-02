@@ -15,13 +15,11 @@ class GTZAN(AudioDataset):
 
 
 class GTZAN_On_Memory(dense_design_matrix.DenseDesignMatrix):
-    def __init__(self, axes=('b', 0, 1, 'c'), **kwargs):
+    def __init__(self, **kwargs):
         gtzan = GTZAN(**kwargs)
-        view_converter = dense_design_matrix.DefaultViewConverter(
-            (gtzan.bins_per_track, gtzan.wins_per_track, 1), axes
-        )
+        gtzan.process()
         super(GTZAN_On_Memory, self).__init__(
             X=gtzan.data_x,
             y=gtzan.data_y,
-            view_converter=view_converter
+            view_converter=gtzan.view_converter
         )
