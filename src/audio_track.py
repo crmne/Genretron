@@ -64,19 +64,17 @@ class AudioTrack(object):
 
     @property
     def spectrogram(self):
-        return self.calc_spectrogram(
-            win_size=1024,
-            step_size=512,
-            window_type='square',
-            fft_resolution=1024
-        )
+        return self.calc_spectrogram()
 
-    def calc_spectrogram(self, win_size, step_size, window_type,
-                         fft_resolution):
+    def calc_spectrogram(self,
+                         window_size=None,
+                         step_size=None,
+                         window_type=None,
+                         fft_resolution=None):
         if not hasattr(self, '_spectrogram'):
             self._spectrogram = Spectrogram.from_waveform(
                 self.signal,
-                win_size,
+                window_size,
                 step_size,
                 window_type,
                 fft_resolution
