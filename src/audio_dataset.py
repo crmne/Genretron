@@ -4,6 +4,7 @@ from sklearn.preprocessing import StandardScaler
 from pylearn2.datasets import dense_design_matrix
 from pylearn2.utils.rng import make_np_rng
 from pylearn2.utils import string_utils
+from theano import config as theanoconfig
 from spectrogram import Spectrogram
 from kfold import KFold
 import utils
@@ -153,7 +154,7 @@ class AudioDataset(object):
     def get_signal_data(self, indexes, seconds, **kwargs):
         data_x = numpy.zeros(
             (len(indexes), seconds * self.samplerate),
-            dtype=numpy.float32)
+            dtype=numpy.dtype(theanoconfig.floatX).type)
         data_y = numpy.zeros(
             (len(indexes), len(self.genres)),
             dtype=numpy.int8)
@@ -168,7 +169,7 @@ class AudioDataset(object):
                              fft_resolution):
         data_x = numpy.zeros(
             (len(indexes), self.wins_per_track, self.bins_per_track),
-            dtype=numpy.float32)
+            dtype=numpy.dtype(theanoconfig.floatX).type)
         data_y = numpy.zeros(
             (len(indexes), len(self.genres)),
             dtype=numpy.int8)
