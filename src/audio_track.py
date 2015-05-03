@@ -89,12 +89,19 @@ class AudioTrack(object):
         import matplotlib.pyplot as plt
         if title is None:
             title = self.filename
-        plt.title(title)
-        plt.plot(
+
+        fig = plt.figure()
+        fig.suptitle('Signal', fontsize=14, fontweight='bold')
+
+        ax = fig.add_subplot(111)
+        ax.set_title(title)
+        ax.set_xlabel('Seconds')
+        ax.set_ylabel('Amplitude')
+        ax.plot(
             numpy.linspace(0, self.seconds, num=self.nframes),
             self.signal
         )
-        plt.xlim(0, self.seconds)
+        ax.set_xlim(0, self.seconds)
         plt.show()
 
     def plot_spectrogram(self, title=None):
