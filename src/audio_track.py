@@ -1,5 +1,6 @@
 import os
 import numpy
+import theano.config
 from scikits.audiolab import Sndfile
 from scikits.audiolab import play
 from scikits.audiolab import available_file_formats
@@ -58,7 +59,7 @@ class AudioTrack(object):
         if not hasattr(self, '_signal'):
             self._signal = Sndfile(self.path, mode='r').read_frames(
                 self.nframes,
-                dtype=numpy.float32
+                dtype=theano.config.floatX
             )
         return self._signal
 
