@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 import argparse
-import collections
-import numpy
-
 from pylearn2.utils import serial
 from pylearn2.config import yaml_parse
 from theano import function
@@ -78,11 +75,18 @@ def predict(model_path, track_paths, verbose=False):
         # convert to the format used in training
         x = view_converter(space_converter(spectrogram))
 
-        y = {genres[index]: "{}%".format(round(value * 100, 4)) for index, value in enumerate(f(x)[0])}
+        # get the results
+        y = f(x)[0]
 
-        # print(collections.Counter(y).most_common())
-        from pprint import pformat
-        print("{}:\n{}".format(track.path, pformat(y)))
+        predictions = sorted(
+            [(genres[i], v * 100) for i, v in enumerate(y)],
+            key=lambda tup: tup[1],
+            reverse=True
+        )
+
+        print("{}:".format(track.path))
+        for prediction in predictions:
+            print("{:>10}: {:12.8f}%".format(prediction[0], prediction[1]))
 
 
 def make_argument_parser():
