@@ -4,7 +4,7 @@
 # Using 50 neurons in 1 Rectified Linear hidden layer, with a Softmax output layer,
 # learning rate of 0.01.
 # In this case we are using a window size of 2048 samples for the spectrogram calculations,
-# in order to speed up the computation. This means that the shape of the spectrogram is 512*623 pixels.
+# in order to speed up the computation. This means that the shape of the spectrogram is 513*623 pixels.
 
 !obj:pylearn2.train.Train {
     dataset: &train !obj:gtzan.GTZAN_On_Memory {
@@ -25,7 +25,7 @@
                     }
                 ],
         input_space: !obj:pylearn2.space.Conv2DSpace {
-            shape: [512, 623], # the second dimension is dependend on the window size
+            shape: [513, 623], # the second dimension is dependend on the window size
             num_channels: 1,
             axes: ['b', 0, 1, 'c'],
         },

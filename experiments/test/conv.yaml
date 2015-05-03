@@ -8,7 +8,7 @@
     model: !obj:pylearn2.models.mlp.MLP {
         batch_size: 10,
         input_space: !obj:pylearn2.space.Conv2DSpace {
-            shape: [512, 85],
+            shape: [513, 85],
             num_channels: 1,
         },
         layers: [
@@ -16,7 +16,7 @@
                         layer_name: 'h2',
                         output_channels: 64,
                         irange: .05,
-                        kernel_shape: [512, 5],
+                        kernel_shape: [513, 5],
                         pool_shape: [1, 8],
                         pool_stride: [1, 4],
                         max_kernel_norm: 1.9365,

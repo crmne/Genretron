@@ -29,7 +29,7 @@ class Spectrogram(object):
     def bins(fft_resolution):
         fft_resolution = Spectrogram._default_fft_resolution \
             if fft_resolution is None else fft_resolution
-        return fft_resolution / 2
+        return (fft_resolution / 2) + 1
 
     def __init__(self, spectrogram, window_size, step_size, window_type,
                  fft_resolution):

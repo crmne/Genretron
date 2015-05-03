@@ -20,7 +20,7 @@
                  }
                 ],
         input_space: !obj:pylearn2.space.VectorSpace {
-            dim: 512,
+            dim: 513,
         },
     },
     algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
