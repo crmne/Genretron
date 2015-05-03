@@ -32,7 +32,7 @@ class Spectrogram(object):
         return (fft_resolution / 2) + 1
 
     def __init__(self, spectrogram, window_size, step_size, window_type,
-                 fft_resolution):
+                 fft_resolution, wins, bins):
         self.__dict__.update(locals())
         del self.self
 
@@ -60,7 +60,7 @@ class Spectrogram(object):
             spectrogram[i, :] = numpy.log(numpy.abs(z[:bins] + 1e-8))
 
         return cls(spectrogram, window_size, step_size, window_type,
-                   fft_resolution)
+                   fft_resolution, wins, bins)
 
     # def aggregate_features(self, window_size, step_size):
     #     """
