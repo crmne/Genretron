@@ -100,4 +100,8 @@ class AudioTrack(object):
     def plot_spectrogram(self, title=None):
         if title is None:
             title = self.filename
-        self.spectrogram.plot(title=title)
+        self.spectrogram.plot(
+            sample_rate=self.samplerate,
+            title=title,
+            with_colorbar=True
+        )

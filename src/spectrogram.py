@@ -32,7 +32,7 @@ class Spectrogram(object):
         return (fft_resolution / 2) + 1
 
     def __init__(self, spectrogram, window_size, step_size, window_type,
-                 fft_resolution, wins, bins):
+                 fft_resolution, wins, bins, nframes):
         self.__dict__.update(locals())
         del self.self
 
@@ -60,7 +60,7 @@ class Spectrogram(object):
             spectrogram[i, :] = numpy.log(numpy.abs(z[:bins] + 1e-8))
 
         return cls(spectrogram, window_size, step_size, window_type,
-                   fft_resolution, wins, bins)
+                   fft_resolution, wins, bins, len(frames))
 
     # def aggregate_features(self, window_size, step_size):
     #     """
@@ -91,14 +91,32 @@ class Spectrogram(object):
     #     )
     #     plt.show()
 
-    # TODO: use time scale
-    def plot(self, title="Spectrogram"):
+    def plot(self, sample_rate=None, title='', with_colorbar=False):
         import matplotlib.pyplot as plt
-        plt.title(title)
-        plt.imshow(
+        fig = plt.figure()
+        fig.suptitle('Spectrogram', fontsize=14, fontweight='bold')
+
+        ax = fig.add_subplot(111)
+        ax.set_title(title)
+
+        if sample_rate is None:
+            horizontal_max = len(self.wins)
+            ax.set_xlabel('Windows')
+            vertical_max = self.bins
+            ax.set_ylabel('Bins')
+        else:
+            horizontal_max = float(self.nframes) / sample_rate
+            ax.set_xlabel('Seconds')
+            vertical_max = sample_rate / 1 / 2.205
+            ax.set_ylabel('Frequency (Hz)')
+
+        cax = ax.imshow(
             self.spectrogram.T,
             interpolation='nearest',
             origin='lower',
-            aspect='auto'
+            aspect='auto',
+            extent=[0, horizontal_max, 0, vertical_max]
         )
+        if with_colorbar:
+            fig.colorbar(cax)
         plt.show()
