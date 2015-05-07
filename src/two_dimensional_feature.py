@@ -17,8 +17,10 @@ class TwoDimensionalFeature(object):
     def shape(wins, bins):
         return len(wins), bins
 
-    @staticmethod
-    def wins(nframes, window_size=None, step_size=None):
+    @classmethod
+    def wins(cls, nframes, window_size=None, step_size=None):
+        window_size = cls.default_window_size \
+            if window_size is None else window_size
         step_size = window_size / 2 if step_size is None else step_size
         return range(window_size, int(nframes), step_size)
 

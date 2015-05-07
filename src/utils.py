@@ -15,6 +15,10 @@ def filter_keys_from_dict(keys, dict):
 #     return DD(valid_y_misclass=valid_y_misclass)
 
 
+def filter_null_args(**kwargs):
+    return {k: v for k, v in kwargs.items() if v is not None}
+
+
 def log_uniform(low, high):
     """
     Generates a number that's uniformly distributed in the log-space between
