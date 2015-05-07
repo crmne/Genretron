@@ -87,8 +87,8 @@ class AudioDataset(object):
 
         wins_per_track = len(
             Spectrogram.wins(
-                window_size,
                 seconds * samplerate,
+                window_size,
                 step_size
             )
         )

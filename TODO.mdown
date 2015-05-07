@@ -1,10 +1,9 @@
 # New features
 ## GTZAN
 
-* Predictions
+* Fix timescale of texture window plot
 * Random Forest
 * Maximum voting
 * MFCC
-* Texture Windows
 * Save features in HDF5
 * Load features from HDF5
