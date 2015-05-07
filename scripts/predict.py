@@ -75,7 +75,7 @@ def predict(model_path, track_paths, verbose=False):
         # load track
         track = AudioTrack(track_path, seconds=seconds)
         # calc spectrogram
-        spectrogram = track.calc_spectrogram(**spectrogram_params).spectrogram
+        spectrogram = track.calc_spectrogram(**spectrogram_params).data
         # add the batch size
         spectrogram = spectrogram.reshape(
              (1, spectrogram.shape[0], spectrogram.shape[1]))

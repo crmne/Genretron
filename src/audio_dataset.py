@@ -63,6 +63,7 @@ class AudioDataset(object):
         feature_extractors = {
             "spectrogram": self.get_spectrogram_data,
             "inv_spectrogram": self.get_inv_spectrogram_data,
+            "texture_window": self.get_texture_window_data,
             "signal": self.get_signal_data
         }
 
@@ -179,7 +180,7 @@ class AudioDataset(object):
                 print("calculating spectrogram of " + track.path)
             data_x[data_i] = track.calc_spectrogram(
                 window_size, step_size, window_type,
-                fft_resolution).spectrogram
+                fft_resolution).data
             data_y[data_i][self.genres.index(track.genre)] = 1
             del track._signal
         return data_x, data_y
