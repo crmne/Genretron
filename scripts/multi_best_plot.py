@@ -11,9 +11,13 @@ import pylearn2
 
 
 def extract_channels(model_path, channels):
-    print("Extracting monitoring channels from %s" % os.path.basename(model_path))
+    print("Extracting monitoring channels from %s" %
+          os.path.basename(model_path))
     pkl = pickle.load(open(model_path, 'rb'))
-    chans = {channel: pkl.monitor.channels[channel].val_record[-1] for channel in channels}
+    chans = {
+        channel: pkl.monitor.channels[channel].val_record[-1]
+        for channel in channels
+    }
     return chans
 
 
@@ -34,10 +38,15 @@ def plot(models, channels, param=None):
     if param:
         params = []
         for model_name in model_names:
-            model = pylearn2.config.yaml_parse.load(open(model_name + '.yaml'), instantiate=False)
+            model = pylearn2.config.yaml_parse.load(
+                open(model_name + '.yaml'), instantiate=False)
             # FIXME
-            # extracting l1 regularization coefficient: generalize to anything in the yaml file
-            params.append(model[2]['algorithm'][2]['cost'][2]['costs'][1][2]['coeffs']['h2'])
+            # extracting l1 regularization coefficient:
+            # generalize to anything in the yaml file
+            params.append(
+                model[2]['algorithm'][2]['cost'][2]
+                ['costs'][1][2]['coeffs']['h2']
+            )
         x = numpy.asarray(params)
         pylab.xlabel(param)
     else:
