@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import argparse
+import utils
 from pylearn2.utils import serial
 from pylearn2.config import yaml_parse
 from theano import function
@@ -56,7 +57,7 @@ def predict(model_path, track_paths, verbose=False):
     dataset = GTZAN(which_set='all',
                     verbose=verbose,
                     print_params=False,
-                    **dataset_params)
+                    **utils.filter_null_args(**dataset_params))
 
     def space_converter(x):
         return dataset.spaces_converters[dataset.converter]((x, []))[0]
@@ -75,7 +76,8 @@ def predict(model_path, track_paths, verbose=False):
         # load track
         track = AudioTrack(track_path, seconds=seconds)
         # calc spectrogram
-        spectrogram = track.calc_spectrogram(**spectrogram_params).data
+        spectrogram = track.calc_spectrogram(
+            **utils.filter_null_args(**spectrogram_params)).data
         # add the batch size
         spectrogram = spectrogram.reshape(
              (1, spectrogram.shape[0], spectrogram.shape[1]))
