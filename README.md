@@ -43,4 +43,4 @@ Prediction
 ----------
 
     . env/bin/activate
-    scripts/predict results/experiments/test/conv.pkl
+    scripts/predict.py results/experiments/test/conv.pkl
