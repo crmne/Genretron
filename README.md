@@ -38,3 +38,9 @@ Training of the neural network
 
 	. env/bin/activate
     scripts/train.py experiments/test/conv.yaml
+
+Prediction
+----------
+
+    . env/bin/activate
+    scripts/predict results/experiments/test/conv.pkl
