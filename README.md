@@ -14,8 +14,8 @@ Make sure you have python 2.7+, HDF5, and libsndfile installed and then:
     virtualenv env
     . env/bin/activate
     pip install -r requirements.txt
-    echo "`pwd`/src" > env/lib/python2.7/site-packages/genretron.pth
-    echo "`pwd`/pylearn2" > env/lib/python2.7/site-packages/pylearn2.pth
+    echo $(pwd)/src > env/lib/python2.7/site-packages/genretron.pth
+    echo $(pwd)/pylearn2 > env/lib/python2.7/site-packages/pylearn2.pth
     . env/bin/activate
 
 Downloading the dataset
@@ -43,4 +43,4 @@ Prediction
 ----------
 
     . env/bin/activate
-    scripts/predict.py results/experiments/test/conv.pkl
+    scripts/predict.py results/experiments/test/conv.pkl song1.wav song2.wav ...
