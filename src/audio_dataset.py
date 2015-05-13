@@ -46,7 +46,7 @@ class AudioDataset(object):
                  tw_window_type=None,
                  tw_step_size=None,
                  fft_resolution=None,
-                 seed=1234,
+                 seed=None,
                  n_folds=4,
                  run_n=0,
                  verbose=False,
