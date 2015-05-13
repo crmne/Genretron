@@ -37,7 +37,7 @@ class AudioDataset(object):
                  feature="spectrogram",
                  space="conv2d",
                  axes=('b', 0, 1, 'c'),
-                 preprocess=True,
+                 preprocess=False,
                  seconds=None,
                  window_size=None,
                  window_type=None,
