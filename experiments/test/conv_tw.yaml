@@ -1,12 +1,12 @@
 !obj:pylearn2.train.Train {
     dataset: &train !obj:gtzan.GTZAN_On_Memory {
         which_set: "train",
-        preprocess: False,
-        feature: "texture_window",
-        verbose: True
+        feature: &feature "texture_window",
+        seed: &seed 1234,
     },
     model: !obj:pylearn2.models.mlp.MLP {
         batch_size: 10,
+        seed: *seed,
         input_space: !obj:pylearn2.space.Conv2DSpace {
             shape: [513, 61],
             num_channels: 1,
@@ -45,15 +45,13 @@
                 'train' : *train,
                 'valid' : !obj:gtzan.GTZAN_On_Memory {
                             which_set: "valid",
-                            preprocess: False,
-                            feature: "texture_window",
-                            verbose: True
+                            feature: *feature,
+                            seed: *seed,
                           },
                 'test'  : !obj:gtzan.GTZAN_On_Memory {
                             which_set: "test",
-                            preprocess: False,
-                            feature: "texture_window",
-                            verbose: True
+                            feature: *feature,
+                            seed: *seed,
                           }
             },
         termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
