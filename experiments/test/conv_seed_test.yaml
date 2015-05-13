@@ -1,0 +1,64 @@
+!obj:pylearn2.train.Train {
+    dataset: &train !obj:gtzan.GTZAN_On_Memory {
+        which_set: "train",
+        window_size: &window_size 2048,
+        seconds: &seconds 4.0,
+        seed: &seed 1234,
+    },
+    model: !obj:pylearn2.models.mlp.MLP {
+        batch_size: 10,
+        seed: *seed,
+        input_space: !obj:pylearn2.space.Conv2DSpace {
+            shape: [513, 85],
+            num_channels: 1,
+        },
+        layers: [
+                    !obj:pylearn2.models.mlp.ConvRectifiedLinear {
+                        layer_name: 'h2',
+                        output_channels: 64,
+                        irange: .05,
+                        kernel_shape: [513, 5],
+                        pool_shape: [1, 8],
+                        pool_stride: [1, 4],
+                        max_kernel_norm: 1.9365,
+                    },
+                    !obj:pylearn2.models.mlp.ConvRectifiedLinear {
+                        layer_name: 'h3',
+                        output_channels: 64,
+                        irange: .05,
+                        kernel_shape: [1, 10],
+                        pool_shape: [1, 8],
+                        pool_stride: [1, 4],
+                        max_kernel_norm: 1.9365,
+                    },
+                    !obj:pylearn2.models.mlp.Softmax {
+                        max_col_norm: 1.9365,
+                        layer_name: 'y',
+                        istdev: .05,
+                        n_classes: 10
+                    }
+                ],
+    },
+    algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
+        learning_rate: .01,
+        monitoring_dataset:
+            {
+                'train' : *train,
+                'valid' : !obj:gtzan.GTZAN_On_Memory {
+                            which_set: "valid",
+                            window_size: *window_size,
+                            seconds: *seconds,
+                            seed: *seed,
+                          },
+                'test'  : !obj:gtzan.GTZAN_On_Memory {
+                            which_set: "test",
+                            window_size: *window_size,
+                            seconds: *seconds,
+                            seed: *seed,
+                          }
+            },
+        termination_criterion: !obj:pylearn2.termination_criteria.EpochCounter {
+            max_epochs: 10,
+        },
+    }
+}
