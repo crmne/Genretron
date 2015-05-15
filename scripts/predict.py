@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import numpy
 import argparse
 import utils
 from pylearn2.utils import serial
@@ -8,7 +9,7 @@ from audio_track import AudioTrack
 from gtzan import GTZAN
 
 
-def predict(model_path, track_paths, verbose=False):
+def predict(model_path, track_paths, verbose=False, extended=False):
     """
     Predict from a pkl file.
 
@@ -73,25 +74,17 @@ def predict(model_path, track_paths, verbose=False):
     genres = dataset.genres
 
     for track_path in track_paths:
-        # load track
-        track = AudioTrack(track_path, seconds=seconds)
-        # calc spectrogram
-        spectrogram = track.calc_spectrogram(
-            **utils.filter_null_args(**spectrogram_params)).data
-        # add the batch size
-        spectrogram = spectrogram.reshape(
-             (1, spectrogram.shape[0], spectrogram.shape[1]))
-
-        # convert to the format used in training
-        x = view_converter(space_converter(spectrogram))
-
-        # get the results
-        if dataset.space == "conv2d":
-            y = f(x)[0]
-        elif dataset.space == "vector":
-            y = f(x).mean(axis=0)
+        if extended:
+            track = AudioTrack(track_path)
+            y = []
+            for offset_seconds in numpy.arange(0, track.seconds_total, seconds):
+                if offset_seconds + seconds <= track.seconds_total:
+                    track = AudioTrack(track_path, seconds=seconds, offset_seconds=offset_seconds)
+                    y.append(track_predict(dataset, track, f, spectrogram_params, view_converter, space_converter))
+            y = numpy.array(y).mean(axis=0)
         else:
-            raise NotImplementedError
+            track = AudioTrack(track_path, seconds=seconds)
+            y = track_predict(dataset, track, f, spectrogram_params, view_converter, space_converter)
 
         predictions = sorted(
             [(genres[i], v * 100) for i, v in enumerate(y)],
@@ -104,6 +97,32 @@ def predict(model_path, track_paths, verbose=False):
             print("{:>10}: {:12.8f}%".format(prediction[0], prediction[1]))
 
 
+def track_predict(dataset,
+                  track,
+                  f,
+                  spectrogram_params,
+                  view_converter,
+                  space_converter):
+
+    # calc spectrogram
+    spectrogram = track.calc_spectrogram(
+        **utils.filter_null_args(**spectrogram_params)).data
+    # add the batch size
+    spectrogram = spectrogram.reshape(
+         (1, spectrogram.shape[0], spectrogram.shape[1]))
+
+    # convert to the format used in training
+    x = view_converter(space_converter(spectrogram))
+
+    # get the results
+    if dataset.space == "conv2d":
+        return f(x)[0]
+    elif dataset.space == "vector":
+        return f(x).mean(axis=0)
+    else:
+        raise NotImplementedError
+
+
 def make_argument_parser():
     """
     Creates an ArgumentParser to read the options for this script from
@@ -113,9 +132,10 @@ def make_argument_parser():
     parser.add_argument('model')
     parser.add_argument('tracks', nargs='*')
     parser.add_argument('-v', '--verbose', action='store_true')
+    parser.add_argument('-e', '--extended', action='store_true')
     return parser
 
 if __name__ == "__main__":
     parser = make_argument_parser()
     args = parser.parse_args()
-    predict(args.model, args.tracks, args.verbose)
+    predict(args.model, args.tracks, args.verbose, args.extended)

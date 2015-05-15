@@ -11,7 +11,7 @@ from texture_window import TextureWindow
 class AudioTrack(object):
     extensions = available_file_formats()
 
-    def __init__(self, path, genre=None, seconds=None):
+    def __init__(self, path, genre=None, seconds=None, offset_seconds=None):
         super(AudioTrack, self).__init__()
 
         filename = os.path.basename(path)
@@ -20,6 +20,9 @@ class AudioTrack(object):
         self.__dict__.update(locals())
         del self.self
         del seconds
+
+        if self.offset_seconds is not None:
+            assert (self.offset_seconds + self.seconds) <= self.seconds_total
 
     @property
     def samplerate(self):
@@ -36,6 +39,10 @@ class AudioTrack(object):
     @property
     def nframes(self):
         return self.seconds * self.samplerate
+
+    @property
+    def nframes_extended(self):
+        return (self.seconds + self.offset_seconds) * self.samplerate
 
     @property
     def format(self):
@@ -58,10 +65,17 @@ class AudioTrack(object):
     @property
     def signal(self):
         if not hasattr(self, '_signal'):
-            self._signal = Sndfile(self.path, mode='r').read_frames(
-                self.nframes,
-                dtype=numpy.dtype(theanoconfig.floatX).type
-            )
+            if self.offset_seconds is None:
+                self._signal = Sndfile(self.path, mode='r').read_frames(
+                    self.nframes,
+                    dtype=numpy.dtype(theanoconfig.floatX).type
+                )
+            else:
+                self._signal = Sndfile(self.path, mode='r').read_frames(
+                    self.nframes_extended,
+                    dtype=numpy.dtype(theanoconfig.floatX).type
+                )
+                self._signal = self._signal[self.nframes_extended - self.nframes:]
         return self._signal
 
     @property
