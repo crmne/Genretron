@@ -1,6 +1,6 @@
 import numpy
 import sys
-# from jobman.tools import DD
+from jobman.tools import DD
 
 
 def filter_keys_from_dict(keys, dict):
@@ -8,15 +8,15 @@ def filter_keys_from_dict(keys, dict):
     return {k: dict[k] for k in key_set}
 
 
-# def results_extractor(train_obj):
-#     channels = train_obj.model.monitor.channels
-#     valid_y_misclass = channels['valid_y_misclass'].val_record[-1]
-
-#     return DD(valid_y_misclass=valid_y_misclass)
-
-
 def filter_null_args(**kwargs):
     return {k: v for k, v in kwargs.items() if v is not None}
+
+
+def results_extractor(train_obj):
+    channels = train_obj.model.monitor.channels
+    valid_y_misclass = channels['valid_y_misclass'].val_record[-1]
+
+    return DD(valid_y_misclass=valid_y_misclass)
 
 
 def log_uniform(low, high):
