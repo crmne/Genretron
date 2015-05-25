@@ -14,9 +14,25 @@ def filter_null_args(**kwargs):
 
 def results_extractor(train_obj):
     channels = train_obj.model.monitor.channels
-    valid_y_misclass = channels['valid_y_misclass'].val_record[-1]
+    epoch_time = channels['valid_y_misclass'].time_record
+    validyma = [i.item() for i in channels['valid_y_misclass'].val_record]
+    testyma = [i.item() for i in channels['test_y_misclass'].val_record]
+    trainyma = [i.item() for i in channels['train_y_misclass'].val_record]
+    train_time = epoch_time[-1]
+    validym = validyma[-1]
+    testym = testyma[-1]
+    trainym = trainyma[-1]
 
-    return DD(valid_y_misclass=valid_y_misclass)
+    return DD(
+        epoch_time=epoch_time,
+        valid_y_misclass_array=validyma,
+        test_y_misclass_array=testyma,
+        train_y_misclass_array=trainyma,
+        train_time=train_time,
+        valid_y_misclass=validym,
+        test_y_misclass=testym,
+        train_y_misclass=trainym,
+    )
 
 
 def log_uniform(low, high):
