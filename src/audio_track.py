@@ -75,8 +75,17 @@ class AudioTrack(object):
                     self.nframes_extended,
                     dtype=numpy.dtype(theanoconfig.floatX).type
                 )
-                self._signal = self._signal[self.nframes_extended - self.nframes:]
+                self._signal = \
+                    self._signal[self.nframes_extended - self.nframes:]
+            self.normalize()
         return self._signal
+
+    @signal.setter
+    def signal(self, value):
+        self._signal = value
+
+    def normalize(self):
+        self.signal /= numpy.max(numpy.abs(self.signal), axis=0)
 
     @property
     def spectrogram(self):
