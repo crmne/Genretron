@@ -8,6 +8,12 @@ from theano import function
 from audio_track import AudioTrack
 from gtzan import GTZAN
 
+__authors__ = "Carmine Paolino"
+__copyright__ = "Copyright 2015, Vrije Universiteit Amsterdam"
+__credits__ = ["Carmine Paolino"]
+__license__ = "3-clause BSD"
+__email__ = "carmine@paolino.me"
+
 
 def predict(model_path, track_paths, verbose=False, extended=False):
     """

@@ -1,6 +1,12 @@
 import numpy
 from jobman.tools import DD
 
+__authors__ = "Carmine Paolino"
+__copyright__ = "Copyright 2015, Vrije Universiteit Amsterdam"
+__credits__ = ["Carmine Paolino"]
+__license__ = "3-clause BSD"
+__email__ = "carmine@paolino.me"
+
 
 def results_extractor(train_obj):
     channels = train_obj.model.monitor.channels

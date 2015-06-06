@@ -5,6 +5,13 @@ import urllib
 import tarfile
 import utils
 
+__authors__ = "Carmine Paolino"
+__copyright__ = "Copyright 2015, Vrije Universiteit Amsterdam"
+__credits__ = ["Carmine Paolino"]
+__license__ = "3-clause BSD"
+__email__ = "carmine@paolino.me"
+
+
 gtzan_origin = "http://opihi.cs.uvic.ca/sound/genres.tar.gz"
 gtzan_base_path = os.path.join(os.environ["PYLEARN2_DATA_PATH"], "GTZAN")
 

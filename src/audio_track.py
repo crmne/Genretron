@@ -7,6 +7,12 @@ from scikits.audiolab import available_file_formats
 from spectrogram import Spectrogram
 from texture_window import TextureWindow
 
+__authors__ = "Carmine Paolino"
+__copyright__ = "Copyright 2015, Vrije Universiteit Amsterdam"
+__credits__ = ["Carmine Paolino"]
+__license__ = "3-clause BSD"
+__email__ = "carmine@paolino.me"
+
 
 class AudioTrack(object):
     extensions = available_file_formats()
@@ -89,14 +95,16 @@ class AudioTrack(object):
 
     @property
     def spectrogram(self):
-        return self.calc_spectrogram()
+        if not hasattr(self, '_spectrogram'):
+            return self.calc_spectrogram()
+        else:
+            return self._spectrogram
 
     def calc_spectrogram(self, **kwargs):
-        if not hasattr(self, '_spectrogram'):
-            self._spectrogram = Spectrogram.from_waveform(
+        self._spectrogram = Spectrogram.from_waveform(
                 self.signal,
                 **kwargs
-            )
+        )
         return self._spectrogram
 
     @property

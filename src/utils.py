@@ -1,5 +1,10 @@
-import numpy
 import sys
+
+__authors__ = "Carmine Paolino"
+__copyright__ = "Copyright 2015, Vrije Universiteit Amsterdam"
+__credits__ = ["Carmine Paolino"]
+__license__ = "3-clause BSD"
+__email__ = "carmine@paolino.me"
 
 
 def filter_keys_from_dict(keys, dict):
