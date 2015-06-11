@@ -1,0 +1,68 @@
+!obj:pylearn2.cross_validation.TrainCV {
+    dataset_iterator: !obj:pylearn2.cross_validation.dataset_iterators.DatasetKFold {
+        dataset: &train !obj:gtzan.GTZAN_On_Memory {
+            which_set: "all",
+            window_size: &window_size 2048,
+            seconds: &seconds 4.0,
+            seed: &seed 1234,
+            verbose: true
+        },
+        n_folds: 4
+    },
+    model: !obj:pylearn2.models.mlp.MLP {
+        batch_size: 10,
+        # seed: *seed,
+        input_space: !obj:pylearn2.space.Conv2DSpace {
+            shape: [513, 85],
+            num_channels: 1,
+        },
+        layers: [
+                    !obj:pylearn2.models.mlp.ConvRectifiedLinear {
+                        layer_name: 'h0',
+                        output_channels: 16,
+                        irange: .05,
+                        kernel_shape: [513, 5],
+                        pool_shape: [1, 8],
+                        pool_stride: [1, 4],
+                        max_kernel_norm: 1.9365,
+                    },
+                    !obj:pylearn2.models.mlp.ConvRectifiedLinear {
+                        layer_name: 'h1',
+                        output_channels: 64,
+                        irange: .05,
+                        kernel_shape: [1, 10],
+                        pool_shape: [1, 8],
+                        pool_stride: [1, 4],
+                        max_kernel_norm: 1.9365,
+                    },
+                    !obj:pylearn2.models.mlp.Softmax {
+                        max_col_norm: 1.9365,
+                        layer_name: 'y',
+                        istdev: .05,
+                        n_classes: 10
+                    }
+                ],
+    },
+    algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
+        batch_size: 10,
+        learning_rate: .001,
+        # learning_rule: !obj:pylearn2.training_algorithms.learning_rule.Momentum {
+        #     init_momentum: .01
+        # },
+        # cost: !obj:pylearn2.costs.mlp.dropout.Dropout {
+        #     input_include_probs: { 'h0' : .8 },
+        #     input_scales: { 'h0' : 1. }
+        # },
+        termination_criterion: !obj:pylearn2.termination_criteria.EpochCounter {
+            max_epochs: 20
+        },
+    },
+    cv_extensions: [
+        !obj:pylearn2.cross_validation.train_cv_extensions.MonitorBasedSaveBestCV {
+            channel_name: 'test_y_misclass',
+            save_path: 'results/${PYLEARN2_TRAIN_FILE_FULL_STEM}_best.pkl',
+            },
+    ],
+    save_freq: 1,
+    save_path: "results/${PYLEARN2_TRAIN_FILE_FULL_STEM}.pkl",
+}
