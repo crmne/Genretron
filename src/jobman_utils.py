@@ -10,24 +10,20 @@ __email__ = "carmine@paolino.me"
 
 def results_extractor(train_obj):
     channels = train_obj.model.monitor.channels
-    epoch_time = channels['valid_y_misclass'].time_record
-    validyma = [i.item() for i in channels['valid_y_misclass'].val_record]
-    testyma = [i.item() for i in channels['test_y_misclass'].val_record]
-    trainyma = [i.item() for i in channels['train_y_misclass'].val_record]
-    train_time = epoch_time[-1]
-    validym = validyma[-1]
-    testym = testyma[-1]
-    trainym = trainyma[-1]
+    best_index = numpy.argmin(channels['valid_nll'].val_record)
 
     return DD(
-        epoch_time=epoch_time,
-        valid_y_misclass_array=validyma,
-        test_y_misclass_array=testyma,
-        train_y_misclass_array=trainyma,
-        train_time=train_time,
-        valid_y_misclass=validym,
-        test_y_misclass=testym,
-        train_y_misclass=trainym,
+        best_epoch=best_index,
+        best_epoch_time=channels['valid_y_misclass'].time_record[best_index],
+        valid_y_misclass_array=[i.item() for i
+                                in channels['valid_y_misclass'].val_record],
+        test_y_misclass_array=[i.item() for i
+                               in channels['test_y_misclass'].val_record],
+        train_y_misclass_array=[i.item() for i
+                                in channels['train_y_misclass'].val_record],
+        valid_y_misclass=channels['valid_y_misclass'].val_record[best_index],
+        test_y_misclass=channels['test_y_misclass'].val_record[best_index],
+        train_y_misclass=channels['train_y_misclass'].val_record[best_index],
     )
 
 
