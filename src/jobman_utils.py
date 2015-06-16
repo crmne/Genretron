@@ -10,7 +10,7 @@ __email__ = "carmine@paolino.me"
 
 def results_extractor(train_obj):
     channels = train_obj.model.monitor.channels
-    best_index = numpy.argmin(channels['valid_nll'].val_record)
+    best_index = numpy.argmin(channels['valid_y_nll'].val_record)
 
     return DD(
         best_epoch=best_index,
