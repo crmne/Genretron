@@ -12,30 +12,23 @@ def generate_hyperparameters():
     hyperparameters.fft_resolution = 1024
     hyperparameters.h0_irange = .05
     hyperparameters.h0_pool_shape_x = 1
-    hyperparameters.h0_pool_shape_y = 2
     hyperparameters.h0_pool_stride_x = 1
-    hyperparameters.h0_pool_stride_y = 1
     hyperparameters.h0_max_kernel_norm = 1.9365
     hyperparameters.h1_irange = .05
     hyperparameters.h1_kernel_shape_x = 1
-    hyperparameters.h1_kernel_shape_y = 10
     hyperparameters.h1_pool_shape_x = 1
-    hyperparameters.h1_pool_shape_y = 2
     hyperparameters.h1_pool_stride_x = 1
-    hyperparameters.h1_pool_stride_y = 1
-    hyperparameters.h1_output_channels = 64
     hyperparameters.h1_max_kernel_norm = 1.9365
     hyperparameters.y_max_col_norm = 1.9365
     hyperparameters.y_istdev = .05
-    hyperparameters.learning_rate = .001
-    hyperparameters.prop_decrease = 0.001
-    hyperparameters.prop_decrease_n = 2
-    for window_size in 1024, 2048:
+    hyperparameters.prop_decrease = 0.01
+    hyperparameters.prop_decrease_n = 20
+    for window_size in 1024, 2048, 4096:
         hyperparameters.window_size = window_size
         hyperparameters.input_shape_x = \
             Spectrogram.bins(hyperparameters.fft_resolution)
 
-        for seconds in 1., 4., 29.:
+        for seconds in 1., 29.:
             hyperparameters.seconds = seconds
             hyperparameters.input_shape_y = \
                 len(Spectrogram.wins(
@@ -43,10 +36,10 @@ def generate_hyperparameters():
                     window_size,
                     window_size / 2))
 
-            for batch_size in 1, 10, 100:
+            for batch_size in 10, 100:
                 hyperparameters.batch_size = batch_size
 
-                for h0_output_channels in 1, 16, 32, 64, 128:
+                for h0_output_channels in 16, 32, 64:
                     hyperparameters.h0_output_channels = h0_output_channels
 
                     for h0_kernel_shape_x in hyperparameters.input_shape_x, \
@@ -56,7 +49,24 @@ def generate_hyperparameters():
                         for h0_kernel_shape_y in hyperparameters.input_shape_y / 8, \
                                 hyperparameters.input_shape_y / 16:
                             hyperparameters.h0_kernel_shape_y = h0_kernel_shape_y
-                            yield hyperparameters
+
+                            for h0_pool_shape_y in 2, 4:
+                                hyperparameters.h0_pool_shape_y = h0_pool_shape_y
+                                hyperparameters.h0_pool_stride_y = h0_pool_shape_y / 2
+
+                                for h1_kernel_shape_y in 4, 8:
+                                    hyperparameters.h1_kernel_shape_y = h1_kernel_shape_y
+
+                                    for h1_pool_shape_y in 2, 4:
+                                        hyperparameters.h1_pool_shape_y = h1_pool_shape_y
+                                        hyperparameters.h1_pool_stride_y = h1_pool_shape_y / 2
+    
+                                        for h1_output_channels in 32, 64:
+                                            hyperparameters.h1_output_channels = h1_output_channels
+    
+                                            for learning_rate in .01, .001, .0001:
+                                                hyperparameters.learning_rate = learning_rate
+                                                yield hyperparameters
 
 
 def make_argument_parser():
