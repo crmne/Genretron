@@ -1,0 +1,82 @@
+!obj:pylearn2.train.Train {
+    dataset: &train !obj:gtzan.GTZAN_On_Memory {
+        which_set: "train",
+        seed: &seed 1234,
+    },
+    model: !obj:pylearn2.models.mlp.MLP {
+        batch_size: %(batch_size)i,
+        input_space: !obj:pylearn2.space.Conv2DSpace {
+            shape: [513, 1247],
+            num_channels: 1,
+        },
+        layers: [
+                    !obj:pylearn2.models.mlp.ConvRectifiedLinear {
+                        layer_name: 'h0',
+                        output_channels: %(h0_output_channels)i,
+                        irange: .05,
+                        kernel_shape: [%(h0_kernel_shape_x)i, %(h0_kernel_shape_y)i],
+                        pool_shape: [%(h0_pool_shape_x)i, %(h0_pool_shape_y)i],
+                        pool_stride: [%(h0_pool_stride_x)i, %(h0_pool_stride_y)i],
+                        max_kernel_norm: 1.9365,
+                    },
+                    !obj:pylearn2.models.mlp.ConvRectifiedLinear {
+                        layer_name: 'h1',
+                        output_channels: %(h1_output_channels)i,
+                        irange: .05,
+                        kernel_shape: [%(h1_kernel_shape_x)i, %(h1_kernel_shape_y)i],
+                        pool_shape: [%(h1_pool_shape_x)i, %(h1_kernel_shape_y)i],
+                        pool_stride: [%(h1_pool_stride_x)i, %(h1_pool_stride_y)i],
+                        max_kernel_norm: 1.9365,
+                    },
+                    !obj:pylearn2.models.mlp.ConvRectifiedLinear {
+                        layer_name: 'h2',
+                        output_channels: %(h2_output_channels)i,
+                        irange: .05,
+                        kernel_shape: [%(h2_kernel_shape_x)i, %(h2_kernel_shape_y)i],
+                        pool_shape: [%(h2_pool_shape_x)i, %(h2_kernel_shape_y)i],
+                        pool_stride: [%(h2_pool_stride_x)i, %(h2_pool_stride_y)i],
+                        max_kernel_norm: 1.9365,
+                    },
+                    !obj:pylearn2.models.mlp.Softmax {
+                        max_col_norm: %(y_max_col_norm)f,
+                        layer_name: 'y',
+                        istdev: %(y_istdev)f,
+                        n_classes: 10
+                    }
+                ],
+    },
+    algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
+        learning_rate: %(learning_rate)f,
+        monitoring_dataset:
+            {
+                'train' : *train,
+                'valid' : !obj:gtzan.GTZAN_On_Memory {
+                            which_set: "valid",
+                            window_size: *window_size,
+                            seconds: *seconds,
+                            seed: *seed,
+                            fft_resolution: *fft_resolution
+                          },
+                'test'  : !obj:gtzan.GTZAN_On_Memory {
+                            which_set: "test",
+                            window_size: *window_size,
+                            seconds: *seconds,
+                            seed: *seed,
+                            fft_resolution: *fft_resolution
+                          }
+            },
+        termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
+            channel_name: "valid_y_misclass",
+            prop_decrease: .001,
+            N: 50
+        },
+    },
+    extensions: [
+        !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
+             channel_name: 'valid_y_misclass',
+             save_path: "${PYLEARN2_TRAIN_FILE_FULL_STEM}_best.pkl"
+        },
+    ],
+    save_freq: 1,
+    save_path: "${PYLEARN2_TRAIN_FILE_FULL_STEM}.pkl"
+}
