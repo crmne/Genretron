@@ -1,72 +1,49 @@
 #!/usr/bin/env python
 import argparse
 import jobman
+import itertools
 from pylearn2.scripts.jobman.experiment import ydict, train_experiment
-from spectrogram import Spectrogram
+
+hp = {
+    'learning_rate': .001,
+    'batch_size': [10, 100],
+    'h0_output_channels': [16, 32, 64],
+    'h0_kernel_shape_x': 513,
+    'h0_kernel_shape_y': [4, 8, 16, 32],
+    'h0_pool_shape_x': 1,
+    'h0_pool_shape_y': 4,
+    'h0_pool_stride_x': 1,
+    'h0_pool_stride_y': 2,
+    'h1_kernel_shape_x': 1,
+    'h1_kernel_shape_y': [4, 8, 16, 32],
+    'h1_pool_shape_x': 1,
+    'h1_pool_shape_y': 4,
+    'h1_pool_stride_x': 1,
+    'h1_pool_stride_y': 2,
+    'h1_output_channels': [32, 64],
+    'h2_kernel_shape_x': 1,
+    'h2_kernel_shape_y': [4, 8, 16, 32],
+    'h2_pool_shape_x': 1,
+    'h2_pool_shape_y': 4,
+    'h2_pool_stride_x': 1,
+    'h2_pool_stride_y': 2,
+    'h2_output_channels': 64
+}
 
 
-# TODO: make this function load from a conf file
-def generate_hyperparameters():
-    hyperparameters = jobman.DD()
-    hyperparameters.seed = 1234
-    hyperparameters.fft_resolution = 1024
-    hyperparameters.h0_irange = .05
-    hyperparameters.h0_pool_shape_x = 1
-    hyperparameters.h0_pool_stride_x = 1
-    hyperparameters.h0_max_kernel_norm = 1.9365
-    hyperparameters.h1_irange = .05
-    hyperparameters.h1_kernel_shape_x = 1
-    hyperparameters.h1_pool_shape_x = 1
-    hyperparameters.h1_pool_stride_x = 1
-    hyperparameters.h1_max_kernel_norm = 1.9365
-    hyperparameters.y_max_col_norm = 1.9365
-    hyperparameters.y_istdev = .05
-    hyperparameters.prop_decrease = 0.01
-    hyperparameters.prop_decrease_n = 20
-    for window_size in 1024, 2048, 4096:
-        hyperparameters.window_size = window_size
-        hyperparameters.input_shape_x = \
-            Spectrogram.bins(hyperparameters.fft_resolution)
+def generate_hyperparameters(hyperparameters):
+    dd = jobman.DD()
+    fixed_hyperparameters = \
+        [(k, v) for k, v in hyperparameters.items() if not isinstance(v, list)]
 
-        for seconds in 1., 29.:
-            hyperparameters.seconds = seconds
-            hyperparameters.input_shape_y = \
-                len(Spectrogram.wins(
-                    seconds * 22050,
-                    window_size,
-                    window_size / 2))
+    dd.update(fixed_hyperparameters)
 
-            for batch_size in 10, 100:
-                hyperparameters.batch_size = batch_size
+    product_hyperparameters = \
+        [(k, v) for k, v in hyperparameters.items() if isinstance(v, list)]
 
-                for h0_output_channels in 16, 32, 64:
-                    hyperparameters.h0_output_channels = h0_output_channels
-
-                    for h0_kernel_shape_x in hyperparameters.input_shape_x, \
-                            hyperparameters.input_shape_x / 4:
-                        hyperparameters.h0_kernel_shape_x = h0_kernel_shape_x
-
-                        for h0_kernel_shape_y in hyperparameters.input_shape_y / 8, \
-                                hyperparameters.input_shape_y / 16:
-                            hyperparameters.h0_kernel_shape_y = h0_kernel_shape_y
-
-                            for h0_pool_shape_y in 2, 4:
-                                hyperparameters.h0_pool_shape_y = h0_pool_shape_y
-                                hyperparameters.h0_pool_stride_y = h0_pool_shape_y / 2
-
-                                for h1_kernel_shape_y in 4, 8:
-                                    hyperparameters.h1_kernel_shape_y = h1_kernel_shape_y
-
-                                    for h1_pool_shape_y in 2, 4:
-                                        hyperparameters.h1_pool_shape_y = h1_pool_shape_y
-                                        hyperparameters.h1_pool_stride_y = h1_pool_shape_y / 2
-    
-                                        for h1_output_channels in 32, 64:
-                                            hyperparameters.h1_output_channels = h1_output_channels
-    
-                                            for learning_rate in .01, .001, .0001:
-                                                hyperparameters.learning_rate = learning_rate
-                                                yield hyperparameters
+    for p in itertools.product(*[i[1] for i in product_hyperparameters]):
+        dd.update(zip([i[0] for i in product_hyperparameters], p))
+        yield dd
 
 
 def make_argument_parser():
@@ -90,7 +67,7 @@ if __name__ == '__main__':
         yaml_template = f.read()
 
     # generate experiments and put them in db
-    for hyperparameters in generate_hyperparameters():
+    for hyperparameters in generate_hyperparameters(hp):
         state = jobman.DD()
         state.yaml_template = yaml_template
         state.hyper_parameters = \
