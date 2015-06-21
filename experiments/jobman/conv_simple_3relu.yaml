@@ -38,9 +38,9 @@
                         max_kernel_norm: 1.9365,
                     },
                     !obj:pylearn2.models.mlp.Softmax {
-                        max_col_norm: %(y_max_col_norm)f,
+                        max_col_norm: 1.9365,
                         layer_name: 'y',
-                        istdev: %(y_istdev)f,
+                        istdev: .05,
                         n_classes: 10
                     }
                 ],
@@ -52,17 +52,11 @@
                 'train' : *train,
                 'valid' : !obj:gtzan.GTZAN_On_Memory {
                             which_set: "valid",
-                            window_size: *window_size,
-                            seconds: *seconds,
                             seed: *seed,
-                            fft_resolution: *fft_resolution
                           },
                 'test'  : !obj:gtzan.GTZAN_On_Memory {
                             which_set: "test",
-                            window_size: *window_size,
-                            seconds: *seconds,
                             seed: *seed,
-                            fft_resolution: *fft_resolution
                           }
             },
         termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
