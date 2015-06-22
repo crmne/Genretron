@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import sys
 import argparse
 import jobman
 import itertools
@@ -77,6 +78,8 @@ if __name__ == '__main__':
             train_experiment,
             jobman.flatten(state),
             db)
+        sys.stdout.write('.')
+    print('')
 
     # create view
     view_db_path = "{0}_view".format(args.table_name)
