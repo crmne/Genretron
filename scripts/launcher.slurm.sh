@@ -7,6 +7,7 @@ function require_vars {
             echo 
             then exit 1
         fi
+    done
 }
 
 . ~/.bashrc
