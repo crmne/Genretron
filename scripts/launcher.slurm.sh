@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
+
+function require_vars {
+    for var in "$@"
+    do
+        if [ -z "$var" ]
+            echo 
+            then exit 1
+        fi
+}
+
 . ~/.bashrc
 
 export CONSECUTIVE_JOBS=$1
 export DB_TABLE=$2
-
-
-if [ -z "$GENRETRON_PATH" ] || [ -z "$DB_TABLE" ] || [ -z "$CONSECUTIVE_JOBS" ]
-    echo "One of the required variables by this script has not been set. Exiting"
-    then exit 1
-fi
 
 . $GENRETRON_PATH/env/bin/activate
 
