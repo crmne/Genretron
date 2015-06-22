@@ -7,4 +7,8 @@ if [ -z "$GENRETRON_PATH" ] || [ -z "$DB_TABLE" ] || [ -z "$1" ]
 fi
 
 . $GENRETRON_PATH/env/bin/activate
-srun $GENRETRON_PATH/env/bin/jobman sql -n $1 $DB_TABLE $GENRETRON_PATH/results
+
+COMMAND="$GENRETRON_PATH/env/bin/jobman sql -n $1 $DB_TABLE $GENRETRON_PATH/results"
+
+echo $COMMAND
+srun $COMMAND
