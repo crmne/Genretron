@@ -12,6 +12,8 @@ def results_extractor(train_obj):
     channels = train_obj.model.monitor.channels
     best_index = numpy.argmin(channels['valid_y_nll'].val_record)
 
+    import ipdb
+    ipdb.set_trace()
     return DD(
         best_epoch=best_index,
         best_epoch_time=channels['valid_y_misclass'].time_record[best_index],
@@ -21,9 +23,9 @@ def results_extractor(train_obj):
                                in channels['test_y_misclass'].val_record],
         train_y_misclass_array=[i.item() for i
                                 in channels['train_y_misclass'].val_record],
-        valid_y_misclass=channels['valid_y_misclass'].val_record[best_index],
-        test_y_misclass=channels['test_y_misclass'].val_record[best_index],
-        train_y_misclass=channels['train_y_misclass'].val_record[best_index],
+        valid_y_misclass=channels['valid_y_misclass'].val_record[best_index].item(),
+        test_y_misclass=channels['test_y_misclass'].val_record[best_index].item(),
+        train_y_misclass=channels['train_y_misclass'].val_record[best_index].item(),
     )
 
 
