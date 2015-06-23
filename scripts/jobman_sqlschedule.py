@@ -65,5 +65,5 @@ if __name__ == '__main__':
     print('')
 
     # create view
-    view_db_path = "{0}_view".format(args.table_name)
+    view_db_path = "{0}view".format(args.table_name)
     db.createView(view_db_path)
