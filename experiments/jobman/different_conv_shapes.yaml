@@ -1,7 +1,7 @@
 yaml_template: experiments/jobman/conv_simple_3relu.yaml
 extract_results: jobman_utils.results_extractor
 hyper_parameters:
-    learning_rate: .001
+    learning_rate: !!python/object/apply:jobman_utils.log_uniform [.00001, .01]
     h0_output_channels: [16, 32, 64]
     h0_kernel_shape_x: 513
     h0_kernel_shape_y: [4, 8, 16, 32]
