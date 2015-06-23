@@ -42,7 +42,9 @@ if __name__ == '__main__':
     with open(args.yaml_config_path) as f:
         config = yaml.load(f.read())
 
-    yaml_template_path = config['yaml_template']
+    with open(config['yaml_template']) as f:
+        yaml_template = f.read()
+
     extract_results_function = config['extract_results']
     hyper_parameters = config['hyper_parameters']
 
@@ -50,7 +52,7 @@ if __name__ == '__main__':
     # generate experiments and put them in db
     for h in generate_hyper_parameters(hyper_parameters):
         state = jobman.DD()
-        state.yaml_template = yaml_template_path
+        state.yaml_template = yaml_template
         state.hyper_parameters = \
             jobman.expand(jobman.flatten(h), dict_type=ydict)
         state.extract_results = extract_results_function
