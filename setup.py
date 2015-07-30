@@ -46,13 +46,13 @@ def requirements():
 config = {
     'description': 'Genretron',
     'author': ['Carmine Paolino'],
-    'url': 'https://github.com/crmne/Genretron-Pylearn2',
-    'download_url': 'https://github.com/crmne/Genretron-Pylearn2.git',
+    'url': 'https://github.com/crmne/Genretron',
+    'download_url': 'https://github.com/crmne/Genretron.git',
     'author_email': ['carmine@paolino.me'],
     'version': '1.0.0',
     'install_requires': requirements(),
     'packages': ['genretron'],
-    # 'scripts': ['bin/spamfilter', 'bin/spamfilter_gentrainpkl'],
+    # 'scripts': ['bin/train'],
     'name': 'genretron',
     # 'test_suite': 'nose.collector',
     'cmdclass': {'install': CustomInstall}

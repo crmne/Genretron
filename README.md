@@ -1,8 +1,8 @@
-# Genretron-Pylearn2
+# Genretron
 
-Genretron-Pylearn2 aims to be an automatic music genre classifier. That means that given any song (even one that you just made) it will try to classify it in one of its learned genres. It uses Deep Learning techniques to learn the genre of songs.
+Genretron aims to be an automatic music genre classifier. That means that given any song (even one that you just made) it will try to classify it in one of its learned genres. It uses Deep Learning techniques to learn the genre of songs.
 
-Genretron-Pylearn2 is part of Carmine Paolino's Master Thesis at Universiteit van Amsterdam.
+Genretron is part of Carmine Paolino's Master Thesis at Universiteit van Amsterdam.
 
 ## Installation
 
@@ -37,7 +37,7 @@ This procedure will download the classic Music Information Retrieval Genre Class
 
 Set the `GENRETRON_PATH`, `DB_TABLE` and `THEANO_FLAGS` environment variables. For example:
     
-    export GENRETRON_PATH=$HOME/Genretron-Pylearn2
+    export GENRETRON_PATH=$HOME/Genretron
     export DB_TABLE='postgres://user[:pass]@host/dbname?table=tablename'
     export THEANO_FLAGS=mode=FAST_RUN,device=gpu,floatX=float32
 
