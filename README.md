@@ -6,15 +6,13 @@ Genretron-Pylearn2 is part of Carmine Paolino's Master Thesis at Universiteit va
 
 ## Installation
 
-Make sure you have python 2.7+, HDF5, and libsndfile installed and then:
+Make sure you have Python 2.7+, HDF5, libsndfile, freetype, and libpng installed and run:
 
-    git submodule update --init
+    git clone --recursive https://github.com/crmne/Genretron-Pylearn2.git
+    cd Genretron-Pylearn2
     virtualenv env
     . env/bin/activate
-    pip install -r requirements.txt
-    echo $(pwd)/src > env/lib/python2.7/site-packages/genretron.pth
-    echo $(pwd)/pylearn2 > env/lib/python2.7/site-packages/pylearn2.pth
-    . env/bin/activate
+    python setup.py install
 
 ## Downloading the dataset
 
@@ -26,14 +24,14 @@ For your own convenience, you might want to add that line to your .bashrc
 
 Then simply run
 
-    scripts/download_gtzan.py
+    bin/download_gtzan.py
 
 This procedure will download the classic Music Information Retrieval Genre Classification dataset GTZAN and unpack it in your `PYLEARN2_DATA_PATH` directory so it's ready for use with Genretron.
 
 ## Training of the neural network
 
 	. env/bin/activate
-    scripts/train.py experiments/test/conv.yaml
+    bin/train.py experiments/test/conv.yaml
 
 ### Training on a SLURM cluster with Jobman
 
@@ -55,4 +53,4 @@ And execute them:
 ## Prediction
 
     . env/bin/activate
-    scripts/predict.py results/experiments/test/conv.pkl song1.wav song2.wav ...
+    bin/predict.py results/experiments/test/conv.pkl song1.wav song2.wav ...

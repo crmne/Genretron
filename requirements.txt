@@ -1,5 +1,4 @@
 Cython
-git+git://github.com/crmne/jobman.git
 matplotlib
 mock
 nose
@@ -15,4 +14,4 @@ scikits.audiolab
 scipy
 six
 tables
-git+git://github.com/Theano/Theano.git
+theano

@@ -1,3 +1,6 @@
 [submodule "pylearn2"]
 	path = pylearn2
 	url = git://github.com/lisa-lab/pylearn2.git
+[submodule "jobman"]
+	path = jobman
+	url = https://github.com/crmne/jobman.git
