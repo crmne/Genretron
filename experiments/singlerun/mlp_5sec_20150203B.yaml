@@ -7,7 +7,7 @@
 # in order to speed up the computation. This means that the shape of the spectrogram is 513*623 pixels.
 
 !obj:pylearn2.train.Train {
-    dataset: &train !obj:gtzan.GTZAN_On_Memory {
+    dataset: &train !obj:genretron.gtzan.GTZAN_On_Memory {
         which_set: 'train',
         window_size: 175986,
         seconds: 25.0, # changing this makes the shape of the Conv2DSpace change in the second dimension
@@ -37,12 +37,12 @@
         monitoring_dataset:
             {
                 'train' : *train,
-                'valid' : !obj:gtzan.GTZAN_On_Memory {
+                'valid' : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: 'valid',
                             window_size: 175986,
                             seconds: 25.0,
                         },
-                'test'  : !obj:gtzan.GTZAN_On_Memory {
+                'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: 'test',
                             window_size: 175986,
                             seconds: 25.0,

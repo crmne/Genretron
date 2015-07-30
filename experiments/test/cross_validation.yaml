@@ -1,6 +1,6 @@
 !obj:pylearn2.cross_validation.TrainCV {
     dataset_iterator: !obj:pylearn2.cross_validation.dataset_iterators.DatasetKFold {
-        dataset: &train !obj:gtzan.GTZAN_On_Memory {
+        dataset: &train !obj:genretron.gtzan.GTZAN_On_Memory {
             which_set: "all",
             window_size: &window_size 2048,
             seconds: &seconds 4.0,

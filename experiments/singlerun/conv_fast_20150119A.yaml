@@ -1,7 +1,7 @@
 # TODO WRITEME
 
 !obj:pylearn2.train.Train {
-    dataset: &train !obj:gtzan.GTZAN_On_Memory {
+    dataset: &train !obj:genretron.gtzan.GTZAN_On_Memory {
         which_set: "train",
         window_size: 2048,
     },
@@ -35,11 +35,11 @@
         monitoring_dataset:
             {
                 'train' : *train,
-                'valid' : !obj:gtzan.GTZAN_On_Memory {
+                'valid' : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: "valid",
                             window_size: 2048,
                           },
-                'test'  : !obj:gtzan.GTZAN_On_Memory {
+                'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: "test",
                             window_size: 2048,
                           }
