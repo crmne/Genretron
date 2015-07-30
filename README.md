@@ -8,8 +8,8 @@ Genretron is part of Carmine Paolino's Master Thesis at Universiteit van Amsterd
 
 Make sure you have Python 2.7+, HDF5, libsndfile, freetype, and libpng installed and run:
 
-    git clone --recursive https://github.com/crmne/Genretron-Pylearn2.git
-    cd Genretron-Pylearn2
+    git clone --recursive https://github.com/crmne/Genretron.git
+    cd Genretron
     virtualenv env
     . env/bin/activate
     python setup.py install
