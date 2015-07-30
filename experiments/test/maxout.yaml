@@ -4,6 +4,7 @@
         window_size: &window_size 2048,
         seconds: &seconds 4.0,
         seed: &seed 1234,
+        axes: &axes ['c', 0, 1, 'b']
     },
     model: !obj:pylearn2.models.mlp.MLP {
         batch_size: 10,
@@ -34,11 +35,11 @@
                         tied_b: 1,
                         W_lr_scale: .05,
                         b_lr_scale: .05,
-                        num_channels: 192,
+                        num_channels: 64,
                         num_pieces: 2,
-                        kernel_shape: [8, 8],
-                        pool_shape: [4, 4],
-                        pool_stride: [2, 2],
+                        kernel_shape: [513, 5],
+                        pool_shape: [1, 8],
+                        pool_stride: [1, 4],
                         irange: .005,
                         max_kernel_norm: 1.9365,
                         partial_sum: 15,
@@ -49,11 +50,11 @@
                         tied_b: 1,
                         W_lr_scale: .05,
                         b_lr_scale: .05,
-                        num_channels: 192,
+                        num_channels: 64,
                         num_pieces: 2,
-                        kernel_shape: [5, 5],
-                        pool_shape: [2, 2],
-                        pool_stride: [2, 2],
+                        kernel_shape: [1, 10],
+                        pool_shape: [1, 8],
+                        pool_stride: [1, 4],
                         irange: .005,
                         max_kernel_norm: 1.9365,
                     },
@@ -82,12 +83,14 @@
                             window_size: *window_size,
                             seconds: *seconds,
                             seed: *seed,
+                            axes: *axes
                           },
                 'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: "test",
                             window_size: *window_size,
                             seconds: *seconds,
                             seed: *seed,
+                            axes: *axes
                           }
             },
         termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
