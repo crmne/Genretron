@@ -17,7 +17,7 @@ export DB_TABLE=$2
 
 . $GENRETRON_PATH/env/bin/activate
 
-COMMAND="$GENRETRON_PATH/env/bin/jobman sql -n $CONSECUTIVE_JOBS $DB_TABLE $GENRETRON_PATH/results"
+COMMAND="$GENRETRON_PATH/bin/jobman sql -n $CONSECUTIVE_JOBS $DB_TABLE $GENRETRON_PATH/results"
 
 echo $COMMAND
 srun $COMMAND
