@@ -3,7 +3,7 @@ import os
 import shutil
 import urllib
 import tarfile
-import utils
+import genretron.utils as utils
 
 __authors__ = "Carmine Paolino"
 __copyright__ = "Copyright 2015, Vrije Universiteit Amsterdam"
