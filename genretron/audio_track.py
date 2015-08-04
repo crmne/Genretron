@@ -90,6 +90,10 @@ class AudioTrack(object):
     def signal(self, value):
         self._signal = value
 
+    def rm_signal(self):
+        if hasattr(self, '_signal'):
+            del self._signal
+
     def normalize(self):
         self.signal /= numpy.max(numpy.abs(self.signal), axis=0)
 
@@ -107,6 +111,10 @@ class AudioTrack(object):
         )
         return self._spectrogram
 
+    def rm_spectrogram(self):
+        if hasattr(self, '_spectrogram'):
+            del self._spectrogram
+
     @property
     def texture_window(self):
         return self.calc_texture_window()
@@ -118,6 +126,10 @@ class AudioTrack(object):
                 **kwargs
             )
         return self._texture_window
+
+    def rm_texture_window(self):
+        if hasattr(self, '_texture_window'):
+            del self._texture_window
 
     def play(self):
         play(self.signal, fs=self.samplerate)

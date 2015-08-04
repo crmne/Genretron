@@ -174,6 +174,7 @@ class AudioDataset(object):
             track = self.tracks[index]
             data_x[data_i] = track.signal
             data_y[data_i][self.genres.index(track.genre)] = 1
+            track.rm_signal()
         return data_x, data_y
 
     def get_spectrogram_data(self, indexes):
@@ -196,7 +197,8 @@ class AudioDataset(object):
                 )
             ).data
             data_y[data_i][self.genres.index(track.genre)] = 1
-            del track._signal
+            track.rm_spectrogram()
+            track.rm_signal()
         return data_x, data_y
 
     def get_texture_window_data(self, indexes):
@@ -226,8 +228,9 @@ class AudioDataset(object):
                 )
             ).data
             data_y[data_i][self.genres.index(track.genre)] = 1
-            del track._signal
-            del track._spectrogram
+            track.rm_signal()
+            track.rm_spectrogram()
+            track.rm_texture_window()
         return data_x, data_y
 
     @staticmethod
