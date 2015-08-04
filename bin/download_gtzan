@@ -53,22 +53,30 @@ Do you want to download it again?".format(gtzan_dest)):
         else:
             download(gtzan_origin, gtzan_dest)
     else:
-        print("GTZAN base path {0} not found. Creating...".format(gtzan_base_path))
+        print("GTZAN base path {0} not found. Creating...".format(
+            gtzan_base_path))
         os.makedirs(gtzan_base_path)
         download(gtzan_origin, gtzan_dest)
 
-    print("Extracting audio files to {0}".format(gtzan_base_path))
+    print("Extracting audio files to {0}...".format(gtzan_base_path))
     tar = tarfile.open(gtzan_dest, 'r:gz')
     tar.extractall(gtzan_base_path)
     tar.close()
 
-    # flatten dir structure
+    print("Flattening directory structure...")
     genre_dir = os.path.join(gtzan_base_path, 'genres')
-    for genre in os.listdir(genre_dir):
-        shutil.move(
-            os.path.join(genre_dir, genre),
-            os.path.join(gtzan_base_path, genre)
-        )
-    os.rmdir(genre_dir)
+    for root, dirnames, filenames in os.walk(genre_dir):
+        for f in filenames:
+            filename = os.path.join(root, f)
+            genre = os.path.basename(root)
+            dest_dir = os.path.join(gtzan_base_path, genre)
+            if not os.path.isdir(dest_dir):
+                os.makedirs(dest_dir)
+            print("Moving {0} to {1}".format(filename, dest_dir))
+            try:
+                shutil.move(filename, dest_dir)
+            except shutil.Error as e:
+                print(e)
+    shutil.rmtree(genre_dir)
 
     print("All done.")
