@@ -37,6 +37,7 @@ class AudioDataset(object):
                  feature="spectrogram",
                  space="conv2d",
                  axes=('b', 0, 1, 'c'),
+                 balanced_splits=False,
                  preprocessor=None,
                  seconds=None,
                  window_size=None,
@@ -151,6 +152,24 @@ class AudioDataset(object):
                 self.spaces_converters[self.converter](
                     self.feature_extractors[self.feature](set_tracks)
                 )
+
+    def __str__(self):
+        from pprint import pformat
+        return pformat(
+            utils.filter_keys_from_dict(
+                self.params_filter,
+                self.__dict__)
+        )
+
+    def __repr__(self):
+        return "".join(
+            [self.__module__,
+             ".",
+             self.__class__.__name__,
+             "(**",
+             self.__str__(),
+             ")"]
+        )
 
     def __repr__(self):
         from pprint import pformat
@@ -305,19 +324,31 @@ class AudioDataset(object):
     def get_all_track_ids(self):
         return numpy.arange(len(self.tracks))
 
-    # To split per genre:
-    # shuffle the tracks inside each genre, then take a certain percentage
-    # of them (use kfold) per genre.
     def get_track_ids(self, which_set, nfolds, run_n, seed):
         """
         Returns the indexes of the tracks according to the split they are in
         """
-        track_ids = get_all_track_ids()
+        track_ids = self.get_all_track_ids()
         if which_set != 'all':
             rng = make_np_rng(None, seed, which_method="shuffle")
-            rng.shuffle(track_ids)
-            kf = KFold(track_ids, n_folds=nfolds)
-            track_ids = kf.runs[run_n][which_set]
+            if self.balanced_splits:
+                genre_ids = {}
+                for index, track in enumerate(self.tracks):
+                    if genre_ids.has_key(track.genre):
+                        genre_ids[track.genre].append(index)
+                    else:
+                        genre_ids[track.genre] = [index]
+                track_ids = []
+                for genre in self.genres:
+                    idxs = numpy.asarray(genre_ids[genre])
+                    rng.shuffle(idxs)
+                    kf = KFold(idxs, n_folds=nfolds)
+                    track_ids.extend(kf.runs[run_n][which_set])
+                rng.shuffle(track_ids)
+            else:
+                rng.shuffle(track_ids)
+                kf = KFold(track_ids, n_folds=nfolds)
+                track_ids = kf.runs[run_n][which_set]
         return track_ids
 
     def track_ids_to_frame_ids(self, track_ids):

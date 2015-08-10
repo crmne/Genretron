@@ -30,6 +30,19 @@ class AudioTrack(object):
         if self.offset_seconds is not None:
             assert (self.offset_seconds + self.seconds) <= self.seconds_total
 
+    def __str__(self):
+        return str(self.__dict__)
+
+    def __repr__(self):
+        return "".join(
+            [self.__module__,
+             ".",
+             self.__class__.__name__,
+             "(**",
+             self.__str__(),
+             ")"]
+        )
+
     @property
     def samplerate(self):
         return Sndfile(self.path, mode='r').samplerate
