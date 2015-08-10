@@ -1,15 +1,15 @@
 import os
 import numpy
-import utils
-from sklearn.preprocessing import StandardScaler
 from pylearn2.datasets import dense_design_matrix
 from pylearn2.utils.rng import make_np_rng
 from pylearn2.utils import string_utils
 from theano import config as theanoconfig
-from spectrogram import Spectrogram
-from texture_window import TextureWindow
-from audio_track import AudioTrack
-from kfold import KFold
+from .spectrogram import Spectrogram
+from .texture_window import TextureWindow
+from .audio_track import AudioTrack
+from .kfold import KFold
+from .preprocessors import ZNormalizer
+import utils
 
 __authors__ = "Carmine Paolino"
 __copyright__ = "Copyright 2015, Vrije Universiteit Amsterdam"
@@ -277,7 +277,7 @@ class AudioDataset(object):
     def scale(self, data_x):
         if self.verbose:
             print("preprocessing...")
-        preprocessor = StandardScaler(copy=False)
+        preprocessor = ZNormalizer()
         preprocessor.fit_transform(data_x)
 
     def tracks_and_genres(self, audio_folder, seconds):
