@@ -8,7 +8,7 @@ from .spectrogram import Spectrogram
 from .texture_window import TextureWindow
 from .audio_track import AudioTrack
 from .kfold import KFold
-from .preprocessors import ZNormalizer
+from .preprocessors import preprocessor_factory
 import utils
 
 __authors__ = "Carmine Paolino"
@@ -30,14 +30,14 @@ class AudioDataset(object):
         'spaces_converters',
         'index_converters',
         'view_converters',
-        'view_converter',
+        'view_converter'
     ]
 
     def __init__(self, path, which_set,
                  feature="spectrogram",
                  space="conv2d",
                  axes=('b', 0, 1, 'c'),
-                 preprocess=False,
+                 preprocessor=None,
                  seconds=None,
                  window_size=None,
                  window_type=None,
@@ -130,13 +130,15 @@ class AudioDataset(object):
             print(self)
 
     def process(self):
-        if self.preprocess:
+        if self.preprocessor is not None:
+            # preprocess all the tracks
             all_tracks = self.get_all_track_ids()
             self.data_x, self.data_y = \
                 self.spaces_converters[self.converter](
                     self.feature_extractors[self.feature](all_tracks)
                 )
-            self.scale(self.data_x)
+            self.preprocess(self.data_x)
+            # select only the tracks in the set
             set_tracks = self.get_track_ids(
                 self.which_set, self.n_folds, self.run_n, self.seed)
             set_indexes = self.index_converters[self.converter](set_tracks)
@@ -273,10 +275,10 @@ class AudioDataset(object):
         return numpy.take(data_x, indexes, axis=0), \
             numpy.take(data_y, indexes, axis=0)
 
-    def scale(self, data_x):
+    def preprocess(self, data_x):
         if self.verbose:
-            print("preprocessing...")
-        preprocessor = ZNormalizer()
+            print("preprocessing with {0}...".format(self.preprocessor))
+        preprocessor = preprocessor_factory(self.preprocessor)
         preprocessor.fit_transform(data_x)
 
     def tracks_and_genres(self, audio_folder, seconds):
@@ -303,9 +305,12 @@ class AudioDataset(object):
     def get_all_track_ids(self):
         return numpy.arange(len(self.tracks))
 
+    # To split per genre:
+    # shuffle the tracks inside each genre, then take a certain percentage
+    # of them (use kfold) per genre.
     def get_track_ids(self, which_set, nfolds, run_n, seed):
         """
-        Returns the indexes of the tracks according to the split they are in 
+        Returns the indexes of the tracks according to the split they are in
         """
         track_ids = get_all_track_ids()
         if which_set != 'all':

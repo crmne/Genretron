@@ -5,7 +5,7 @@
         seconds: &seconds 4.0,
         seed: &seed 1234,
         space: &space vector,
-        preprocess: &preprocess True
+        preprocessor: &preprocessor znormalizer
     },
     model: !obj:genretron.logistic_regression.LogisticRegression {
         nvis: 513,
@@ -23,7 +23,7 @@
                             seconds: *seconds,
                             seed: *seed,
                             space: *space,
-                            preprocess: *preprocess
+                            preprocessor: *preprocessor
                           },
                 'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: "test",
@@ -31,7 +31,7 @@
                             seconds: *seconds,
                             seed: *seed,
                             space: *space,
-                            preprocess: *preprocess
+                            preprocessor: *preprocessor
                           }
             },
         termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {

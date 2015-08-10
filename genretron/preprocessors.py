@@ -18,3 +18,15 @@ class LinearNormalizer(object):
 class OutlierReplacer(object):
     def fit_transform(self, data, percentile=5):
         raise NotImplementedError
+
+
+preprocessors = {
+    'znormalizer': ZNormalizer(),
+    'linearnormalizer': LinearNormalizer(),
+    'outlierreplacer': OutlierReplacer()
+}
+
+
+def preprocessor_factory(preprocessor):
+    return preprocessors[preprocessor]
+
