@@ -131,8 +131,7 @@ class AudioDataset(object):
 
     def process(self):
         if self.preprocess:
-            all_tracks = self.get_track_ids(
-                'all', self.n_folds, self.run_n, self.seed)
+            all_tracks = self.get_all_track_ids()
             self.data_x, self.data_y = \
                 self.spaces_converters[self.converter](
                     self.feature_extractors[self.feature](all_tracks)
@@ -301,17 +300,19 @@ class AudioDataset(object):
                         genres.add(genre)
         return tracks, sorted(genres)
 
-    def get_track_ids(self, set, nfolds, run_n, seed):
+    def get_all_track_ids(self):
+        return numpy.arange(len(self.tracks))
+
+    def get_track_ids(self, which_set, nfolds, run_n, seed):
         """
-        Returns the indexes of the tracks if the space is Conv2D,
-        the indexes of the frames if the space is Vector
+        Returns the indexes of the tracks according to the split they are in 
         """
-        track_ids = numpy.arange(len(self.tracks))
-        if set != 'all':
+        track_ids = get_all_track_ids()
+        if which_set != 'all':
             rng = make_np_rng(None, seed, which_method="shuffle")
             rng.shuffle(track_ids)
             kf = KFold(track_ids, n_folds=nfolds)
-            track_ids = kf.runs[run_n][set]
+            track_ids = kf.runs[run_n][which_set]
         return track_ids
 
     def track_ids_to_frame_ids(self, track_ids):
