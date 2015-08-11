@@ -4,7 +4,7 @@ function require_vars {
     for var in "$@"
     do
         if [ -z "$var" ]
-            echo 
+            echo
             then exit 1
         fi
     done
