@@ -2,6 +2,7 @@ argparse
 matplotlib
 numpy
 PyYAML
+psycopg2
 scikit-learn
 scikits.audiolab
 scipy
