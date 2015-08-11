@@ -13,9 +13,6 @@ function require_vars {
 
 . ~/.bashrc
 
-export CONSECUTIVE_JOBS=$1
-export DB_TABLE=$2
-
 . $GENRETRON_PATH/env/bin/activate
 
 COMMAND="$GENRETRON_PATH/bin/jobman sql -n $CONSECUTIVE_JOBS $DB_TABLE $GENRETRON_PATH/results"
