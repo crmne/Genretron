@@ -1,5 +1,5 @@
 yaml_template: experiments/jobman/models/conv_3relu_l1reg.yaml
-extract_results: jobman_utils.results_extractor
+extract_results: genretron.jobman_utils.results_extractor
 hyper_parameters:
     learning_rate: [!!python/object/apply:jobman_utils.log_uniform [.0001, .01], !!python/object/apply:jobman_utils.log_uniform [.0001, .01], !!python/object/apply:jobman_utils.log_uniform [.0001, .01], !!python/object/apply:jobman_utils.log_uniform [.0001, .01]]
     h0_output_channels: [16, 64]
