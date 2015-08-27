@@ -2,20 +2,24 @@
 #PBS -S /bin/bash
 
 function require_vars {
-    for var in "$@"
-    do
-        if [ -z "$var" ]
-            echo
-            then exit 1
+    for var in "$@"; do
+        if [ -v "$var" ]; then 
+            echo "var $var was not found"
+            env
+            exit 1
         fi
     done
 }
 
 . ~/.bashrc
 
+require_vars GENRETRON_PATH CONSECUTIVE_JOBS DB_TABLE PYLEARN2_DATA_PATH THEANO_FLAGS
+
 . $GENRETRON_PATH/env/bin/activate
 
 COMMAND="$GENRETRON_PATH/bin/jobman sql -n $CONSECUTIVE_JOBS $DB_TABLE $GENRETRON_PATH/results"
 
 echo $COMMAND
+
+
 $COMMAND
