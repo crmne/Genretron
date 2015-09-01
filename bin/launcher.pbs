@@ -1,5 +1,5 @@
-#!/usr/bin/env bash
-#PBS -S /usr/bin/env bash
+#!/bin/bash
+#PBS -S /bin/bash
 
 function require_vars {
     for var in "$@"; do
