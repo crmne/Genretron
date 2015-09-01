@@ -281,11 +281,11 @@ class AudioDataset(object):
         data_y = AudioDataset.y_to_vectorspace(data[0], data[1])
         return data_x, data_y
 
-    def get_inv_spectrogram_data(self, **kwargs):
+    def get_inv_spectrogram_data(self, *args):
         if self.verbose:
             print("transposing spectrograms...")
         return AudioDataset.invert_wins_bins(
-                self.get_spectrogram_data(**kwargs)
+                self.get_spectrogram_data(*args)
             )
 
     def filter_indexes(self, indexes, data_x, data_y):
