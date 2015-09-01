@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+"""
+Make plots from db.
+"""
+import argparse
+import matplotlib.pyplot as plt
+from sqlalchemy import create_engine
+from genretron.utils import longest_common_substring
+
+__authors__ = "Carmine Paolino"
+__copyright__ = "Copyright 2015, Vrije Universiteit Amsterdam"
+__credits__ = ["Carmine Paolino"]
+__license__ = "3-clause BSD"
+__email__ = "carmine@paolino.me"
+
+
+def plot(results_x, results_y, xlabel, ylabels, log):
+    if log:
+        plt.semilogx(results_x, results_y, '.-')
+    else:
+        plt.plot(results_x, results_y, '.-')
+    ylabel = longest_common_substring(ylabels)
+    title = "{0} / {1}".format(ylabel, xlabel)
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.legend(ylabels)
+    plt.show()
+
+
+def make_query(table, columns, orderby):
+    column_string = ", ".join(columns)
+    return "select {0} from {1} order by {2}".format(
+        column_string,
+        table,
+        orderby
+        )
+
+
+def make_argument_parser():
+    """
+    Creates an ArgumentParser to read the options for this script from
+    sys.argv
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("db")
+    parser.add_argument("table")
+    parser.add_argument("columns", nargs='+')
+    parser.add_argument("orderby")
+    parser.add_argument("--log", action="store_true")
+    return parser
+
+if __name__ == "__main__":
+    parser = make_argument_parser()
+    args = parser.parse_args()
+    print("connecting to {0}...".format(args.db))
+    engine = create_engine(args.db)
+    conn = engine.connect()
+
+    query = make_query(args.table, args.columns, args.orderby)
+    print("executing query '{0}'...".format(query))
+    results = conn.execute(query).fetchall()
+    print("results: {0}".format(results))
+    results_x = [i[3] for i in results]
+    results_y = [(i[0], i[1], i[2]) for i in results]
+    xlabel = args.orderby
+    ylabels = [i for i in args.columns if i != args.orderby]
+    plot(results_x, results_y, xlabel, ylabels, log=args.log)
