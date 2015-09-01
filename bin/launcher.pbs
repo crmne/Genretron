@@ -1,15 +1,13 @@
 #!/usr/bin/env bash
-#PBS -S /bin/bash
+#PBS -S /usr/bin/env bash
 
 function require_vars {
     for var in "$@"; do
         if [ -v "$var" ]; then
             eval value=\$$var
             echo "$var=$value"
-            export $var=$value
         else 
             echo "var $var was not found"
-            env
             exit 1
         fi
     done
