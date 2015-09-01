@@ -6,5 +6,6 @@ psycopg2
 scikit-learn
 scikits.audiolab
 scipy
+sqlalchemy
 tables
 theano
