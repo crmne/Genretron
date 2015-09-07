@@ -59,10 +59,10 @@ if __name__ == "__main__":
 
     query = make_query(args.table, args.columns, args.orderby)
     print("executing query '{0}'...".format(query))
-    results = conn.execute(query).fetchall()
+    results = [tuple(i) for i in conn.execute(query).fetchall()]
     print("results: {0}".format(results))
-    results_x = [i[3] for i in results]
-    results_y = [(i[0], i[1], i[2]) for i in results]
+    results_x = [i[-1] for i in results]
+    results_y = [tuple(i[:-1]) for i in results]
     xlabel = args.orderby
     ylabels = [i for i in args.columns if i != args.orderby]
     plot(results_x, results_y, xlabel, ylabels, log=args.log)
