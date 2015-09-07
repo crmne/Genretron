@@ -35,7 +35,7 @@ This procedure will download the classic Music Information Retrieval Genre Class
 ### Training on a SLURM cluster with Jobman
 
 Set the `GENRETRON_PATH`, `DB_TABLE` and `THEANO_FLAGS` environment variables. For example:
-    
+
     export GENRETRON_PATH=$HOME/Genretron
     export DB_TABLE='postgres://user[:pass]@host/dbname?table=tablename'
     export THEANO_FLAGS=mode=FAST_RUN,device=gpu,floatX=float32
