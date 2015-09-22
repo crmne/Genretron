@@ -6,7 +6,16 @@ Genretron is part of Carmine Paolino's Master Thesis at Universiteit van Amsterd
 
 ## Installation
 
-Make sure you have Python 2.7+, HDF5, libsndfile, freetype, and libpng installed and run:
+### Dependencies
+
+Install Python 2.7+ with virtualenv, HDF5, libsndfile, freetype, libpng, a fortran compiler and postgresql.
+
+On a Mac with [Homebrew](http://brew.sh):
+
+    brew install python libsndfile homebrew/science/hdf5 freetype libpng gcc postgresql
+    pip install virtualenv
+
+### Genretron
 
     git clone --recursive https://github.com/crmne/Genretron.git
     cd Genretron
