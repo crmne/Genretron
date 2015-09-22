@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 
 function require_vars {
-    for var in "$@"
-    do
-        if [ -z "$var" ]
-            echo
-            then exit 1
+    for var in "$@"; do
+        if [ -v "$var" ]; then
+            eval value=\$$var
+            echo "$var=$value"
+        else 
+            echo "var $var was not found"
+            exit 1
         fi
     done
 }

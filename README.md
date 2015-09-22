@@ -59,7 +59,7 @@ Then schedule the jobs with jobman:
 
 #### Execution of the training jobs on a cluster with SLURM
 
-    sbatch -t [time in minutes] -p [cluster partition] -n [number of processes] -N [number of nodes] bin/launcher.slurm $DB_TABLE
+    sbatch -t [time in minutes] -p [cluster partition] -n [number of processes] -N [number of nodes] bin/launcher.slurm 1 $DB_TABLE
 
 #### Execution of the training jobs on a cluster with PBS
 
