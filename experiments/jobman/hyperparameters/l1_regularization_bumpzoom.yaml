@@ -1,4 +1,4 @@
-yaml_template: experiments/jobman/models/conv_3relu_l1reg.yaml
+yaml_template: experiments/jobman/models/conv_3relu_l1reg_small.yaml
 extract_results: genretron.jobman_utils.results_extractor
 hyper_parameters:
     learning_rate: 0.01
