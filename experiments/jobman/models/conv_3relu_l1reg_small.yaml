@@ -8,35 +8,35 @@
         batch_size: 50,
         seed: *seed,
         input_space: !obj:pylearn2.space.Conv2DSpace {
-            shape: [513, 1247],
+            shape: [513, 343],
             num_channels: 1,
         },
         layers: [
                     !obj:pylearn2.models.mlp.ConvRectifiedLinear {
                         layer_name: 'h0',
-                        output_channels: %(h0_output_channels)i,
+                        output_channels: 64,
                         irange: .05,
-                        kernel_shape: [%(h0_kernel_shape_x)i, %(h0_kernel_shape_y)i],
-                        pool_shape: [%(h0_pool_shape_x)i, %(h0_pool_shape_y)i],
-                        pool_stride: [%(h0_pool_stride_x)i, %(h0_pool_stride_y)i],
+                        kernel_shape: [513, 4],
+                        pool_shape: [1, 4],
+                        pool_stride: [1, 2],
                         max_kernel_norm: 1.9365,
                     },
                     !obj:pylearn2.models.mlp.ConvRectifiedLinear {
                         layer_name: 'h1',
-                        output_channels: %(h1_output_channels)i,
+                        output_channels: 32,
                         irange: .05,
-                        kernel_shape: [%(h1_kernel_shape_x)i, %(h1_kernel_shape_y)i],
-                        pool_shape: [%(h1_pool_shape_x)i, %(h1_kernel_shape_y)i],
-                        pool_stride: [%(h1_pool_stride_x)i, %(h1_pool_stride_y)i],
+                        kernel_shape: [1, 4],
+                        pool_shape: [1, 4],
+                        pool_stride: [1, 2],
                         max_kernel_norm: 1.9365,
                     },
                     !obj:pylearn2.models.mlp.ConvRectifiedLinear {
                         layer_name: 'h2',
-                        output_channels: %(h2_output_channels)i,
+                        output_channels: 64,
                         irange: .05,
-                        kernel_shape: [%(h2_kernel_shape_x)i, %(h2_kernel_shape_y)i],
-                        pool_shape: [%(h2_pool_shape_x)i, %(h2_kernel_shape_y)i],
-                        pool_stride: [%(h2_pool_stride_x)i, %(h2_pool_stride_y)i],
+                        kernel_shape: [1, 4],
+                        pool_shape: [1, 4],
+                        pool_stride: [1, 2],
                         max_kernel_norm: 1.9365,
                     },
                     !obj:pylearn2.models.mlp.Softmax {
@@ -48,7 +48,7 @@
                 ],
     },
     algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
-        learning_rate: %(learning_rate)f,
+        learning_rate: 0.01,
         monitoring_dataset:
             {
                 'train' : *train,

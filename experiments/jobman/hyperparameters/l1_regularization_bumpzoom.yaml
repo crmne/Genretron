@@ -1,28 +1,6 @@
 yaml_template: experiments/jobman/models/conv_3relu_l1reg_small.yaml
 extract_results: genretron.jobman_utils.results_extractor
 hyper_parameters:
-    learning_rate: 0.01
-    h0_output_channels: 64
-    h0_kernel_shape_x: 513
-    h0_kernel_shape_y: 32
-    h0_pool_shape_x: 1
-    h0_pool_shape_y: 4
-    h0_pool_stride_x: 1
-    h0_pool_stride_y: 2
-    h1_kernel_shape_x: 1
-    h1_kernel_shape_y: 4
-    h1_pool_shape_x: 1
-    h1_pool_shape_y: 4
-    h1_pool_stride_x: 1
-    h1_pool_stride_y: 2
-    h1_output_channels: 32
-    h2_kernel_shape_x: 1
-    h2_kernel_shape_y: 4
-    h2_pool_shape_x: 1
-    h2_pool_shape_y: 4
-    h2_pool_stride_x: 1
-    h2_pool_stride_y: 2
-    h2_output_channels: 64
     # numpy.linspace(1.2182493960703473, 2.008553692318767, num=10)
     l1_weight_decay: [1.2182494, 1.30606098, 1.39387257, 1.48168416, 1.56949575, 1.65730734, 1.74511893, 1.83293052, 1.9207421, 2.00855369]
 
