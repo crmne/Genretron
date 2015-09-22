@@ -1,6 +1,6 @@
 # Genretron
 
-Genretron aims to be an automatic music genre classifier. That means that given any song (even one that you just made) it will try to classify it in one of its learned genres. It uses Deep Learning techniques to learn the genre of songs.
+Genretron aims to be an automatic music genre classifier. That means that given any song (even one that you just made) it will try to classify it in one of its learned genres. It uses Deep Learning techniques to learn the genre of the songs.
 
 Genretron is part of Carmine Paolino's Master Thesis at Universiteit van Amsterdam.
 
@@ -41,7 +41,7 @@ This procedure will download the classic Music Information Retrieval Genre Class
 
     bin/train experiments/test/conv.yaml
 
-### Training on a SLURM cluster with Jobman
+### Training on a cluster with Jobman
 
 Set the `GENRETRON_PATH`, `DB_TABLE` and `THEANO_FLAGS` environment variables. For example:
 
@@ -51,12 +51,19 @@ Set the `GENRETRON_PATH`, `DB_TABLE` and `THEANO_FLAGS` environment variables. F
 
 Then schedule the jobs with jobman:
 
-    bin/jobman sqlschedule $DB_TABLE pylearn2.scripts.jobman.experiment.train_experiment path/to/experiment.conf
+    bin/jobman_sqlschedule experiments/jobman/hyperparameters/experiment_name.yaml $DB_TABLE tablename
 
-And execute them:
+#### Execution of the training jobs on a single machine
 
-    sbatch -t [time in minutes] -p [cluster partition] -n [number of processes] -N [number of nodes] scripts/launcher.slurm $DB_TABLE
+    bin/jobman sql -n [number of jobs] $DB_TABLE $GENRETRON_PATH/resuts
 
+#### Execution of the training jobs on a cluster with SLURM
+
+    sbatch -t [time in minutes] -p [cluster partition] -n [number of processes] -N [number of nodes] bin/launcher.slurm $DB_TABLE
+
+#### Execution of the training jobs on a cluster with PBS
+
+    for i in {1..[number of jobs]}; do qsub -lwalltime=[time in hh:mm:ss] -v CONSECUTIVE_JOBS=1,DB_TABLE=$DB_TABLE bin/launcher.pbs; done
 
 ## Prediction
 
