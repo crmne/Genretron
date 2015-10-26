@@ -15,11 +15,15 @@ On a Mac with [Homebrew](http://brew.sh):
     brew install python libsndfile homebrew/science/hdf5 freetype libpng gcc postgresql
     pip install virtualenv
 
+On Ubuntu 14.04 LTS:
+
+    sudo apt-get install libsndfile1-dev python-virtualenv python-tables python-matplotlib python-scikits-learn python-sqlalchemy python-psycopg2 python-yaml python-numpy python-scipy python-progressbar
+
 ### Genretron
 
     git clone --recursive https://github.com/crmne/Genretron.git
     cd Genretron
-    virtualenv env
+    virtualenv --system-site-packages env
     . env/bin/activate
     python setup.py install
 

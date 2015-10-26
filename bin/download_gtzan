@@ -1,8 +1,6 @@
 #!/usr/bin/env python
-import sys
 import os
 import shutil
-import urllib2
 import tarfile
 import genretron.utils as utils
 
@@ -17,29 +15,6 @@ gtzan_origin = "http://opihi.cs.uvic.ca/sound/genres.tar.gz"
 gtzan_base_path = os.path.join(os.environ["PYLEARN2_DATA_PATH"], "GTZAN")
 
 
-def download(url, file_name):
-    u = urllib2.urlopen(url)
-    f = open(file_name, 'wb')
-    meta = u.info()
-    file_size = int(meta.getheaders("Content-Length")[0])
-    print("Downloading: {0} Bytes: {1}".format(url, file_size))
-
-    file_size_dl = 0
-    block_sz = 8192
-    while True:
-        buffer = u.read(block_sz)
-        if not buffer:
-            break
-
-        file_size_dl += len(buffer)
-        f.write(buffer)
-        p = float(file_size_dl) / file_size
-        status = r"{0}  [{1:.2%}]".format(file_size_dl, p)
-        status = status + chr(8)*(len(status)+1)
-        sys.stdout.write(status)
-
-    f.close()
-
 if __name__ == '__main__':
     gtzan_dest = os.path.join(gtzan_base_path, os.path.basename(gtzan_origin))
 
@@ -49,14 +24,14 @@ if __name__ == '__main__':
                 "GTZAN dataset already downloaded in {0}. \
 Do you want to download it again?".format(gtzan_dest)):
                 os.remove(gtzan_dest)
-                download(gtzan_origin, gtzan_dest)
+                utils.urlretrieve(gtzan_origin, gtzan_dest)
         else:
-            download(gtzan_origin, gtzan_dest)
+            utils.urlretrieve(gtzan_origin, gtzan_dest)
     else:
         print("GTZAN base path {0} not found. Creating...".format(
             gtzan_base_path))
         os.makedirs(gtzan_base_path)
-        download(gtzan_origin, gtzan_dest)
+        utils.urlretrieve(gtzan_origin, gtzan_dest)
 
     print("Extracting audio files to {0}...".format(gtzan_base_path))
     tar = tarfile.open(gtzan_dest, 'r:gz')
