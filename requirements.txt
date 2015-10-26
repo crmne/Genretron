@@ -1,6 +1,7 @@
 argparse
 matplotlib
 numpy
+progressbar
 PyYAML
 psycopg2
 scikit-learn

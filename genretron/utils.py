@@ -66,3 +66,23 @@ def __is_substr(find, data):
         if find not in data[i]:
             return False
     return True
+
+
+def urlretrieve(url, filename):
+    from progressbar import Percentage, Bar, ETA, FileTransferSpeed, ProgressBar
+    import urllib
+    import os
+    widgets = [os.path.basename(filename), ' ', Percentage(), ' ',
+               Bar(), ' ', ETA(), ' ',
+               FileTransferSpeed()]
+    pbar = ProgressBar(widgets=widgets)
+
+    def dlProgress(count, blockSize, totalSize):
+        if pbar.maxval is None:
+            pbar.maxval = totalSize
+            pbar.start()
+
+        pbar.update(min(count*blockSize, totalSize))
+
+    urllib.urlretrieve(url, filename, reporthook=dlProgress)
+    pbar.finish()
