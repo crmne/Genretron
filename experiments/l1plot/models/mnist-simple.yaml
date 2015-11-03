@@ -44,7 +44,7 @@
             {
                 'train': *train,
                 'valid' : !obj:pylearn2.datasets.mnist.MNIST {
-                    which_set: 'valid',
+                    which_set: 'train',
                     start: 50000,
                     stop:  60000
                 },
