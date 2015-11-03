@@ -17,7 +17,7 @@ On a Mac with [Homebrew](http://brew.sh):
 
 On Ubuntu 14.04 LTS:
 
-    sudo apt-get install libsndfile1-dev python-virtualenv python-tables python-matplotlib python-scikits-learn python-sqlalchemy python-psycopg2 python-yaml python-numpy python-scipy python-progressbar
+    sudo apt-get install libsndfile1-dev python-virtualenv python-tables python-matplotlib python-scikits-learn python-sqlalchemy python-psycopg2 python-yaml python-numpy python-scipy python-progressbar procmail
 
 ### Genretron
 
