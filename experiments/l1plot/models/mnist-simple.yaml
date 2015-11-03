@@ -42,14 +42,15 @@
         learning_rate: .01,
         monitoring_dataset:
             {
+                'train': *train,
                 'valid' : !obj:pylearn2.datasets.mnist.MNIST {
-                    which_set: 'train',
+                    which_set: 'valid',
                     start: 50000,
                     stop:  60000
                 },
-            'test'  : !obj:pylearn2.datasets.mnist.MNIST {
-                which_set: 'test',
-                stop: 10000
+                'test'  : !obj:pylearn2.datasets.mnist.MNIST {
+                    which_set: 'test',
+                    stop: 10000
                 }
             },
          cost: !obj:pylearn2.costs.cost.SumOfCosts {
