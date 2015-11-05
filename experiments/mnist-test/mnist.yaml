@@ -42,6 +42,7 @@
         },
         monitoring_dataset:
             {
+                'train' : *train,
                 'valid' : !obj:pylearn2.datasets.mnist.MNIST {
                               which_set: 'train',
                               start: 50000,
