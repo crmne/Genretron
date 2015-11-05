@@ -84,5 +84,6 @@ def urlretrieve(url, filename):
 
         pbar.update(min(count*blockSize, totalSize))
 
+    print("Downloading {0}".format(url))
     urllib.urlretrieve(url, filename, reporthook=dlProgress)
     pbar.finish()
