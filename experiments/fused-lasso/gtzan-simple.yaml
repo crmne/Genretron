@@ -71,7 +71,7 @@
                 !obj:pylearn2.costs.mlp.Default {},
                 !obj:pylearn2.costs.mlp.FusedLasso {
                     coeffs: {
-                        'h0': 16.0,
+                        'h0': 1.0,
                         # 'h1': 16.0,
                         # 'y': %(l1_weight_decay)f
                     },
