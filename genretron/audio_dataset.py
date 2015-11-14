@@ -171,18 +171,6 @@ class AudioDataset(object):
              ")"]
         )
 
-    def __repr__(self):
-        from pprint import pformat
-        return "{}(\n{}\n)".format(
-            self.__class__.__name__,
-            pformat(
-                utils.filter_keys_from_dict(
-                    self.params_filter,
-                    self.__dict__
-                    )
-                )
-            )
-
     def get_signal_data(self, indexes):
         data_x = numpy.zeros(
             (len(indexes), self.seconds * self.samplerate),
@@ -285,8 +273,8 @@ class AudioDataset(object):
         if self.verbose:
             print("transposing spectrograms...")
         return AudioDataset.invert_wins_bins(
-                self.get_spectrogram_data(*args)
-            )
+            self.get_spectrogram_data(*args)
+        )
 
     def filter_indexes(self, indexes, data_x, data_y):
         if self.verbose:
@@ -334,7 +322,7 @@ class AudioDataset(object):
             if self.balanced_splits:
                 genre_ids = {}
                 for index, track in enumerate(self.tracks):
-                    if genre_ids.has_key(track.genre):
+                    if track.genre in genre_ids:
                         genre_ids[track.genre].append(index)
                     else:
                         genre_ids[track.genre] = [index]
@@ -353,7 +341,7 @@ class AudioDataset(object):
 
     def track_ids_to_frame_ids(self, track_ids):
         return numpy.array(
-                    [numpy.arange(
-                        x * self.wins_per_track,
-                        (x * self.wins_per_track) + self.wins_per_track
-                    ) for x in track_ids]).flatten()
+            [numpy.arange(
+                x * self.wins_per_track,
+                (x * self.wins_per_track) + self.wins_per_track
+            ) for x in track_ids]).flatten()
