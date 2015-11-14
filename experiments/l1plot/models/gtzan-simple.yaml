@@ -6,7 +6,7 @@
         balanced_splits: True,
     },
     model: !obj:pylearn2.models.mlp.MLP {
-        batch_size: 100,
+        batch_size: 25,
         input_space: !obj:pylearn2.space.Conv2DSpace {
             shape: [513, 171],
             num_channels: 1,
@@ -40,7 +40,7 @@
     },
     algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
         learning_rate: 0.01,
-        batch_size: 100,
+        batch_size: 25,
         monitoring_dataset:
             {
                 'train' : *train,
