@@ -38,6 +38,7 @@ class AudioDataset(object):
                  space="conv2d",
                  axes=('b', 0, 1, 'c'),
                  balanced_splits=False,
+                 use_whole_song=False,
                  preprocessor=None,
                  seconds=None,
                  window_size=None,
@@ -87,7 +88,7 @@ class AudioDataset(object):
         path = string_utils.preprocess(path)
 
         # init dynamic params
-        tracks, genres = self.tracks_and_genres(path, seconds)
+        tracks, genres = self.tracks_and_genres(path, seconds, use_whole_song)
         samplerate = tracks[0].samplerate
         seconds = tracks[0].seconds
 
@@ -288,7 +289,7 @@ class AudioDataset(object):
         preprocessor = preprocessor_factory(self.preprocessor)
         preprocessor.fit_transform(data_x)
 
-    def tracks_and_genres(self, audio_folder, seconds):
+    def tracks_and_genres(self, audio_folder, seconds, use_whole_song):
         """
         Returns a list of tracks and a list of genres.
         Assumes that audio_folder contains genre-named folders, which
@@ -303,14 +304,25 @@ class AudioDataset(object):
                     if f.endswith(x):
                         filename = os.path.join(root, f)
                         genre = os.path.basename(root)
-                        tracks.append(
-                            AudioTrack(filename, genre=genre, seconds=seconds)
-                        )
+                        track = AudioTrack(filename, genre=genre,
+                                           seconds=seconds)
+                        if use_whole_song:
+                            tracks.append(track)
+                            self.ntracksegments = int(
+                                track.seconds_total / seconds)
+                            for i in range(1, self.ntracksegments):
+                                tracks.append(
+                                    AudioTrack(filename, genre=genre,
+                                               seconds=seconds,
+                                               offset_seconds=seconds*i))
+                        else:
+                            self.ntracksegments = 1
+                            tracks.append(track)
                         genres.add(genre)
         return tracks, sorted(genres)
 
     def get_all_track_ids(self):
-        return numpy.arange(len(self.tracks))
+        return numpy.arange(len(self.tracks) / self.ntracksegments)
 
     def get_track_ids(self, which_set, nfolds, run_n, seed):
         """
@@ -321,11 +333,13 @@ class AudioDataset(object):
             rng = make_np_rng(None, seed, which_method="shuffle")
             if self.balanced_splits:
                 genre_ids = {}
-                for index, track in enumerate(self.tracks):
-                    if track.genre in genre_ids:
-                        genre_ids[track.genre].append(index)
+                for track in track_ids:
+                    index = track * self.ntracksegments
+                    genre = self.tracks[index].genre
+                    if genre in genre_ids:
+                        genre_ids[genre].append(index)
                     else:
-                        genre_ids[track.genre] = [index]
+                        genre_ids[genre] = [index]
                 track_ids = []
                 for genre in self.genres:
                     idxs = numpy.asarray(genre_ids[genre])
@@ -337,6 +351,13 @@ class AudioDataset(object):
                 rng.shuffle(track_ids)
                 kf = KFold(track_ids, n_folds=nfolds)
                 track_ids = kf.runs[run_n][which_set]
+
+        if self.use_whole_song:
+            for index, track_id in enumerate(track_ids):
+                track_ids[index] = numpy.arange(
+                    track_id, track_id + self.ntracksegments)
+            track_ids = numpy.array(track_ids).flatten()
+            rng.shuffle(track_ids)
         return track_ids
 
     def track_ids_to_frame_ids(self, track_ids):

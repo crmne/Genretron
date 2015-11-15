@@ -119,8 +119,8 @@ class AudioTrack(object):
 
     def calc_spectrogram(self, **kwargs):
         self._spectrogram = Spectrogram.from_waveform(
-                self.signal,
-                **kwargs
+            self.signal,
+            **kwargs
         )
         return self._spectrogram
 
