@@ -71,15 +71,15 @@
         cost: !obj:pylearn2.costs.cost.SumOfCosts {
             costs: [
                 !obj:pylearn2.costs.mlp.Default {},
-                !obj:pylearn2.costs.mlp.L1WeightDecay {
+                !obj:pylearn2.costs.mlp.WeightDecay {
                     coeffs: {
-                        'h2': 1.0,
-                        'h3': 1.0
+                        'h2': .005,
+                        'h3': .005
                     },
                 },
                 !obj:pylearn2.costs.mlp.FusedLasso {
                     coeffs: {
-                        'h2': 1.0,
+                        'h2': .005,
                         # 'h3': 1.0,
                         # 'y': %(l1_weight_decay)f
                     },
