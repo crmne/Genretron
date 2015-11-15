@@ -74,14 +74,11 @@
                 !obj:pylearn2.costs.mlp.WeightDecay {
                     coeffs: {
                         'h2': .005,
-                        'h3': .005
                     },
                 },
                 !obj:pylearn2.costs.mlp.FusedLasso {
                     coeffs: {
                         'h2': .005,
-                        'h3': .005,
-                        # 'y': %(l1_weight_decay)f
                     },
                 }
             ]
