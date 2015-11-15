@@ -35,7 +35,7 @@
                     },
                     !obj:pylearn2.models.mlp.RectifiedLinear {
                         layer_name: 'h4',
-                        dim: 5,
+                        dim: 10,
                         irange: .05,
                     },
                     !obj:pylearn2.models.mlp.Softmax {
