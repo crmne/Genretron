@@ -1,7 +1,7 @@
 !obj:pylearn2.train.Train {
     dataset: &train !obj:genretron.gtzan.GTZAN_On_Memory {
         which_set: "train",
-        window_size: &window_size 1024,
+        window_size: &window_size 2048,
         seconds: &seconds 4.0,
         seed: &seed 1234,
         balanced_splits: True,
