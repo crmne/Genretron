@@ -81,6 +81,9 @@
                     coeffs: {
                         'h2': %(fusedlasso)f,
                     },
+                    axes: {
+                        'h2': 1
+                    },
                 }
             ]
         },
