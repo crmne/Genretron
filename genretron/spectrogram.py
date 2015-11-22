@@ -29,6 +29,18 @@ class Spectrogram(TwoDimensionalFeature):
         self.fft_resolution = fft_resolution
         self.nframes = nframes
 
+    def to_signal(self):
+        import scipy
+        signal = numpy.zeros(self.nframes)
+        for i, n in enumerate(self.wins):
+            print(i,n,self.data.T.shape)
+            signal[i*self.bins:(i+1)*self.bins] = scipy.real(scipy.ifft(self.data[i]))
+
+        # for n, i in enumerate(range(0, int(self.nframes - len(self.wins)), int(self.step_size))):
+        #     data = scipy.real(scipy.ifft(self.data[n]))
+        #     signal[i:i+len(self.wins)] += data
+        return signal
+
     @classmethod
     def from_waveform(cls, frames,
                       window_size=TwoDimensionalFeature.default_window_size,
