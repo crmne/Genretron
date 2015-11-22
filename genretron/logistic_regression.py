@@ -25,7 +25,7 @@ class LogisticRegressionCost(DefaultDataSpecsMixin, Cost):
 
 
 class LogisticRegression(Model):
-    """Code from
+    """Most code from
     http://deeplearning.net/software/pylearn2/theano_to_pylearn2_tutorial.html
     """
     def __init__(self, nvis, nclasses):
@@ -61,6 +61,9 @@ class LogisticRegression(Model):
         error = T.neq(y.argmax(axis=1), y_hat.argmax(axis=1)).mean()
 
         return OrderedDict([('error', error)])
+
+    def get_weights(self):
+        return self.W
 
     def get_default_cost(self):
         return LogisticRegressionCost()
