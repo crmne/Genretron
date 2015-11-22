@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+import numpy
+import argparse
+
+from pylearn2.utils import serial
+from pylearn2.models.mlp import MLP
+from scikits.audiolab import play
+from numpy.fft import ifft
+import matplotlib.pyplot as plt
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description='plays the weight matrices as audio')
+    parser.add_argument('model_path')
+    return parser.parse_args()
+
+
+def get_weights(model):
+    return model.get_weights_topo()
+
+
+if __name__ == "__main__":
+    # args = parse_args()
+    model = serial.load('/Users/carmine/Code/Genretron/'
+                        'results/experiments/test/conv.pkl')
+    if not isinstance(model, MLP):
+        raise NotImplementedError(
+            "Expected the pkl of an MPL, got {0}".format(model.type))
+    W = get_weights(model)
+    W = numpy.reshape(W, (W.shape[1], W.shape[0] * W.shape[2]))
+    fig, (ax1, ax2) = plt.subplots(nrows=2)
+    ax1.pcolormesh(W)
+    s = ifft(W)
+    t = numpy.arange(s.real.shape[0])
+    ax2.plot(t, s.real, 'b-', t, s.imag, 'r--')
+    plt.show()
