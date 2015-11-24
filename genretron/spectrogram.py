@@ -21,22 +21,6 @@ class Spectrogram():
     default_window_type = 'square'
     default_fft_resolution = 1024
 
-    @staticmethod
-    def shape(wins, bins):
-        return wins, bins
-
-    @classmethod
-    def wins(cls, nframes, fft_resolution=None, step_size=None):
-        fft_resolution = cls.default_fft_resolution \
-            if fft_resolution is None else fft_resolution
-        step_size = fft_resolution / 2 if step_size is None else step_size
-        return int(math.ceil(nframes / fft_resolution) * fft_resolution - nframes)
-
-    @staticmethod
-    def bins(fft_resolution=None):
-        fft_resolution = fft_resolution or Spectrogram.default_fft_resolution
-        return (fft_resolution / 2) + 1
-
     @classmethod
     def from_waveform(cls, frames,
                       step_size=None,

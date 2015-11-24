@@ -4,7 +4,6 @@ from pylearn2.datasets import dense_design_matrix
 from pylearn2.utils.rng import make_np_rng
 from pylearn2.utils import string_utils
 from theano import config as theanoconfig
-from .spectrogram import Spectrogram
 from .audio_track import AudioTrack
 from .kfold import KFold
 from .preprocessors import preprocessor_factory
@@ -87,12 +86,12 @@ class AudioDataset(object):
         seconds = tracks[0].seconds
 
         if feature != "signal":
-            wins_per_track = Spectrogram.wins(
-                seconds * samplerate,
-                fft_resolution,
-                step_size)
-
-            bins_per_track = Spectrogram.bins(fft_resolution)
+            tracks[0].calc_spectrogram(
+                **utils.filter_null_args(
+                    step_size=step_size,
+                    window_type=window_type,
+                    fft_resolution=fft_resolution))
+            bins_per_track, wins_per_track = tracks[0].spectrogram.data.shape
 
         view_converters = {
             "conv2d": dense_design_matrix.DefaultViewConverter(
@@ -167,7 +166,7 @@ class AudioDataset(object):
 
     def get_spectrogram_data(self, indexes):
         data_x = numpy.zeros(
-            (len(indexes), self.wins_per_track, self.bins_per_track),
+            (len(indexes), self.bins_per_track, self.wins_per_track),
             dtype=numpy.dtype(theanoconfig.floatX).type)
         data_y = numpy.zeros(
             (len(indexes), len(self.genres)),

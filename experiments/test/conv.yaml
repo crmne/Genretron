@@ -3,12 +3,13 @@
         which_set: "train",
         seconds: &seconds 4.0,
         seed: &seed 1234,
+        preprocessor: &preprocessor znormalizer,
     },
     model: !obj:pylearn2.models.mlp.MLP {
         batch_size: 10,
         seed: *seed,
         input_space: !obj:pylearn2.space.Conv2DSpace {
-            shape: [513, 171],
+            shape: [513, 175],
             num_channels: 1,
         },
         layers: [
@@ -47,11 +48,13 @@
                             which_set: "valid",
                             seconds: *seconds,
                             seed: *seed,
+                            preprocessor: *preprocessor
                           },
                 'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: "test",
                             seconds: *seconds,
                             seed: *seed,
+                            preprocessor: *preprocessor
                           }
             },
         termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
