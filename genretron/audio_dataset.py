@@ -172,7 +172,6 @@ class AudioDataset(object):
         data_y = numpy.zeros(
             (len(indexes), len(self.genres)),
             dtype=numpy.int8)
-        
         for data_i, index in enumerate(indexes):
             track = self.tracks[index]
             if self.verbose:
