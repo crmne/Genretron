@@ -11,7 +11,7 @@
         batch_size: 125,
         seed: *seed,
         input_space: !obj:pylearn2.space.Conv2DSpace {
-            shape: [513, 42],
+            shape: [513, 45],
             num_channels: 1,
         },
         layers: [
