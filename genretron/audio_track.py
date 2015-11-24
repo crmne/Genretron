@@ -5,7 +5,6 @@ from scikits.audiolab import Sndfile
 from scikits.audiolab import play
 from scikits.audiolab import available_file_formats
 from spectrogram import Spectrogram
-from texture_window import TextureWindow
 
 __authors__ = "Carmine Paolino"
 __copyright__ = "Copyright 2015, Vrije Universiteit Amsterdam"
@@ -128,22 +127,6 @@ class AudioTrack(object):
         if hasattr(self, '_spectrogram'):
             del self._spectrogram
 
-    @property
-    def texture_window(self):
-        return self.calc_texture_window()
-
-    def calc_texture_window(self, **kwargs):
-        if not hasattr(self, '_texture_window'):
-            self._texture_window = TextureWindow.from_matrix(
-                self.spectrogram.data,
-                **kwargs
-            )
-        return self._texture_window
-
-    def rm_texture_window(self):
-        if hasattr(self, '_texture_window'):
-            del self._texture_window
-
     def play(self):
         play(self.signal, fs=self.samplerate)
 
@@ -170,15 +153,6 @@ class AudioTrack(object):
         if title is None:
             title = self.filename
         self.spectrogram.plot(
-            sample_rate=self.samplerate,
-            title=title,
-            with_colorbar=True
-        )
-
-    def plot_texture_window(self, title=None):
-        if title is None:
-            title = self.filename
-        self.texture_window.plot(
             sample_rate=self.samplerate,
             title=title,
             with_colorbar=True

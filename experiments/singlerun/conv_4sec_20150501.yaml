@@ -2,7 +2,6 @@
 !obj:pylearn2.train.Train {
     dataset: &train !obj:genretron.gtzan.GTZAN_On_Memory {
         which_set: "train",
-        window_size: 2048,
         preprocess: False,
         seconds: 4.0,
     },
@@ -46,13 +45,11 @@
                 'train' : *train,
                 'valid' : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: "valid",
-                            window_size: 2048,
                             preprocess: False,
                             seconds: 4.0,
                           },
                 'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: "test",
-                            window_size: 2048,
                             preprocess: False,
                             seconds: 4.0,
                           }
