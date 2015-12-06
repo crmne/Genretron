@@ -14,7 +14,7 @@ __license__ = "3-clause BSD"
 __email__ = "carmine@paolino.me"
 
 
-def plot(results_x, results_y, xlabel, ylabels, log):
+def plot(results_x, results_y, xlabel, ylabels, log, out):
     if log:
         plt.semilogx(results_x, results_y, '.-')
     else:
@@ -25,7 +25,10 @@ def plot(results_x, results_y, xlabel, ylabels, log):
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.legend(ylabels)
-    plt.show()
+    if out:
+        plt.savefig(out, format='pdf')
+    else:
+        plt.show()
 
 
 def make_query(table, columns, orderby):
@@ -47,7 +50,8 @@ def make_argument_parser():
     parser.add_argument("table")
     parser.add_argument("columns", nargs='+')
     parser.add_argument("orderby")
-    parser.add_argument("--log", action="store_true")
+    parser.add_argument('-l', "--log", action="store_true")
+    parser.add_argument('-o ', "--out", default=None)
     return parser
 
 if __name__ == "__main__":
@@ -65,4 +69,4 @@ if __name__ == "__main__":
     results_y = [tuple(i[:-1]) for i in results]
     xlabel = args.orderby
     ylabels = [i for i in args.columns if i != args.orderby]
-    plot(results_x, results_y, xlabel, ylabels, log=args.log)
+    plot(results_x, results_y, xlabel, ylabels, log=args.log, out=args.out)
