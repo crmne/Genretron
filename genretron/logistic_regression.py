@@ -1,5 +1,6 @@
 import theano.tensor as T
 import numpy
+import theano
 from pylearn2.models.model import Model
 from pylearn2.space import VectorSpace
 from pylearn2.utils import sharedX
@@ -34,9 +35,9 @@ class LogisticRegression(Model):
         self.nvis = nvis
         self.nclasses = nclasses
 
-        W_value = numpy.random.uniform(size=(self.nvis, self.nclasses))
+        W_value = numpy.random.uniform(size=(self.nvis, self.nclasses)).astype(theano.config.floatX)
         self.W = sharedX(W_value, 'W')
-        b_value = numpy.zeros(self.nclasses)
+        b_value = numpy.zeros(self.nclasses, dtype=theano.config.floatX)
         self.b = sharedX(b_value, 'b')
         self._params = [self.W, self.b]
 
@@ -58,7 +59,7 @@ class LogisticRegression(Model):
 
         X, y = data
         y_hat = self.logistic_regression(X)
-        error = T.neq(y.argmax(axis=1), y_hat.argmax(axis=1)).mean()
+        error = T.neq(y.argmax(axis=1), y_hat.argmax(axis=1)).mean(dtype=theano.config.floatX)
 
         return OrderedDict([('error', error)])
 

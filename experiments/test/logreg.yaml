@@ -36,7 +36,7 @@
             },
         termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
             channel_name: "valid_error",
-            prop_decrease: 0.,
+            prop_decrease: 0.001,
             N: 100
         },
     },
