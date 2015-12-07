@@ -4,6 +4,7 @@ numpy
 progressbar
 PyYAML
 psycopg2
+progressbar
 scikit-learn
 scikits.audiolab
 scipy
