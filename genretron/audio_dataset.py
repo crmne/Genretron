@@ -119,7 +119,9 @@ class AudioDataset(object):
             "conv2d": dense_design_matrix.DefaultViewConverter(
                 (bins_per_track, wins_per_track, 1), axes
             ),
-            "vector": None,
+            "vector": dense_design_matrix.DefaultViewConverter(
+                (bins_per_track, 1, 1), axes
+            ),
             "signal": None
         }
 
