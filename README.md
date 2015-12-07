@@ -12,7 +12,7 @@ Install Python 2.7+ with virtualenv, HDF5, libsndfile, freetype, libpng, a fortr
 
 On a Mac with [Homebrew](http://brew.sh):
 
-    brew install python libsndfile homebrew/science/hdf5 freetype libpng gcc postgresql
+    brew install python libsndfile homebrew/science/hdf5 freetype libpng gcc postgresql homebrew/python/matplotlib homebrew/python/numpy homebrew/python/scipy
     pip install virtualenv
 
 On Ubuntu 14.04 LTS:
