@@ -22,18 +22,14 @@ class AudioDataset(object):
     """Represent an abstract Audio Dataset"""
 
     params_filter = [
-        'params_filter',
-        'tracks',
-        'data_x',
-        'data_y',
-        'feature_extractors',
-        'spaces_converters',
-        'index_converters',
-        'view_converters',
+        'params_filter', 'tracks', 'data_x', 'data_y', 'feature_extractors',
+        'spaces_converters', 'index_converters', 'view_converters',
         'view_converter'
     ]
 
-    def __init__(self, path, which_set,
+    def __init__(self,
+                 path,
+                 which_set,
                  feature="spectrogram",
                  space="conv2d",
                  axes=('b', 0, 1, 'c'),
@@ -92,23 +88,25 @@ class AudioDataset(object):
         samplerate = tracks[0].samplerate
         seconds = tracks[0].seconds
 
+        # extract parameters from spectrogram
+        spec = tracks[0].calc_spectrogram(
+            **utils.filter_null_args(window_size=window_size,
+                                     step_size=step_size,
+                                     window_type=window_type,
+                                     fft_resolution=fft_resolution))
+        window_size = spec.window_size
+        step_size = spec.step_size
+        window_type = spec.window_type
+        fft_resolution = spec.fft_resolution
+        del spec
+
         if feature != "signal":
-            spec_wins_per_track = len(
-                Spectrogram.wins(
-                    seconds * samplerate,
-                    window_size,
-                    step_size
-                )
-            )
+            spec_wins_per_track = len(Spectrogram.wins(seconds * samplerate,
+                                                       window_size, step_size))
 
             if feature == "texture_window":
-                tw_wins_per_track = len(
-                    TextureWindow.wins(
-                        spec_wins_per_track,
-                        tw_window_size,
-                        tw_step_size
-                    )
-                )
+                tw_wins_per_track = len(TextureWindow.wins(
+                    spec_wins_per_track, tw_window_size, tw_step_size))
                 wins_per_track = tw_wins_per_track
             else:
                 wins_per_track = spec_wins_per_track
@@ -117,11 +115,9 @@ class AudioDataset(object):
 
         view_converters = {
             "conv2d": dense_design_matrix.DefaultViewConverter(
-                (bins_per_track, wins_per_track, 1), axes
-            ),
+                (bins_per_track, wins_per_track, 1), axes),
             "vector": dense_design_matrix.DefaultViewConverter(
-                (bins_per_track, 1, 1), axes
-            ),
+                (bins_per_track, 1, 1), axes),
             "signal": None
         }
 
@@ -143,14 +139,14 @@ class AudioDataset(object):
                 )
             self.preprocess(self.data_x)
             # select only the tracks in the set
-            set_tracks = self.get_track_ids(
-                self.which_set, self.n_folds, self.run_n, self.seed)
+            set_tracks = self.get_track_ids(self.which_set, self.n_folds,
+                                            self.run_n, self.seed)
             set_indexes = self.index_converters[self.converter](set_tracks)
             self.data_x, self.data_y = \
                 self.filter_indexes(set_indexes, self.data_x, self.data_y)
         else:
-            set_tracks = self.get_track_ids(
-                self.which_set, self.n_folds, self.run_n, self.seed)
+            set_tracks = self.get_track_ids(self.which_set, self.n_folds,
+                                            self.run_n, self.seed)
             self.data_x, self.data_y = \
                 self.spaces_converters[self.converter](
                     self.feature_extractors[self.feature](set_tracks)
@@ -158,21 +154,12 @@ class AudioDataset(object):
 
     def __str__(self):
         from pprint import pformat
-        return pformat(
-            utils.filter_keys_from_dict(
-                self.params_filter,
-                self.__dict__)
-        )
+        return pformat(utils.filter_keys_from_dict(self.params_filter,
+                                                   self.__dict__))
 
     def __repr__(self):
-        return "".join(
-            [self.__module__,
-             ".",
-             self.__class__.__name__,
-             "(**",
-             self.__str__(),
-             ")"]
-        )
+        return "".join([self.__module__, ".", self.__class__.__name__, "(**",
+                        self.__str__(), ")"])
 
     def get_signal_data(self, indexes):
         data_x = numpy.zeros(
@@ -199,14 +186,11 @@ class AudioDataset(object):
             track = self.tracks[index]
             if self.verbose:
                 print("calculating spectrogram of " + track.path)
-            data_x[data_i] = track.calc_spectrogram(
-                **utils.filter_null_args(
-                    window_size=self.window_size,
-                    step_size=self.step_size,
-                    window_type=self.window_type,
-                    fft_resolution=self.fft_resolution
-                )
-            ).data
+            data_x[data_i] = track.calc_spectrogram(**utils.filter_null_args(
+                window_size=self.window_size,
+                step_size=self.step_size,
+                window_type=self.window_type,
+                fft_resolution=self.fft_resolution)).Data
             data_y[data_i][self.genres.index(track.genre)] = 1
             track.rm_spectrogram()
             track.rm_signal()
@@ -224,20 +208,14 @@ class AudioDataset(object):
             if self.verbose:
                 print("calculating texture window of " + track.path)
             track.calc_spectrogram(
-                **utils.filter_null_args(
-                    window_size=self.window_size,
-                    step_size=self.step_size,
-                    window_type=self.window_type,
-                    fft_resolution=self.fft_resolution
-                )
-            )
+                **utils.filter_null_args(window_size=self.window_size,
+                                         step_size=self.step_size,
+                                         window_type=self.window_type,
+                                         fft_resolution=self.fft_resolution))
             data_x[data_i] = track.calc_texture_window(
-                **utils.filter_null_args(
-                    window_size=self.tw_window_size,
-                    step_size=self.tw_step_size,
-                    window_type=self.window_type
-                )
-            ).data
+                **utils.filter_null_args(window_size=self.tw_window_size,
+                                         step_size=self.tw_step_size,
+                                         window_type=self.window_type)).data
             data_y[data_i][self.genres.index(track.genre)] = 1
             track.rm_signal()
             track.rm_spectrogram()
@@ -275,9 +253,7 @@ class AudioDataset(object):
     def get_inv_spectrogram_data(self, *args):
         if self.verbose:
             print("transposing spectrograms...")
-        return AudioDataset.invert_wins_bins(
-            self.get_spectrogram_data(*args)
-        )
+        return AudioDataset.invert_wins_bins(self.get_spectrogram_data(*args))
 
     def filter_indexes(self, indexes, data_x, data_y):
         if self.verbose:
@@ -306,17 +282,19 @@ class AudioDataset(object):
                     if f.endswith(x):
                         filename = os.path.join(root, f)
                         genre = os.path.basename(root)
-                        track = AudioTrack(filename, genre=genre,
+                        track = AudioTrack(filename,
+                                           genre=genre,
                                            seconds=seconds)
                         if use_whole_song:
                             tracks.append(track)
-                            self.ntracksegments = int(
-                                track.seconds_total / seconds)
+                            self.ntracksegments = int(track.seconds_total /
+                                                      seconds)
                             for i in range(1, self.ntracksegments):
                                 tracks.append(
-                                    AudioTrack(filename, genre=genre,
+                                    AudioTrack(filename,
+                                               genre=genre,
                                                seconds=seconds,
-                                               offset_seconds=seconds*i))
+                                               offset_seconds=seconds * i))
                         else:
                             self.ntracksegments = 1
                             tracks.append(track)
@@ -356,15 +334,13 @@ class AudioDataset(object):
 
         if self.use_whole_song:
             for index, track_id in enumerate(track_ids):
-                track_ids[index] = numpy.arange(
-                    track_id, track_id + self.ntracksegments)
+                track_ids[index] = numpy.arange(track_id,
+                                                track_id + self.ntracksegments)
             track_ids = numpy.array(track_ids).flatten()
             rng.shuffle(track_ids)
         return track_ids
 
     def track_ids_to_frame_ids(self, track_ids):
-        return numpy.array(
-            [numpy.arange(
-                x * self.wins_per_track,
-                (x * self.wins_per_track) + self.wins_per_track
-            ) for x in track_ids]).flatten()
+        return numpy.array([numpy.arange(x * self.wins_per_track, (
+            x * self.wins_per_track) + self.wins_per_track) for x in track_ids
+                            ]).flatten()

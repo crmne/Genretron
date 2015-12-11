@@ -9,5 +9,6 @@ scikit-learn
 scikits.audiolab
 scipy
 sqlalchemy
+stft
 tables
 theano
