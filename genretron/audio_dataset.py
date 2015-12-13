@@ -190,7 +190,7 @@ class AudioDataset(object):
                 window_size=self.window_size,
                 step_size=self.step_size,
                 window_type=self.window_type,
-                fft_resolution=self.fft_resolution)).Data
+                fft_resolution=self.fft_resolution)).data
             data_y[data_i][self.genres.index(track.genre)] = 1
             track.rm_spectrogram()
             track.rm_signal()
