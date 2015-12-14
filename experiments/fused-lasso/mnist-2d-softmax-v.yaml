@@ -30,14 +30,14 @@
                 !obj:pylearn2.costs.cost.MethodCost {
                     method: 'cost_from_X'
                 },
-                !obj:pylearn2.costs.mlp.FusedLasso {
-                    coeffs: {
-                        'y': 1.,
-                    },
-                    axes: {
-                        'y': 1
-                    }
-                },
+                # !obj:pylearn2.costs.mlp.FusedLasso {
+                #     coeffs: {
+                #         'y': 1.,
+                #     },
+                #     axes: {
+                #         'y': 1
+                #     }
+                # },
                 !obj:pylearn2.costs.mlp.FusedLasso {
                     coeffs: {
                         'y': 1.,

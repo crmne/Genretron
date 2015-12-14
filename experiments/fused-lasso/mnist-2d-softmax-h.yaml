@@ -38,14 +38,14 @@
                         'y': 1
                     }
                 },
-                !obj:pylearn2.costs.mlp.FusedLasso {
-                    coeffs: {
-                        'y': 1.,
-                    },
-                    axes: {
-                        'y': 0
-                    }
-                }
+                # !obj:pylearn2.costs.mlp.FusedLasso {
+                #     coeffs: {
+                #         'y': 1.,
+                #     },
+                #     axes: {
+                #         'y': 0
+                #     }
+                # }
             ]
         },
         termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
