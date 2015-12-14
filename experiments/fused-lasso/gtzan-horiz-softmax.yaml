@@ -1,0 +1,80 @@
+!obj:pylearn2.train.Train {
+    dataset: &train !obj:genretron.gtzan.GTZAN_On_Memory {
+        path: &path "${PYLEARN2_DATA_PATH}/GTZAN_cut",
+        which_set: "train",
+        seconds: &seconds .5,
+        seed: &seed 1234,
+        balanced_splits: True,
+        use_whole_song: True
+    },
+    model: !obj:pylearn2.models.softmax_regression.SoftmaxRegression {
+        nvis: 10260,
+        n_classes: 10,
+        irange: .05
+    },
+    algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
+        learning_rate: .01,
+        batch_size: 62300,
+        monitoring_dataset:
+            {
+                'train' : *train,
+                'valid' : !obj:genretron.gtzan.GTZAN_On_Memory {
+                            path: *path,
+                            which_set: "valid",
+                            seconds: *seconds,
+                            seed: *seed,
+                            balanced_splits: True,
+                            use_whole_song: True
+                          },
+                'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
+                            path: *path,
+                            which_set: "test",
+                            seconds: *seconds,
+                            seed: *seed,
+                            balanced_splits: True,
+                            use_whole_song: True
+                          }
+            },
+        termination_criterion: !obj:pylearn2.termination_criteria.And {
+            criteria: [
+                !obj:pylearn2.termination_criteria.MonitorBased {
+                    channel_name: "valid_y_misclass",
+                    prop_decrease: 0.01,
+                    N: 10
+                },
+                !obj:pylearn2.termination_criteria.EpochCounter {
+                    max_epochs: 500
+                },
+            ]
+        },
+        cost: !obj:pylearn2.costs.cost.SumOfCosts {
+            costs: [
+                !obj:pylearn2.costs.mlp.Default {},
+                !obj:pylearn2.costs.mlp.FusedLasso {
+                    coeffs: {
+                        'y': .01,
+                    },
+                    axes: {
+                        'y': 1
+                    },
+                },
+                # !obj:pylearn2.costs.mlp.FusedLasso {
+                #     coeffs: {
+                #         'y': .01,
+                #     },
+                #     axes: {
+                #         'y': 0
+                #     },
+                # }
+            ]
+        },
+    },
+    extensions: [
+        !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
+             channel_name: 'valid_y_misclass',
+             save_path: "results/${PYLEARN2_TRAIN_FILE_FULL_STEM}_best.pkl"
+        },
+    ],
+    save_freq: 1,
+    save_path: "results/${PYLEARN2_TRAIN_FILE_FULL_STEM}.pkl"
+}
