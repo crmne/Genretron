@@ -60,7 +60,7 @@
                 },
                 !obj:pylearn2.costs.mlp.FusedLasso {
                     coeffs: {
-                        'h2': 0.1,
+                        'h2': 1.,
                     },
                     axes: {
                         'h2': 1
@@ -68,7 +68,7 @@
                 },
                 !obj:pylearn2.costs.mlp.FusedLasso {
                     coeffs: {
-                        'h2': 0.1,
+                        'h2': 1.,
                     },
                     axes: {
                         'h2': 0
