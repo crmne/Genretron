@@ -510,7 +510,7 @@ def predict():
 if __name__ == '__main__':
     classifier = sgd_optimization_mnist(learning_rate=5 * 1e-4,
                                         n_epochs=50,
-                                        fl_hori_lam=1.05,
-                                        fl_vert_lam=1.05)
+                                        fl_hori_lam=0.05,
+                                        fl_vert_lam=0.05)
 
     plot_weights(classifier.W.get_value())
