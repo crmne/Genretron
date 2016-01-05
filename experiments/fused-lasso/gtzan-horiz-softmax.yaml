@@ -1,11 +1,11 @@
 !obj:pylearn2.train.Train {
     dataset: &train !obj:genretron.gtzan.GTZAN_On_Memory {
-        path: &path "${PYLEARN2_DATA_PATH}/GTZAN_cut",
+        path: &path "${PYLEARN2_DATA_PATH}/GTZAN",
         which_set: "train",
         seconds: &seconds .5,
         seed: &seed 1234,
         balanced_splits: True,
-        use_whole_song: True
+        # use_whole_song: True
     },
     model: !obj:pylearn2.models.softmax_regression.SoftmaxRegression {
         nvis: 10260,
@@ -13,8 +13,8 @@
         irange: .05
     },
     algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
-        learning_rate: .01,
-        batch_size: 62300,
+        learning_rate: .001,
+        batch_size: 10,
         monitoring_dataset:
             {
                 'train' : *train,
@@ -24,7 +24,7 @@
                             seconds: *seconds,
                             seed: *seed,
                             balanced_splits: True,
-                            use_whole_song: True
+                            # use_whole_song: True
                           },
                 'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
                             path: *path,
@@ -32,15 +32,15 @@
                             seconds: *seconds,
                             seed: *seed,
                             balanced_splits: True,
-                            use_whole_song: True
+                            # use_whole_song: True
                           }
             },
         termination_criterion: !obj:pylearn2.termination_criteria.And {
             criteria: [
                 !obj:pylearn2.termination_criteria.MonitorBased {
                     channel_name: "valid_y_misclass",
-                    prop_decrease: 0.01,
-                    N: 10
+                    prop_decrease: 0.001,
+                    N: 100
                 },
                 !obj:pylearn2.termination_criteria.EpochCounter {
                     max_epochs: 500
@@ -50,22 +50,17 @@
         cost: !obj:pylearn2.costs.cost.SumOfCosts {
             costs: [
                 !obj:pylearn2.costs.mlp.Default {},
+                !obj:pylearn2.costs.mlp.WeightDecay {
+                    coeffs: { 'y': 0.05 }
+                },
                 !obj:pylearn2.costs.mlp.FusedLasso {
                     coeffs: {
-                        'y': .01,
+                        'y': 0.0005,
                     },
                     axes: {
                         'y': 1
                     },
                 },
-                # !obj:pylearn2.costs.mlp.FusedLasso {
-                #     coeffs: {
-                #         'y': .01,
-                #     },
-                #     axes: {
-                #         'y': 0
-                #     },
-                # }
             ]
         },
     },

@@ -32,7 +32,7 @@
                 },
                 !obj:pylearn2.costs.mlp.FusedLasso {
                     coeffs: {
-                        'y': 150.,
+                        'y': 0.005,
                     },
                     axes: {
                         'y': 1
@@ -40,7 +40,7 @@
                 },
                 !obj:pylearn2.costs.mlp.FusedLasso {
                     coeffs: {
-                        'y': 150.,
+                        'y': 0.005,
                     },
                     axes: {
                         'y': 0
@@ -50,8 +50,8 @@
         },
         termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
             channel_name: "valid_y_misclass",
-            prop_decrease: 0.001,
-            N: 100
+            prop_decrease: .0001,
+            N: 10
         },
     },
     extensions: [
