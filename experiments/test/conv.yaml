@@ -1,7 +1,6 @@
 !obj:pylearn2.train.Train {
     dataset: &train !obj:genretron.gtzan.GTZAN_On_Memory {
         which_set: "train",
-        window_size: &window_size 2048,
         seconds: &seconds 4.0,
         seed: &seed 1234,
     },
@@ -9,7 +8,7 @@
         batch_size: 10,
         seed: *seed,
         input_space: !obj:pylearn2.space.Conv2DSpace {
-            shape: [513, 85],
+            shape: [513, 175],
             num_channels: 1,
         },
         layers: [
@@ -46,13 +45,11 @@
                 'train' : *train,
                 'valid' : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: "valid",
-                            window_size: *window_size,
                             seconds: *seconds,
                             seed: *seed,
                           },
                 'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: "test",
-                            window_size: *window_size,
                             seconds: *seconds,
                             seed: *seed,
                           }

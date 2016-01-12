@@ -19,17 +19,6 @@ class TwoDimensionalFeature(object):
     default_window_size = 1024
     default_window_type = 'square'
 
-    @staticmethod
-    def shape(wins, bins):
-        return len(wins), bins
-
-    @classmethod
-    def wins(cls, nframes, window_size=None, step_size=None):
-        window_size = cls.default_window_size \
-            if window_size is None else window_size
-        step_size = window_size / 2 if step_size is None else step_size
-        return range(window_size, int(nframes), step_size)
-
     def __init__(self,
                  data,
                  window_size,
@@ -50,7 +39,7 @@ class TwoDimensionalFeature(object):
         ax.set_title(title)
 
         if sample_rate is None:
-            horizontal_max = len(self.wins)
+            horizontal_max = self.wins
             ax.set_xlabel('Windows')
             vertical_max = self.bins
             ax.set_ylabel('Bins')
@@ -61,7 +50,7 @@ class TwoDimensionalFeature(object):
             ax.set_ylabel('Frequency (Hz)')
 
         cax = ax.imshow(
-            self.data.T,
+            numpy.real(self.data),
             interpolation='nearest',
             origin='lower',
             aspect='auto',

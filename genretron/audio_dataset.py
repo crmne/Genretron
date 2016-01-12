@@ -5,7 +5,6 @@ from pylearn2.utils.rng import make_np_rng
 from pylearn2.utils import string_utils
 from theano import config as theanoconfig
 from .spectrogram import Spectrogram
-from .texture_window import TextureWindow
 from .audio_track import AudioTrack
 from .kfold import KFold
 from .preprocessors import preprocessor_factory
@@ -37,12 +36,8 @@ class AudioDataset(object):
                  use_whole_song=False,
                  preprocessor=None,
                  seconds=None,
-                 window_size=None,
                  window_type=None,
                  step_size=None,
-                 tw_window_size=None,
-                 tw_window_type=None,
-                 tw_step_size=None,
                  fft_resolution=None,
                  seed=None,
                  n_folds=4,
@@ -65,7 +60,6 @@ class AudioDataset(object):
         feature_extractors = {
             "spectrogram": self.get_spectrogram_data,
             "inv_spectrogram": self.get_inv_spectrogram_data,
-            "texture_window": self.get_texture_window_data,
             "signal": self.get_signal_data
         }
 
@@ -101,15 +95,10 @@ class AudioDataset(object):
         del spec
 
         if feature != "signal":
-            spec_wins_per_track = len(Spectrogram.wins(seconds * samplerate,
-                                                       window_size, step_size))
-
-            if feature == "texture_window":
-                tw_wins_per_track = len(TextureWindow.wins(
-                    spec_wins_per_track, tw_window_size, tw_step_size))
-                wins_per_track = tw_wins_per_track
-            else:
-                wins_per_track = spec_wins_per_track
+            wins_per_track = Spectrogram.wins(
+                seconds * samplerate,
+                fft_resolution,
+                step_size)
 
             bins_per_track = Spectrogram.bins(fft_resolution)
 
@@ -177,49 +166,26 @@ class AudioDataset(object):
 
     def get_spectrogram_data(self, indexes):
         data_x = numpy.zeros(
-            (len(indexes), self.spec_wins_per_track, self.bins_per_track),
+            (len(indexes), self.wins_per_track, self.bins_per_track),
             dtype=numpy.dtype(theanoconfig.floatX).type)
         data_y = numpy.zeros(
             (len(indexes), len(self.genres)),
             dtype=numpy.int8)
+        
         for data_i, index in enumerate(indexes):
             track = self.tracks[index]
             if self.verbose:
                 print("calculating spectrogram of " + track.path)
-            data_x[data_i] = track.calc_spectrogram(**utils.filter_null_args(
-                window_size=self.window_size,
-                step_size=self.step_size,
-                window_type=self.window_type,
-                fft_resolution=self.fft_resolution)).data
+            data_x[data_i] = numpy.real(track.calc_spectrogram(
+                **utils.filter_null_args(
+                    step_size=self.step_size,
+                    window_type=self.window_type,
+                    fft_resolution=self.fft_resolution
+                )
+            ).data)
             data_y[data_i][self.genres.index(track.genre)] = 1
             track.rm_spectrogram()
             track.rm_signal()
-        return data_x, data_y
-
-    def get_texture_window_data(self, indexes):
-        data_x = numpy.zeros(
-            (len(indexes), self.tw_wins_per_track, self.bins_per_track),
-            dtype=numpy.dtype(theanoconfig.floatX).type)
-        data_y = numpy.zeros(
-            (len(indexes), len(self.genres)),
-            dtype=numpy.int8)
-        for data_i, index in enumerate(indexes):
-            track = self.tracks[index]
-            if self.verbose:
-                print("calculating texture window of " + track.path)
-            track.calc_spectrogram(
-                **utils.filter_null_args(window_size=self.window_size,
-                                         step_size=self.step_size,
-                                         window_type=self.window_type,
-                                         fft_resolution=self.fft_resolution))
-            data_x[data_i] = track.calc_texture_window(
-                **utils.filter_null_args(window_size=self.tw_window_size,
-                                         step_size=self.tw_step_size,
-                                         window_type=self.window_type)).data
-            data_y[data_i][self.genres.index(track.genre)] = 1
-            track.rm_signal()
-            track.rm_spectrogram()
-            track.rm_texture_window()
         return data_x, data_y
 
     @staticmethod
