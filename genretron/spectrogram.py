@@ -1,6 +1,5 @@
 import stft
 import numpy
-import math
 
 __authors__ = "Carmine Paolino"
 __copyright__ = "Copyright 2015, Vrije Universiteit Amsterdam"
@@ -27,12 +26,10 @@ class Spectrogram():
                       window_type=default_window_type,
                       fft_resolution=default_fft_resolution):
         step_size = fft_resolution / 2 if step_size is None else step_size
-        window = cls.window_types[window_type]
 
         spectrogram = stft.spectrogram(frames,
                                        framelength=fft_resolution,
-                                       hopsize=step_size,
-                                       window=window)
+                                       hopsize=step_size)
 
         bins = spectrogram.shape[0]
         wins = spectrogram.shape[1]
