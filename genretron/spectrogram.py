@@ -1,4 +1,5 @@
-import stft
+from librosa.core import stft
+from librosa.core import istft
 import numpy
 
 __authors__ = "Carmine Paolino"
@@ -9,41 +10,33 @@ __email__ = "carmine@paolino.me"
 
 
 class Spectrogram():
-    window_types = {
-        'square': numpy.ones,
-        'hamming': numpy.hamming,
-        'hanning': numpy.hanning,
-        'bartlett': numpy.bartlett,
-        'blackman': numpy.blackman
-    }
-
-    default_window_type = 'square'
     default_fft_resolution = 1024
 
     @classmethod
     def from_waveform(cls, frames,
                       step_size=None,
-                      window_type=default_window_type,
                       fft_resolution=default_fft_resolution):
         step_size = fft_resolution / 2 if step_size is None else step_size
 
-        spectrogram = stft.spectrogram(frames,
-                                       framelength=fft_resolution,
-                                       hopsize=step_size)
+        spectrogram = numpy.log(stft(frames,
+                                     hop_length=step_size,
+                                     n_fft=fft_resolution) + 1.18e-38)
 
         bins = spectrogram.shape[0]
         wins = spectrogram.shape[1]
 
-        return cls(spectrogram, step_size, window_type,
+        return cls(spectrogram, step_size,
                    fft_resolution, wins, bins, len(frames))
 
-    def __init__(self, data, step_size, window_type,
+    def __init__(self, data, step_size,
                  fft_resolution, wins, bins, nframes):
         self.__dict__.update(locals())
         del self.self
 
     def to_signal(self):
-        return stft.ispectrogram(self.data)
+        return istft(numpy.exp(self.data),
+                     n_fft=self.fft_resolution,
+                     hop_length=self.step_size)
 
     def plot(self, sample_rate=None, title='', with_colorbar=False):
         import matplotlib.pyplot as plt

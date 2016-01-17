@@ -35,7 +35,6 @@ class AudioDataset(object):
                  use_whole_song=False,
                  preprocessor=None,
                  seconds=None,
-                 window_type=None,
                  step_size=None,
                  fft_resolution=None,
                  seed=None,
@@ -84,10 +83,8 @@ class AudioDataset(object):
         # extract parameters from spectrogram
         spec = tracks[0].calc_spectrogram(
             **utils.filter_null_args(step_size=step_size,
-                                     window_type=window_type,
                                      fft_resolution=fft_resolution))
         step_size = spec.step_size
-        window_type = spec.window_type
         fft_resolution = spec.fft_resolution
         del spec
 
@@ -95,7 +92,6 @@ class AudioDataset(object):
             tracks[0].calc_spectrogram(
                 **utils.filter_null_args(
                     step_size=step_size,
-                    window_type=window_type,
                     fft_resolution=fft_resolution))
             bins_per_track, wins_per_track = tracks[0].spectrogram.data.shape
 
@@ -176,7 +172,6 @@ class AudioDataset(object):
             data_x[data_i] = numpy.real(track.calc_spectrogram(
                 **utils.filter_null_args(
                     step_size=self.step_size,
-                    window_type=self.window_type,
                     fft_resolution=self.fft_resolution
                 )
             ).data)

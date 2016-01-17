@@ -1,5 +1,5 @@
 argparse
-matplotlib
+matplotlib>=1.5.0
 numpy
 progressbar
 PyYAML
@@ -7,8 +7,9 @@ psycopg2
 progressbar
 scikit-learn
 scikits.audiolab
+scikits.samplerate
 scipy
 sqlalchemy
-stft
+librosa
 tables
 theano

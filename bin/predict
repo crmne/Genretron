@@ -53,7 +53,7 @@ def predict(model_path, track_paths, verbose=False, extended=False):
         model.dataset_yaml_src, instantiate=False).keywords
     seconds = dataset_params.get('seconds', None)
     valid_spectrogram_params = [
-        'window_size', 'step_size', 'window_type', 'fft_resolution'
+        'step_size', 'fft_resolution'
     ]
     spectrogram_params = \
         {k: dataset_params.get(k, None) for k in valid_spectrogram_params}

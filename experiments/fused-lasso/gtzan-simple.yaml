@@ -4,11 +4,12 @@
         seconds: &seconds 8.0,
         seed: &seed 1234,
         balanced_splits: True,
+        preprocessor: znormalizer
     },
     model: !obj:pylearn2.models.mlp.MLP {
         seed: *seed,
         input_space: !obj:pylearn2.space.Conv2DSpace {
-            shape: [513, 347],
+            shape: [513, 345],
             num_channels: 1,
         },
         layers: [
@@ -46,19 +47,21 @@
                             seconds: *seconds,
                             seed: *seed,
                             balanced_splits: True,
+                            preprocessor: znormalizer
                           },
                 'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: "test",
                             seconds: *seconds,
                             seed: *seed,
                             balanced_splits: True,
+                            preprocessor: znormalizer
                           }
             },
         termination_criterion: !obj:pylearn2.termination_criteria.And {
             criteria: [
                 !obj:pylearn2.termination_criteria.MonitorBased {
                     channel_name: "valid_y_misclass",
-                    prop_decrease: 0.01,
+                    prop_decrease: 0.0001,
                     N: 10
                 },
                 !obj:pylearn2.termination_criteria.EpochCounter {
@@ -72,11 +75,9 @@
                 !obj:pylearn2.costs.mlp.FusedLasso {
                     coeffs: {
                         'h0': .005,
-                        # 'h1': 16.0,
-                        # 'y': %(l1_weight_decay)f
                     },
                     axes: {
-                        'h0': 1
+                        'h0': 0
                     },
                 }
             ]
