@@ -15,7 +15,7 @@ import numpy as np
 import os
 import pylearn2.config.yaml_parse
 import time
-import stft
+from librosa.core import istft
 
 logger = logging.getLogger(os.path.basename(__file__))
 
@@ -136,16 +136,8 @@ def get_dataset_keywords(model=None):
 
 
 def calc_ispectrogram(weights, dataset):
-    assert dataset.fft_resolution == dataset.window_size
-    return stft.ispectrogram(weights,
-                             framelength=dataset.window_size,
-                             hopsize=dataset.step_size,
-                             overlap=dataset.step_size//dataset.window_size,
-                             centered=True,
-                             halved=True,
-                             transform=None,
-                             padding=0)
-
+    return istft(np.exp(weights),
+          hop_length=dataset.step_size)
 
 def play_weights(model_path=None, model=None, out=None):
     weights = get_weights(model=model)

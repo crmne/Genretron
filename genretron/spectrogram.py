@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from librosa.core import stft
 from librosa.core import istft
 import numpy
@@ -35,7 +36,6 @@ class Spectrogram():
 
     def to_signal(self):
         return istft(numpy.exp(self.data),
-                     n_fft=self.fft_resolution,
                      hop_length=self.step_size)
 
     def plot(self, sample_rate=None, title='', with_colorbar=False):
