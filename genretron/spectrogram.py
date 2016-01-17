@@ -72,7 +72,8 @@ class Spectrogram():
             interpolation='nearest',
             origin='lower',
             aspect='auto',
-            extent=[0, horizontal_max, 0, vertical_max]
+            extent=[0, horizontal_max, 0, vertical_max],
+            cmap='spectral'
         )
         if with_colorbar:
             fig.colorbar(cax)
