@@ -26,7 +26,7 @@ if __name__ == '__main__':
     gtzan_dest = os.path.join(gtzan_base_path, os.path.basename(gtzan_origin))
 
     if os.path.isdir(gtzan_base_path):
-        if os.path.isfile(gtzan_dest):
+        if os.path.isfile(gtzan_dest)23:
             if utils.query_yes_no(
                 "GTZAN dataset already downloaded in {0}. \
 Do you want to download it again?".format(gtzan_dest)):

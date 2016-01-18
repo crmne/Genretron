@@ -132,7 +132,8 @@ def get_dataset_keywords(model=None):
 
 
 def calc_ispectrogram(weights, dataset):
-    return istft(np.exp(weights),
+    return istft(np.exp(weights) -
+                 1e-38,
                  hop_length=dataset.step_size)
 
 
