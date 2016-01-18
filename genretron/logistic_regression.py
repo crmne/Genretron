@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import theano.tensor as T
 import numpy
 import theano
@@ -10,6 +11,7 @@ from pylearn2.space import CompositeSpace
 
 
 class LogisticRegressionCost(DefaultDataSpecsMixin, Cost):
+
     """Code from
     http://deeplearning.net/software/pylearn2/theano_to_pylearn2_tutorial.html
     """
@@ -26,16 +28,19 @@ class LogisticRegressionCost(DefaultDataSpecsMixin, Cost):
 
 
 class LogisticRegression(Model):
+
     """Most code from
     http://deeplearning.net/software/pylearn2/theano_to_pylearn2_tutorial.html
     """
+
     def __init__(self, nvis, nclasses):
         super(LogisticRegression, self).__init__()
 
         self.nvis = nvis
         self.nclasses = nclasses
 
-        W_value = numpy.random.uniform(size=(self.nvis, self.nclasses)).astype(theano.config.floatX)
+        W_value = numpy.random.uniform(
+            size=(self.nvis, self.nclasses)).astype(theano.config.floatX)
         self.W = sharedX(W_value, 'W')
         b_value = numpy.zeros(self.nclasses, dtype=theano.config.floatX)
         self.b = sharedX(b_value, 'b')
@@ -59,7 +64,8 @@ class LogisticRegression(Model):
 
         X, y = data
         y_hat = self.logistic_regression(X)
-        error = T.neq(y.argmax(axis=1), y_hat.argmax(axis=1)).mean(dtype=theano.config.floatX)
+        error = T.neq(y.argmax(axis=1), y_hat.argmax(axis=1)).mean(
+            dtype=theano.config.floatX)
 
         return OrderedDict([('error', error)])
 

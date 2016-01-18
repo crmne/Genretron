@@ -49,6 +49,7 @@ from pylearn2.utils import string_utils
 
 
 class LogisticRegression(object):
+
     """Multi-class Logistic Regression Class
 
     The logistic regression is fully described by a weight matrix :math:`W`
@@ -78,14 +79,14 @@ class LogisticRegression(object):
         self.W = theano.shared(value=numpy.zeros(
             (n_in, n_out),
             dtype=theano.config.floatX),
-                               name='W',
-                               borrow=True)
+            name='W',
+            borrow=True)
         # initialize the biases b as a vector of n_out 0s
         self.b = theano.shared(value=numpy.zeros(
             (n_out, ),
             dtype=theano.config.floatX),
-                               name='b',
-                               borrow=True)
+            name='b',
+            borrow=True)
 
         # symbolic expression for computing the matrix of class-membership
         # probabilities
@@ -224,9 +225,9 @@ def load_data(dataset):
 
     dataset = string_utils.preprocess(dataset)
 
-    #############
+    #
     # LOAD DATA #
-    #############
+    #
 
     # Download the MNIST dataset if it is not present
     data_dir, data_file = os.path.split(dataset)
@@ -251,12 +252,12 @@ def load_data(dataset):
     train_set, valid_set, test_set = cPickle.load(f)
     f.close()
 
-    #train_set, valid_set, test_set format: tuple(input, target)
-    #input is an numpy.ndarray of 2 dimensions (a matrix)
-    #witch row's correspond to an example. target is a
-    #numpy.ndarray of 1 dimensions (vector)) that have the same length as
-    #the number of rows in the input. It should give the target
-    #target to the example with the same index in the input.
+    # train_set, valid_set, test_set format: tuple(input, target)
+    # input is an numpy.ndarray of 2 dimensions (a matrix)
+    # witch row's correspond to an example. target is a
+    # numpy.ndarray of 1 dimensions (vector)) that have the same length as
+    # the number of rows in the input. It should give the target
+    # target to the example with the same index in the input.
 
     def shared_dataset(data_xy, borrow=True):
         """ Function that loads the dataset into shared variables
@@ -340,9 +341,9 @@ def sgd_optimization_mnist(learning_rate=0.13,
     n_valid_batches = valid_set_x.get_value(borrow=True).shape[0] / batch_size
     n_test_batches = test_set_x.get_value(borrow=True).shape[0] / batch_size
 
-    ######################
+    #
     # BUILD ACTUAL MODEL #
-    ######################
+    #
     print '... building the model'
 
     # allocate symbolic variables for the data
@@ -360,8 +361,8 @@ def sgd_optimization_mnist(learning_rate=0.13,
     # the cost we minimize during training is the negative log likelihood of
     # the model in symbolic format
     cost = classifier.negative_log_likelihood(y) + \
-           classifier.fused_lasso(lam=fl_hori_lam, axis=-1) + \
-           classifier.fused_lasso(lam=fl_vert_lam, axis=0)
+        classifier.fused_lasso(lam=fl_hori_lam, axis=-1) + \
+        classifier.fused_lasso(lam=fl_vert_lam, axis=0)
 
     # compiling a Theano function that computes the mistakes that are made by
     # the model on a minibatch
@@ -404,9 +405,9 @@ def sgd_optimization_mnist(learning_rate=0.13,
         })
     # end-snippet-3
 
-    ###############
+    #
     # TRAIN MODEL #
-    ###############
+    #
     print '... training the model'
     # early-stopping parameters
     patience = 5000  # look as this many examples regardless
@@ -446,7 +447,7 @@ def sgd_optimization_mnist(learning_rate=0.13,
 
                 # if we got the best validation score until now
                 if this_validation_loss < best_validation_loss:
-                    #improve patience if loss improvement is good enough
+                    # improve patience if loss improvement is good enough
                     if this_validation_loss < best_validation_loss *  \
                        improvement_threshold:
                         patience = max(patience, iter * patience_increase)

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import numpy
 from jobman.tools import DD
 
@@ -21,9 +22,12 @@ def results_extractor(train_obj):
                                in channels['test_y_misclass'].val_record],
         train_y_misclass_array=[i.item() for i
                                 in channels['train_y_misclass'].val_record],
-        valid_y_misclass=channels['valid_y_misclass'].val_record[best_index].item(),
-        test_y_misclass=channels['test_y_misclass'].val_record[best_index].item(),
-        train_y_misclass=channels['train_y_misclass'].val_record[best_index].item(),
+        valid_y_misclass=channels[
+            'valid_y_misclass'].val_record[best_index].item(),
+        test_y_misclass=channels[
+            'test_y_misclass'].val_record[best_index].item(),
+        train_y_misclass=channels[
+            'train_y_misclass'].val_record[best_index].item(),
     )
 
 

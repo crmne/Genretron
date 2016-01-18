@@ -11,9 +11,9 @@ __license__ = "3-clause BSD"
 __email__ = "carmine@paolino.me"
 
 
-gtzan_origins = [ "https://dl.dropboxusercontent.com/u/2729268/genres.tar.gz",
-                  "http://home.paolino.me/datasets/gtzan/genres.tar.gz",
-                  "http://opihi.cs.uvic.ca/sound/genres.tar.gz" ]
+gtzan_origins = ["https://dl.dropboxusercontent.com/u/2729268/genres.tar.gz",
+                 "http://home.paolino.me/datasets/gtzan/genres.tar.gz",
+                 "http://opihi.cs.uvic.ca/sound/genres.tar.gz"]
 gtzan_origin = gtzan_origins[0]
 gtzan_base_path = os.path.join(os.environ["PYLEARN2_DATA_PATH"], "GTZAN")
 

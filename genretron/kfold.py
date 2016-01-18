@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import numpy
 
 __authors__ = "Carmine Paolino"
@@ -8,7 +9,9 @@ __email__ = "carmine@paolino.me"
 
 
 class KFold(object):
+
     """KFold CrossValidation with support for validation sets"""
+
     def __init__(self, idxs, n_folds=4):
         assert n_folds >= 3
         assert isinstance(idxs, numpy.ndarray)
@@ -22,6 +25,6 @@ class KFold(object):
             run['test'] = folds[test_idxs]
             run['valid'] = folds[valid_idxs]
             run['train'] = numpy.concatenate(
-                [x for i, x in enumerate(folds) if i not in {test_idxs, valid_idxs}])
+                [x for i, x in enumerate(folds)
+                 if i not in {test_idxs, valid_idxs}])
             self.runs.append(run)
-

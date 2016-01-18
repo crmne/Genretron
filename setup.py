@@ -18,6 +18,7 @@ git_submodules = [
 
 
 class CustomInstall(install):
+
     """Customized setuptools install command.
 
     Installs git submodules and packages that need to be installed first."""

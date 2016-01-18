@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import numpy
 from pylearn2.datasets import dense_design_matrix
@@ -17,6 +18,7 @@ __email__ = "carmine@paolino.me"
 
 
 class AudioDataset(object):
+
     """Represent an abstract Audio Dataset"""
 
     params_filter = [
@@ -164,7 +166,7 @@ class AudioDataset(object):
         data_y = numpy.zeros(
             (len(indexes), len(self.genres)),
             dtype=numpy.int8)
-        
+
         for data_i, index in enumerate(indexes):
             track = self.tracks[index]
             if self.verbose:
@@ -301,4 +303,4 @@ class AudioDataset(object):
     def track_ids_to_frame_ids(self, track_ids):
         return numpy.array([numpy.arange(x * self.wins_per_track, (
             x * self.wins_per_track) + self.wins_per_track) for x in track_ids
-                            ]).flatten()
+        ]).flatten()

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sys
 
 __authors__ = "Carmine Paolino"
@@ -53,9 +54,9 @@ def longest_common_substring(data):
     substr = ''
     if len(data) > 1 and len(data[0]) > 0:
         for i in range(len(data[0])):
-            for j in range(len(data[0])-i+1):
-                if j > len(substr) and __is_substr(data[0][i:i+j], data):
-                    substr = data[0][i:i+j]
+            for j in range(len(data[0]) - i + 1):
+                if j > len(substr) and __is_substr(data[0][i:i + j], data):
+                    substr = data[0][i:i + j]
     return substr
 
 
@@ -69,7 +70,8 @@ def __is_substr(find, data):
 
 
 def urlretrieve(url, filename):
-    from progressbar import Percentage, Bar, ETA, FileTransferSpeed, ProgressBar
+    from progressbar import Percentage, Bar, ETA
+    from progressbar import FileTransferSpeed, ProgressBar
     import urllib
     import os
     widgets = [os.path.basename(filename), ' ', Percentage(), ' ',
@@ -82,7 +84,7 @@ def urlretrieve(url, filename):
             pbar.maxval = totalSize
             pbar.start()
 
-        pbar.update(min(count*blockSize, totalSize))
+        pbar.update(min(count * blockSize, totalSize))
 
     print("Downloading {0}".format(url))
     urllib.urlretrieve(url, filename, reporthook=dlProgress)

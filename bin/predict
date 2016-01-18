@@ -85,12 +85,15 @@ def predict(model_path, track_paths, verbose=False, extended=False):
             y = []
             for offset_seconds in numpy.arange(0, track.seconds_total, seconds):
                 if offset_seconds + seconds <= track.seconds_total:
-                    track = AudioTrack(track_path, seconds=seconds, offset_seconds=offset_seconds)
-                    y.append(track_predict(dataset, track, f, spectrogram_params, view_converter, space_converter))
+                    track = AudioTrack(
+                        track_path, seconds=seconds, offset_seconds=offset_seconds)
+                    y.append(
+                        track_predict(dataset, track, f, spectrogram_params, view_converter, space_converter))
             y = numpy.array(y).mean(axis=0)
         else:
             track = AudioTrack(track_path, seconds=seconds)
-            y = track_predict(dataset, track, f, spectrogram_params, view_converter, space_converter)
+            y = track_predict(
+                dataset, track, f, spectrogram_params, view_converter, space_converter)
 
         predictions = sorted(
             [(genres[i], v * 100) for i, v in enumerate(y)],
@@ -115,7 +118,7 @@ def track_predict(dataset,
         **utils.filter_null_args(**spectrogram_params)).data
     # add the batch size
     spectrogram = spectrogram.reshape(
-         (1, spectrogram.shape[0], spectrogram.shape[1]))
+        (1, spectrogram.shape[0], spectrogram.shape[1]))
 
     # convert to the format used in training
     x = view_converter(space_converter(spectrogram))

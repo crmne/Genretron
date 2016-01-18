@@ -22,11 +22,11 @@ logger = logging.getLogger(os.path.basename(__file__))
 
 def get_weights(model=None, norm_sort=False, dataset=None):
     if isinstance(model, dict):
-        #assume this was a saved matlab dictionary
+        # assume this was a saved matlab dictionary
         del model['__version__']
         del model['__header__']
         del model['__globals__']
-        keys = [key for key in model \
+        keys = [key for key in model
                 if hasattr(model[key], 'ndim') and model[key].ndim == 2]
         if len(keys) > 2:
             key = None
@@ -137,7 +137,8 @@ def get_dataset_keywords(model=None):
 
 def calc_ispectrogram(weights, dataset):
     return istft(np.exp(weights),
-          hop_length=dataset.step_size)
+                 hop_length=dataset.step_size)
+
 
 def play_weights(model_path=None, model=None, out=None):
     weights = get_weights(model=model)
@@ -154,13 +155,15 @@ def play_weights(model_path=None, model=None, out=None):
 def plot_weights(model_path=None, model=None, out=None):
     import matplotlib.pyplot as plt
     weights = get_weights(model=model)
-    fig, axes = plt.subplots(2, int(len(weights)/2), subplot_kw={'xticks': [], 'yticks': []})
+    fig, axes = plt.subplots(
+        2, int(len(weights) / 2), subplot_kw={'xticks': [], 'yticks': []})
     fig.subplots_adjust(hspace=0.3, wspace=0.05)
 
     for ax, patch in zip(axes.flat, weights):
         ax.imshow(np.squeeze(patch), interpolation='none')
     plt.suptitle(model_path)
     plt.show()
+
 
 def make_argument_parser():
     """

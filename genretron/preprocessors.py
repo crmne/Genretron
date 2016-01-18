@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 import numpy
 
 
 class ZNormalizer(object):
+
     def fit_transform(self, data):
         mean = numpy.mean(data)
         std = numpy.std(data)
@@ -11,11 +13,13 @@ class ZNormalizer(object):
 
 
 class LinearNormalizer(object):
+
     def fit_transform(self, data):
         raise NotImplementedError
 
 
 class OutlierReplacer(object):
+
     def fit_transform(self, data, percentile=5):
         raise NotImplementedError
 
@@ -29,4 +33,3 @@ preprocessors = {
 
 def preprocessor_factory(preprocessor):
     return preprocessors[preprocessor]
-

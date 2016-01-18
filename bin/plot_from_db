@@ -37,7 +37,7 @@ def make_query(table, columns, orderby):
         column_string,
         table,
         orderby
-        )
+    )
 
 
 def make_argument_parser():
