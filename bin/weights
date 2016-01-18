@@ -4,7 +4,6 @@ Plays the weight matrices of a pickled model
 """
 from __future__ import division
 from genretron.gtzan import GTZAN, GTZAN_On_Memory
-from genretron.spectrogram import Spectrogram
 from pylearn2.datasets import control
 from pylearn2.config import yaml_parse
 from pylearn2.utils import serial
@@ -101,10 +100,6 @@ Original exception: """ + str(e)))
         if 'hidShape' in dir(model):
             hr, hc = model.hidShape
 
-    grid_shape = (hr, hc)
-    patch_shape = weights_view.shape[1:3]
-    is_color = weights_view.shape[-1] == 3
-
     if norm_sort:
         logger.info('sorting weights by decreasing norm')
         idx = sorted(range(h), key=lambda l: -norm_prop[l])
@@ -136,7 +131,8 @@ def get_dataset_keywords(model=None):
 
 
 def calc_ispectrogram(weights, dataset):
-    return istft(np.exp(weights),
+    return istft(np.exp(weights) -
+                 np.finfo('float32').min,
                  hop_length=dataset.step_size)
 
 

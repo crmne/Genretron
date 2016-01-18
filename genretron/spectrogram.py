@@ -21,7 +21,8 @@ class Spectrogram():
 
         spectrogram = numpy.log(stft(frames,
                                      hop_length=step_size,
-                                     n_fft=fft_resolution) + 1.18e-38)
+                                     n_fft=fft_resolution) +
+                                numpy.finfo('float32').min)
 
         bins = spectrogram.shape[0]
         wins = spectrogram.shape[1]
@@ -35,7 +36,8 @@ class Spectrogram():
         del self.self
 
     def to_signal(self):
-        return istft(numpy.exp(self.data),
+        return istft(numpy.exp(self.data) -
+                     numpy.finfo('float32').min,
                      hop_length=self.step_size)
 
     def plot(self, sample_rate=None, title='', with_colorbar=False):
