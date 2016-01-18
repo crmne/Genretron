@@ -5,10 +5,12 @@
         seconds: &seconds .5,
         seed: &seed 1234,
         balanced_splits: True,
+        preprocessor: "znormalizer",
+        verbose: True
         # use_whole_song: True
     },
     model: !obj:pylearn2.models.softmax_regression.SoftmaxRegression {
-        nvis: 10260,
+        nvis: 11286,
         n_classes: 10,
         irange: .05
     },
@@ -24,6 +26,8 @@
                             seconds: *seconds,
                             seed: *seed,
                             balanced_splits: True,
+                            preprocessor: "znormalizer",
+                            verbose: True
                             # use_whole_song: True
                           },
                 'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
@@ -32,6 +36,8 @@
                             seconds: *seconds,
                             seed: *seed,
                             balanced_splits: True,
+                            preprocessor: "znormalizer",
+                            verbose: True
                             # use_whole_song: True
                           }
             },
