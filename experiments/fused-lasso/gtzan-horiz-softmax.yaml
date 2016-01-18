@@ -6,7 +6,6 @@
         seed: &seed 1234,
         balanced_splits: True,
         preprocessor: "znormalizer",
-        verbose: True
         # use_whole_song: True
     },
     model: !obj:pylearn2.models.softmax_regression.SoftmaxRegression {

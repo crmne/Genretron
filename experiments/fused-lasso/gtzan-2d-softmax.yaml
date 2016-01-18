@@ -9,7 +9,7 @@
         # use_whole_song: True
     },
     model: !obj:pylearn2.models.softmax_regression.SoftmaxRegression {
-        nvis: 10260,
+        nvis: 11286,
         n_classes: 10,
         irange: .05
     },

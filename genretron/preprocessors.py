@@ -12,6 +12,14 @@ class ZNormalizer(object):
         return data
 
 
+class MinMaxScaler(object):
+
+    def fit_transform(self, data, feature_range=(-1, 1)):
+        _min, _max = feature_range
+        std = (data - data.min(axis=0)) / (data.max(axis=0) - data.min(axis=0))
+        return std * (_max - _min) + _min
+
+
 class LinearNormalizer(object):
 
     def fit_transform(self, data):
@@ -27,7 +35,8 @@ class OutlierReplacer(object):
 preprocessors = {
     'znormalizer': ZNormalizer(),
     'linearnormalizer': LinearNormalizer(),
-    'outlierreplacer': OutlierReplacer()
+    'outlierreplacer': OutlierReplacer(),
+    'minmaxscaler': MinMaxScaler()
 }
 
 
