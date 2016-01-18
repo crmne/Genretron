@@ -1,11 +1,12 @@
 !obj:pylearn2.train.Train {
     dataset: &train !obj:genretron.gtzan.GTZAN_On_Memory {
         which_set: "train",
-        seconds: &seconds 8.0,
+        seconds: &seconds 30.0,
         seed: &seed 1234,
         balanced_splits: True,
         preprocessor: znormalizer,
-        use_whole_song: True,
+        verbose: &verbose True,
+        # use_whole_song: True,
     },
     model: !obj:pylearn2.models.mlp.MLP {
         batch_size: 125,
@@ -25,7 +26,7 @@
                         max_kernel_norm: 1.9365,
                     },
                     !obj:pylearn2.models.mlp.ConvRectifiedLinear {
-                        layer_name: 'h0',
+                        layer_name: 'h1',
                         output_channels: 64,
                         irange: .05,
                         kernel_shape: [1, 10],
@@ -52,7 +53,8 @@
                             seed: *seed,
                             balanced_splits: True,
                             preprocessor: znormalizer,
-                            use_whole_song: True,
+                            verbose: *verbose,
+                            # use_whole_song: True,
                           },
                 'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: "test",
@@ -60,7 +62,8 @@
                             seed: *seed,
                             balanced_splits: True,
                             preprocessor: znormalizer,
-                            use_whole_song: True,
+                            verbose: *verbose,
+                            # use_whole_song: True,
                           }
             },
         termination_criterion: !obj:pylearn2.termination_criteria.And {

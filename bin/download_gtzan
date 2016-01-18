@@ -17,6 +17,10 @@ gtzan_origins = ["https://dl.dropboxusercontent.com/u/2729268/genres.tar.gz",
 gtzan_origin = gtzan_origins[0]
 gtzan_base_path = os.path.join(os.environ["PYLEARN2_DATA_PATH"], "GTZAN")
 
+seconds = 30
+samplerate = 22050
+frames = seconds * samplerate
+
 
 if __name__ == '__main__':
     gtzan_dest = os.path.join(gtzan_base_path, os.path.basename(gtzan_origin))
@@ -36,25 +40,58 @@ Do you want to download it again?".format(gtzan_dest)):
         os.makedirs(gtzan_base_path)
         utils.urlretrieve(gtzan_origin, gtzan_dest)
 
-    print("Extracting audio files to {0}...".format(gtzan_base_path))
-    tar = tarfile.open(gtzan_dest, 'r:gz')
-    tar.extractall(gtzan_base_path)
-    tar.close()
+    if utils.query_yes_no("Do you want to extract the files?"):
+        print("Extracting audio files to {0}...".format(gtzan_base_path))
+        tar = tarfile.open(gtzan_dest, 'r:gz')
+        tar.extractall(gtzan_base_path)
+        tar.close()
 
-    print("Flattening directory structure...")
-    genre_dir = os.path.join(gtzan_base_path, 'genres')
-    for root, dirnames, filenames in os.walk(genre_dir):
-        for f in filenames:
-            filename = os.path.join(root, f)
-            genre = os.path.basename(root)
-            dest_dir = os.path.join(gtzan_base_path, genre)
-            if not os.path.isdir(dest_dir):
-                os.makedirs(dest_dir)
-            print("Moving {0} to {1}".format(filename, dest_dir))
-            try:
-                shutil.move(filename, dest_dir)
-            except shutil.Error as e:
-                print(e)
-    shutil.rmtree(genre_dir)
+        print("Flattening directory structure...")
+        genre_dir = os.path.join(gtzan_base_path, 'genres')
+        for root, dirnames, filenames in os.walk(genre_dir):
+            for f in filenames:
+                filepath = os.path.join(root, f)
+                genre = os.path.basename(root)
+                dest_dir = os.path.join(gtzan_base_path, genre)
+                dest_file = os.path.join(dest_dir, f)
+                if not os.path.isdir(dest_dir):
+                    os.makedirs(dest_dir)
+                if os.path.exists(dest_file):
+                    os.remove(dest_file)
+                shutil.move(filepath, dest_dir)
+        shutil.rmtree(genre_dir)
+
+    if utils.query_yes_no("Do you want to apply some fixes?"):
+        utils.urlretrieve("https://dl.dropboxusercontent.com/u/2729268/hiphop.00038.au",
+                          os.path.join(gtzan_base_path, "hiphop", "hiphop.00038.au"))
+        import subprocess
+        for root, dirnames, filenames in os.walk(gtzan_base_path):
+            filenames = [f for f in filenames if f != 'genres.tar.gz']
+            for f in filenames:
+                filepath = os.path.join(root, f)
+                tempnewfilepath = filepath + '.tmp.au'
+                command = ['soxi', '-s', filepath]
+                length = int(subprocess.check_output(command))
+                if length > frames:
+                    print("Trimming {0}...".format(f))
+                    trim_command = ['sox', filepath, tempnewfilepath,
+                                    'trim', '0', str(frames) + 's']
+                    subprocess.check_output(trim_command)
+                    os.remove(filepath)
+                    shutil.move(tempnewfilepath, filepath)
+                elif length < frames:
+                    print("Padding {0}...".format(f))
+                    pad_length = frames - length
+                    pad_command = ['sox', filepath, tempnewfilepath,
+                                   'pad', str(pad_length) + 's@' + str(length) + 's']
+                    subprocess.check_output(pad_command)
+                    os.remove(filepath)
+                    shutil.move(tempnewfilepath, filepath)
+
+                print("Normalizing {0}...".format(f))
+                norm_command = ['sox', filepath, tempnewfilepath, 'norm']
+                subprocess.check_output(norm_command)
+                os.remove(filepath)
+                shutil.move(tempnewfilepath, filepath)
 
     print("All done.")
