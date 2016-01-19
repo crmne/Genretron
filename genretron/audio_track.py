@@ -130,7 +130,7 @@ class AudioTrack(object):
     def play(self):
         play(self.signal, fs=self.samplerate)
 
-    def plot_signal(self, title=None):
+    def plot_signal(self, title=None, out=None):
         import matplotlib.pyplot as plt
         if title is None:
             title = self.filename
@@ -147,13 +147,17 @@ class AudioTrack(object):
             self.signal
         )
         ax.set_xlim(0, self.seconds)
-        plt.show()
+        if out is None:
+            plt.show()
+        else:
+            plt.savefig(out)
 
-    def plot_spectrogram(self, title=None):
+    def plot_spectrogram(self, title=None, out=None):
         if title is None:
             title = self.filename
         self.spectrogram.plot(
             sample_rate=self.samplerate,
             title=title,
-            with_colorbar=True
+            with_colorbar=True,
+            out=out
         )

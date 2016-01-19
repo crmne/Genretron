@@ -42,7 +42,8 @@ class Spectrogram():
                      1e-38,
                      hop_length=self.step_size)
 
-    def plot(self, sample_rate=None, title='', with_colorbar=False):
+    def plot(self, sample_rate=None, title='', with_colorbar=True,
+             out=None):
         import matplotlib.pyplot as plt
         fig = plt.figure()
         fig.suptitle(self.__class__.__name__, fontsize=14, fontweight='bold')
@@ -71,4 +72,8 @@ class Spectrogram():
         )
         if with_colorbar:
             fig.colorbar(cax)
-        plt.show()
+        if out is None:
+            plt.show()
+        else:
+            plt.savefig(out)
+
