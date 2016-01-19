@@ -79,9 +79,9 @@
     extensions: [
         !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
              channel_name: 'valid_y_misclass',
-             save_path: "results/${PYLEARN2_TRAIN_FILE_FULL_STEM}_best.pkl"
+             save_path: "gtzan-shape-convnet2_best.pkl"
         },
     ],
     save_freq: 1,
-    save_path: "results/${PYLEARN2_TRAIN_FILE_FULL_STEM}.pkl"
+    save_path: "gtzan-shape-convnet2.pkl"
 }
