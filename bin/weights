@@ -144,12 +144,6 @@ def play_weights(model_path=None, model=None, out=None):
     dataset_keywords = get_dataset_keywords(model=model)
     dataset = GTZAN(**dataset_keywords)
 
-    # make it loud enough
-    from genretron.preprocessors import MinMaxScaler
-    scaler = MinMaxScaler()
-    weights = [scaler.fit_transform(w, feature_range=(-4, 4))
-               for w in weights]
-
     audios = [calc_ispectrogram(np.tile(w, (1, 5)), dataset) for w in weights]
     for index, audio in enumerate(audios):
         if isinstance(model, SoftmaxRegression):
@@ -163,7 +157,8 @@ def play_weights(model_path=None, model=None, out=None):
         else:
             filename = "{0}.{1}.wav".format(out, filter_name)
             write_wav(filename, audio,
-                      sr=dataset.samplerate)
+                      sr=dataset.samplerate,
+                      norm=True)
 
 
 def plot_weights(model_path=None, model=None, out=None):
