@@ -170,7 +170,10 @@ def plot_weights(model_path=None, model=None, out=None):
     for ax, patch in zip(axes.flat, weights):
         ax.imshow(np.squeeze(patch), interpolation='none')
     plt.suptitle(model_path)
-    plt.show()
+    if out is None:
+        plt.show()
+    else:
+        plt.savefig(out)
 
 
 def make_argument_parser():

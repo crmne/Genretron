@@ -5,6 +5,7 @@ from scikits.audiolab import Sndfile
 from scikits.audiolab import play
 from scikits.audiolab import available_file_formats
 from spectrogram import Spectrogram
+from librosa.display import waveplot
 
 __authors__ = "Carmine Paolino"
 __copyright__ = "Copyright 2015, Vrije Universiteit Amsterdam"
@@ -134,23 +135,14 @@ class AudioTrack(object):
         import matplotlib.pyplot as plt
         if title is None:
             title = self.filename
-
-        fig = plt.figure()
-        fig.suptitle('Signal', fontsize=14, fontweight='bold')
-
-        ax = fig.add_subplot(111)
-        ax.set_title(title)
-        ax.set_xlabel('Seconds')
-        ax.set_ylabel('Amplitude')
-        ax.plot(
-            numpy.linspace(0, self.seconds, num=self.nframes),
-            self.signal
-        )
-        ax.set_xlim(0, self.seconds)
+        plt.title(title)
+        waveplot(self.signal,
+                 sr=self.samplerate)
         if out is None:
             plt.show()
         else:
             plt.savefig(out)
+        plt.close()
 
     def plot_spectrogram(self, title=None, out=None):
         if title is None:

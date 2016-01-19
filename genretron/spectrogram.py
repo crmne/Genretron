@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from librosa.core import stft
 from librosa.core import istft
+from librosa.display import specshow
 import numpy
 
 __authors__ = "Carmine Paolino"
@@ -42,38 +43,21 @@ class Spectrogram():
                      1e-38,
                      hop_length=self.step_size)
 
-    def plot(self, sample_rate=None, title='', with_colorbar=True,
+    def plot(self, sample_rate=22050, title='', with_colorbar=True,
              out=None):
         import matplotlib.pyplot as plt
-        fig = plt.figure()
-        fig.suptitle(self.__class__.__name__, fontsize=14, fontweight='bold')
-
-        ax = fig.add_subplot(111)
-        ax.set_title(title)
-
-        if sample_rate is None:
-            horizontal_max = self.wins
-            ax.set_xlabel('Windows')
-            vertical_max = self.bins
-            ax.set_ylabel('Bins')
-        else:
-            horizontal_max = float(self.nframes) / sample_rate
-            ax.set_xlabel('Seconds')
-            vertical_max = sample_rate / 1 / 2.205
-            ax.set_ylabel('Frequency (Hz)')
-
-        cax = ax.imshow(
-            numpy.real(self.data),
-            interpolation='nearest',
-            origin='lower',
-            aspect='auto',
-            extent=[0, horizontal_max, 0, vertical_max],
-            cmap='spectral'
-        )
+        plt.title(title)
+        specshow(numpy.real(self.data),
+                 sr=sample_rate,
+                 hop_length=self.step_size,
+                 x_axis='time',
+                 y_axis='linear',
+                 cmap='spectral')
         if with_colorbar:
-            fig.colorbar(cax)
+            plt.colorbar(format='%+2.0f dB',
+                         cmap='spectral')
         if out is None:
             plt.show()
         else:
             plt.savefig(out)
-
+        plt.close()
