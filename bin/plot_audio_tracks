@@ -1,0 +1,12 @@
+#!/usr/bin/env python
+from genretron.gtzan import GTZAN
+
+if __name__ == '__main__':
+    gtzan = GTZAN(which_set='all', seconds=30.)
+    for track in gtzan.tracks:
+        signalpdfpath = track.filename + ".signal.pdf"
+        print("plotting " + signalpdfpath)
+        track.plot_signal(out=signalpdfpath)
+        spectrogrampdfpath = track.filename + ".spectrogram.pdf"
+        print("plotting " + spectrogrampdfpath)
+        track.plot_spectrogram(out=spectrogrampdfpath)
