@@ -1,0 +1,4 @@
+yaml_template: experiments/gtzan-shape/models/gtzan-convnet1.yaml
+extract_results: genretron.jobman_utils.results_extractor
+hyper_parameters:
+  kernel_shape_h0: [ 5, 10, 20, 40 ]
