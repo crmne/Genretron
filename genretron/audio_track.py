@@ -141,7 +141,7 @@ class AudioTrack(object):
         if out is None:
             plt.show()
         else:
-            plt.savefig(out)
+            plt.savefig(out, dpi=300)
         plt.close()
 
     def plot_spectrogram(self, title=None, out=None):

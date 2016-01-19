@@ -4,9 +4,9 @@ from genretron.gtzan import GTZAN
 if __name__ == '__main__':
     gtzan = GTZAN(which_set='all', seconds=30.)
     for track in gtzan.tracks:
-        signalpdfpath = track.filename + ".signal.pdf"
+        signalpdfpath = track.filename + ".signal.png"
         print("plotting " + signalpdfpath)
         track.plot_signal(out=signalpdfpath)
-        spectrogrampdfpath = track.filename + ".spectrogram.pdf"
+        spectrogrampdfpath = track.filename + ".spectrogram.png"
         print("plotting " + spectrogrampdfpath)
         track.plot_spectrogram(out=spectrogrampdfpath)
