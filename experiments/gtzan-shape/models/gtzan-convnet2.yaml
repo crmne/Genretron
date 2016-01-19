@@ -1,17 +1,17 @@
 !obj:pylearn2.train.Train {
     dataset: &train !obj:genretron.gtzan.GTZAN_On_Memory {
         which_set: "train",
-        seconds: &seconds 4.0,
+        seconds: &seconds 15.0,
         seed: &seed 1234,
         balanced_splits: True,
         preprocessor: znormalizer,
-        use_whole_song: True,
+        # use_whole_song: True,
     },
     model: !obj:pylearn2.models.mlp.MLP {
         batch_size: 125,
         seed: *seed,
         input_space: !obj:pylearn2.space.Conv2DSpace {
-            shape: [513, 173],
+            shape: [513, 646],
             num_channels: 1,
         },
         layers: [
@@ -52,7 +52,7 @@
                             seed: *seed,
                             balanced_splits: True,
                             preprocessor: znormalizer,
-                            use_whole_song: True,
+                            # use_whole_song: True,
                           },
                 'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: "test",
@@ -60,7 +60,7 @@
                             seed: *seed,
                             balanced_splits: True,
                             preprocessor: znormalizer,
-                            use_whole_song: True,
+                            # use_whole_song: True,
                           }
             },
         termination_criterion: !obj:pylearn2.termination_criteria.And {
