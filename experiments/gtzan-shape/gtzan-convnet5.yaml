@@ -1,17 +1,18 @@
 !obj:pylearn2.train.Train {
     dataset: &train !obj:genretron.gtzan.GTZAN_On_Memory {
         which_set: "train",
-        seconds: &seconds 15.0,
+        seconds: &seconds 30.,
         seed: &seed 1234,
         balanced_splits: True,
         preprocessor: znormalizer,
+        scale_factors: &scale_factors [10, 10],
         # use_whole_song: True,
     },
     model: !obj:pylearn2.models.mlp.MLP {
         batch_size: 125,
         seed: *seed,
         input_space: !obj:pylearn2.space.Conv2DSpace {
-            shape: [513, 646],
+            shape: [51, 129],
             num_channels: 1,
         },
         layers: [
@@ -19,8 +20,8 @@
                         layer_name: 'h0',
                         output_channels: 64,
                         irange: .05,
-                        kernel_shape: [513, 20],
-                        pool_shape: [1, 2],
+                        kernel_shape: [5, 5],
+                        pool_shape: [2, 2],
                         pool_stride: [1, 1],
                         max_kernel_norm: 1.9365,
                     },
@@ -28,7 +29,7 @@
                         layer_name: 'h1',
                         output_channels: 64,
                         irange: .05,
-                        kernel_shape: [1, 5],
+                        kernel_shape: [5, 5],
                         pool_shape: [1, 2],
                         pool_stride: [1, 1],
                         max_kernel_norm: 1.9365,
@@ -52,6 +53,7 @@
                             seed: *seed,
                             balanced_splits: True,
                             preprocessor: znormalizer,
+                            scale_factors: *scale_factors,
                             # use_whole_song: True,
                           },
                 'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
@@ -60,6 +62,7 @@
                             seed: *seed,
                             balanced_splits: True,
                             preprocessor: znormalizer,
+                            scale_factors: *scale_factors,
                             # use_whole_song: True,
                           }
             },

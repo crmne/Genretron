@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import numpy
 from theano import config as theanoconfig
@@ -117,11 +118,17 @@ class AudioTrack(object):
         else:
             return self._spectrogram
 
-    def calc_spectrogram(self, **kwargs):
+    def calc_spectrogram(self,
+                         step_size=None,
+                         fft_resolution=None,
+                         scale_factors=None):
         self._spectrogram = Spectrogram.from_waveform(
             self.signal,
-            **kwargs
+            step_size=step_size,
+            fft_resolution=fft_resolution,
         )
+        if scale_factors is not None:
+            self._spectrogram.data = self._spectrogram.scale(scale_factors)
         return self._spectrogram
 
     def rm_spectrogram(self):

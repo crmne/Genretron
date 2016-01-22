@@ -3,6 +3,7 @@ from librosa.core import stft
 from librosa.core import istft
 from librosa.display import specshow
 import numpy
+from scipy.ndimage.interpolation import affine_transform
 
 __authors__ = "Carmine Paolino"
 __copyright__ = "Copyright 2015, Vrije Universiteit Amsterdam"
@@ -17,7 +18,9 @@ class Spectrogram():
     @classmethod
     def from_waveform(cls, frames,
                       step_size=None,
-                      fft_resolution=default_fft_resolution):
+                      fft_resolution=None):
+        fft_resolution = Spectrogram.default_fft_resolution if fft_resolution \
+            is None else fft_resolution
         step_size = fft_resolution / 2 if step_size is None else step_size
 
         spectrogram = numpy.log(stft(frames,
@@ -43,9 +46,13 @@ class Spectrogram():
                      1e-38,
                      hop_length=self.step_size)
 
-    def moving_average(self, window):
-        weights = numpy.repeat(1., window) / window
-        return numpy.convolve(self.data, weights, 'valid')
+    def scale(self, scale_factors=(1, 1)):
+        x_scale_factor, y_scale_factor = scale_factors
+        transformation_matrix = numpy.diag(scale_factors)
+        data = numpy.real(self.data)
+        scaled = affine_transform(data, transformation_matrix)
+        return scaled[:scaled.shape[0] / x_scale_factor,
+                      :scaled.shape[1] / y_scale_factor]
 
     def plot(self, sample_rate=22050, title='', with_colorbar=True,
              out=None):
