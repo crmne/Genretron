@@ -43,6 +43,10 @@ class Spectrogram():
                      1e-38,
                      hop_length=self.step_size)
 
+    def moving_average(self, window):
+        weights = numpy.repeat(1., window) / window
+        return numpy.convolve(self.data, weights, 'valid')
+
     def plot(self, sample_rate=22050, title='', with_colorbar=True,
              out=None):
         import matplotlib.pyplot as plt
