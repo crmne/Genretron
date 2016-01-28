@@ -5,14 +5,14 @@
         seed: &seed 1234,
         balanced_splits: True,
         preprocessor: znormalizer,
-        scale_factors: &scale_factors [10, 10],
+        scale_factors: &scale_factors [5, 5],
         # use_whole_song: True,
     },
     model: !obj:pylearn2.models.mlp.MLP {
         batch_size: 125,
         seed: *seed,
         input_space: !obj:pylearn2.space.Conv2DSpace {
-            shape: [51, 129],
+            shape: [102, 258],
             num_channels: 1,
         },
         layers: [
@@ -20,18 +20,18 @@
                         layer_name: 'h0',
                         output_channels: 64,
                         irange: .05,
-                        kernel_shape: [5, 5],
-                        pool_shape: [2, 2],
-                        pool_stride: [1, 1],
+                        kernel_shape: [102, 5],
+                        pool_shape: [1, 4],
+                        pool_stride: [1, 2],
                         max_kernel_norm: 1.9365,
                     },
                     !obj:pylearn2.models.mlp.ConvRectifiedLinear {
                         layer_name: 'h1',
                         output_channels: 64,
                         irange: .05,
-                        kernel_shape: [5, 5],
-                        pool_shape: [1, 2],
-                        pool_stride: [1, 1],
+                        kernel_shape: [1, 5],
+                        pool_shape: [1, 4],
+                        pool_stride: [1, 2],
                         max_kernel_norm: 1.9365,
                     },
                     !obj:pylearn2.models.mlp.Softmax {
@@ -82,9 +82,9 @@
     extensions: [
         !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
              channel_name: 'valid_y_misclass',
-             save_path: "gtzan-shape-convnet1_best.pkl"
+             save_path: "results/${PYLEARN2_TRAIN_FILE_FULL_STEM}_best.pkl"
         },
     ],
     save_freq: 1,
-    save_path: "gtzan-shape-convnet1.pkl"
+    save_path: "results/${PYLEARN2_TRAIN_FILE_FULL_STEM}.pkl"
 }
