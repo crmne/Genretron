@@ -4,19 +4,18 @@ Plays the weight matrices of a pickled model
 """
 from __future__ import division
 from genretron.gtzan import GTZAN, GTZAN_On_Memory
+from genretron.spectrogram import Spectrogram
 from pylearn2.datasets import control
 from pylearn2.config import yaml_parse
 from pylearn2.utils import serial
 from pylearn2.models.softmax_regression import SoftmaxRegression
-from scikits.audiolab import play
 import argparse
 import logging
 import numpy as np
 import os
 import pylearn2.config.yaml_parse
-import time
-from librosa.core import istft
-from librosa.output import write_wav
+import librosa.output
+import librosa.util
 
 logger = logging.getLogger(os.path.basename(__file__))
 
@@ -132,33 +131,32 @@ def get_dataset_keywords(model=None):
     return dataset.keywords
 
 
-def calc_ispectrogram(weights, dataset):
-    return istft(np.exp(weights) -
-                 1e-38,
-                 hop_length=dataset.step_size)
-
-
-def play_weights(model_path=None, model=None, out=None):
+def play_weights(out, model_path=None, model=None, repetitions=1):
     weights = get_weights(model=model)
     weights = np.squeeze(weights)
     dataset_keywords = get_dataset_keywords(model=model)
     dataset = GTZAN(**dataset_keywords)
 
-    audios = [calc_ispectrogram(np.tile(w, (1, 5)), dataset) for w in weights]
-    for index, audio in enumerate(audios):
+    for index, weight in enumerate(weights):
+        if dataset.scale_factors is not None:
+            logger.warning('scaled spectrograms may not be zoomed to the '
+                           'exact original dimensions')
+            weight = Spectrogram.zoom(weight, dataset.scale_factors)
+        repeated_weight = np.tile(weight, (1, repetitions))
+        signal = Spectrogram.signal_from_spectrogram(
+            spectrogram=repeated_weight,
+            step_size=dataset.step_size)
+        normalized_signal = librosa.util.normalize(signal,
+                                                   norm=np.inf,
+                                                   axis=None)
         if isinstance(model, SoftmaxRegression):
-            filter_name = dataset.genres[index]
+            weight_name = dataset.genres[index]
         else:
-            filter_name = index
-        if out is None:
-            logger.info('playing filter {0}...'.format(filter_name))
-            play(audio, fs=dataset.samplerate)
-            time.sleep(0.5)
-        else:
-            filename = "{0}.{1}.wav".format(out, filter_name)
-            write_wav(filename, audio,
-                      sr=dataset.samplerate,
-                      norm=True)
+            weight_name = index
+
+        filename = "{0}.{1}.wav".format(out, weight_name)
+        librosa.output.write_wav(filename, normalized_signal,
+                                 sr=dataset.samplerate)
 
 
 def plot_weights(model_path=None, model=None, out=None):
@@ -187,6 +185,7 @@ def make_argument_parser():
     parser.add_argument("action", choices=("play", "plot"))
     parser.add_argument("model_path")
     parser.add_argument("--out", default=None)
+    parser.add_argument("--repetitions", default=5)
     return parser
 
 
@@ -198,6 +197,12 @@ if __name__ == "__main__":
     model = serial.load(args.model_path)
     logger.info('loading done')
     if args.action == "play":
-        play_weights(model_path=args.model_path, model=model, out=args.out)
+        assert args.out is not None
+        play_weights(args.out,
+                     model_path=args.model_path,
+                     model=model,
+                     repetitions=args.repetitions)
     elif args.action == "plot":
-        plot_weights(model_path=args.model_path, model=model, out=args.out)
+        plot_weights(model_path=args.model_path,
+                     model=model,
+                     out=args.out)

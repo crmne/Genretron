@@ -9,6 +9,7 @@ from .audio_track import AudioTrack
 from .kfold import KFold
 from .preprocessors import preprocessor_factory
 import utils
+import librosa
 
 __authors__ = "Carmine Paolino"
 __copyright__ = "Copyright 2015, Vrije Universiteit Amsterdam"
@@ -175,7 +176,7 @@ class AudioDataset(object):
             track = self.tracks[index]
             if self.verbose:
                 print("calculating spectrogram of " + track.path)
-            data_x[data_i] = numpy.real(track.calc_spectrogram(
+            data_x[data_i], _ = librosa.magphase(track.calc_spectrogram(
                 **utils.filter_null_args(
                     step_size=self.step_size,
                     fft_resolution=self.fft_resolution,

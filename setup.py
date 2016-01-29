@@ -9,6 +9,8 @@ from pip.req import parse_requirements
 from pip.download import PipSession
 
 install_first = [
+    'setuptools>=17.1',
+    'six>=1.7'
     'numpy'
 ]
 git_submodules = [
