@@ -1,4 +1,4 @@
-# The difference between this experiment and the previous one (mlp_20150107B) is that 
+# The difference between this experiment and the previous one (mlp_20150107B) is that
 # the batch size has been increased to 1000.
 !obj:pylearn2.train.Train {
     dataset: &train !obj:genretron.gtzan.GTZAN_On_Memory {

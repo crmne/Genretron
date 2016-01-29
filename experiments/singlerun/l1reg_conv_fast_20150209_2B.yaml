@@ -50,7 +50,7 @@
                     coeffs: { 'h2': 0.2 },
                 }
             ]
-        
+
         },
         # cost: !obj:pylearn2.costs.mlp.dropout.Dropout {
         #     input_include_probs: { 'h2' : .1 },

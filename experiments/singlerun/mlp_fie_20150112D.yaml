@@ -1,4 +1,4 @@
-# Similar to mlp_fie_20150112B, but with 500 units 
+# Similar to mlp_fie_20150112B, but with 500 units
 !obj:pylearn2.train.Train {
     dataset: &train !obj:genretron.gtzan.GTZAN_On_Memory {
         which_set: 'train',

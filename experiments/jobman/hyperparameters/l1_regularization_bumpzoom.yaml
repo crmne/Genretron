@@ -3,4 +3,3 @@ extract_results: genretron.jobman_utils.results_extractor
 hyper_parameters:
     # numpy.linspace(1.2182493960703473, 2.008553692318767, num=10)
     l1_weight_decay: [1.2182494, 1.30606098, 1.39387257, 1.48168416, 1.56949575, 1.65730734, 1.74511893, 1.83293052, 1.9207421, 2.00855369]
-

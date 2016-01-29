@@ -1,17 +1,17 @@
-- repo: git://github.com/pre-commit/pre-commit-hooks
-  sha: master
-  hooks:
-    - id: trailing-whitespace
-    - id: autopep8-wrapper
-    - id: check-added-large-files
-    - id: check-ast
-    - id: check-case-conflict
-    - id: check-docstring-first
-    - id: check-json
-    - id: check-merge-conflict
-    - id: debug-statements
-    - id: end-of-file-fixer
-    - id: fix-encoding-pragma
-    - id: flake8
-    - id: name-tests-test
-    - id: requirements-txt-fixer
+-   repo: git://github.com/pre-commit/pre-commit-hooks
+    sha: 64943e86417774b9d6ba63c74e00f8cc3e2119e0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: autopep8-wrapper
+    -   id: check-added-large-files
+    -   id: check-ast
+    -   id: check-case-conflict
+    -   id: check-docstring-first
+    -   id: check-json
+    -   id: check-merge-conflict
+    -   id: debug-statements
+    -   id: end-of-file-fixer
+    -   id: fix-encoding-pragma
+    -   id: flake8
+    -   id: name-tests-test
+    -   id: requirements-txt-fixer
