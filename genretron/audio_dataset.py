@@ -112,6 +112,8 @@ class AudioDataset(object):
 
         view_converter = view_converters[converter]
 
+        preprocessor = None if preprocessor == "None" else preprocessor
+
         self.__dict__.update(locals())
         del self.self
 
@@ -121,7 +123,7 @@ class AudioDataset(object):
     def process(self):
         if self.preprocessor is not None:
             # preprocess all the tracks
-            all_tracks = self.get_all_track_ids()
+            all_tracks = self.get_track_ids('all', None, None, None)
             self.data_x, self.data_y = \
                 self.spaces_converters[self.converter](
                     self.feature_extractors[self.feature](all_tracks)
@@ -267,16 +269,13 @@ class AudioDataset(object):
                         genres.add(genre)
         return tracks, sorted(genres)
 
-    def get_all_track_ids(self):
-        return numpy.arange(len(self.tracks) / self.ntracksegments)
-
     def get_track_ids(self, which_set, nfolds, run_n, seed):
         """
         Returns the indexes of the tracks according to the split they are in
         """
-        track_ids = self.get_all_track_ids()
+        track_ids = numpy.arange(len(self.tracks) / self.ntracksegments)
+        rng = make_np_rng(None, seed, which_method="shuffle")
         if which_set != 'all':
-            rng = make_np_rng(None, seed, which_method="shuffle")
             if self.balanced_splits:
                 genre_ids = {}
                 for track in track_ids:

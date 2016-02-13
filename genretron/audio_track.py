@@ -58,11 +58,11 @@ class AudioTrack(object):
 
     @property
     def nframes(self):
-        return self.seconds * self.samplerate
+        return int(self.seconds * self.samplerate)
 
     @property
     def nframes_extended(self):
-        return (self.seconds + self.offset_seconds) * self.samplerate
+        return int((self.seconds + self.offset_seconds) * self.samplerate)
 
     @property
     def format(self):
