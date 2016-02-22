@@ -44,7 +44,7 @@ class Spectrogram():
 
     @staticmethod
     def signal_from_spectrogram(spectrogram, step_size, iterations=10):
-        spectrogram = numpy.exp(spectrogram) - 1e-38
+        spectrogram = numpy.exp(spectrogram) - Spectrogram._small_constant
         return librosa.core.istft(spectrogram,
                                   hop_length=step_size)
 
