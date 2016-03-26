@@ -1,12 +1,12 @@
-
+# TODO: try more seconds or use_whole_song
 !obj:pylearn2.train.Train {
     dataset: &train !obj:genretron.gtzan.GTZAN_On_Memory {
         path: &path "${PYLEARN2_DATA_PATH}/GTZAN",
         which_set: "train",
         seconds: &seconds .5,
         seed: &seed 1234,
-        balanced_splits: True,
-        # use_whole_song: True
+        balanced_splits: &balanced_splits True,
+        use_whole_song: &use_whole_song True
     },
     model: !obj:pylearn2.models.softmax_regression.SoftmaxRegression {
         nvis: 11286,
@@ -14,7 +14,7 @@
         irange: .05
     },
     algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
-        learning_rate: .001,
+        learning_rate: .001, # TODO: check this
         batch_size: 10,
         monitoring_dataset:
             {
@@ -24,16 +24,16 @@
                             which_set: "valid",
                             seconds: *seconds,
                             seed: *seed,
-                            balanced_splits: True,
-                            # use_whole_song: True
+                            balanced_splits: *balanced_splits,
+                            use_whole_song: *use_whole_song
                           },
                 'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
                             path: *path,
                             which_set: "test",
                             seconds: *seconds,
                             seed: *seed,
-                            balanced_splits: True,
-                            # use_whole_song: True
+                            balanced_splits: *balanced_splits,
+                            use_whole_song: *use_whole_song
                           }
             },
         termination_criterion: !obj:pylearn2.termination_criteria.And {

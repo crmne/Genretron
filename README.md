@@ -27,7 +27,7 @@ On Ubuntu 14.04 LTS:
     . env/bin/activate
     python setup.py install
 
-## Downloading the dataset
+## Downloading the datasets
 
 Make sure you set the environment variable `PYLEARN2_DATA_PATH` to a directory of your preference where you want the datasets to be stored. For example:
 
@@ -40,6 +40,10 @@ Then simply run
     bin/download_gtzan
 
 This procedure will download the classic Music Information Retrieval Genre Classification dataset GTZAN and unpack it in your `PYLEARN2_DATA_PATH` directory so it's ready for use with Genretron.
+
+If you wanna download MNIST, run:
+
+    python bin/download_mnist
 
 ## Training of the neural network
 
