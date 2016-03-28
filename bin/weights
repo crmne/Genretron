@@ -13,6 +13,7 @@ import argparse
 import logging
 import numpy as np
 import os
+import math
 import pylearn2.config.yaml_parse
 import librosa.output
 import librosa.util
@@ -159,20 +160,23 @@ def play_weights(out, model_path=None, model=None, repetitions=1):
                                  sr=dataset.samplerate)
 
 
-def plot_weights(model_path=None, model=None, out=None):
-    import matplotlib.pyplot as plt
+def plot_weights(args, model=None):
+    title = args.title if args.title is not None else args.model_path
     weights = get_weights(model=model)
+    rows = math.sqrt(int(len(weights)))
+    rows = int(rows) if math.floor(rows) == rows else args.rows
+    import matplotlib.pyplot as plt
     fig, axes = plt.subplots(
-        2, int(len(weights) / 2), subplot_kw={'xticks': [], 'yticks': []})
-
+        rows, int(len(weights) / rows), subplot_kw={'xticks': [], 'yticks': []})
     for ax, patch in zip(axes.flat, weights):
         ax.imshow(np.squeeze(patch), interpolation='none')
-    plt.suptitle(model_path)
-    plt.tight_layout()
-    if out is None:
+    plt.suptitle(title)
+    if args.tight:
+        plt.tight_layout()
+    if args.out is None:
         plt.show()
     else:
-        plt.savefig(out, dpi=300)
+        plt.savefig(args.out, dpi=300)
 
 
 def make_argument_parser():
@@ -186,6 +190,9 @@ def make_argument_parser():
     parser.add_argument("model_path")
     parser.add_argument("--out", default=None)
     parser.add_argument("--repetitions", default=5)
+    parser.add_argument("--rows", default=2)
+    parser.add_argument("--title", default=None)
+    parser.add_argument("--tight", dest='tight', action="store_true", default=False)
     return parser
 
 
@@ -203,6 +210,5 @@ if __name__ == "__main__":
                      model=model,
                      repetitions=args.repetitions)
     elif args.action == "plot":
-        plot_weights(model_path=args.model_path,
-                     model=model,
-                     out=args.out)
+        plot_weights(args,
+                     model=model)
