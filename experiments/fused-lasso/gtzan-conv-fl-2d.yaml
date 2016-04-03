@@ -1,12 +1,15 @@
+gtzan-params: &gtzan-params 
+  seconds: 4.0,
+  seed: 1234,
+  balanced_splits: True,
+  preprocessor: znormalizer,
+  verbose: True,
+  use_whole_song: True
+
 !obj:pylearn2.train.Train {
     dataset: &train !obj:genretron.gtzan.GTZAN_On_Memory {
         which_set: "train",
-        seconds: &seconds 4.0,
-        seed: &seed 1234,
-        balanced_splits: True,
-        preprocessor: znormalizer,
-        verbose: &verbose True,
-        # use_whole_song: True,
+        <<: *gtzan-params
     },
     model: !obj:pylearn2.models.mlp.MLP {
         batch_size: 125,
@@ -49,21 +52,11 @@
                 'train' : *train,
                 'valid' : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: "valid",
-                            seconds: *seconds,
-                            seed: *seed,
-                            balanced_splits: True,
-                            preprocessor: znormalizer,
-                            verbose: *verbose,
-                            # use_whole_song: True,
+                            <<: *gtzan-params
                           },
                 'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: "test",
-                            seconds: *seconds,
-                            seed: *seed,
-                            balanced_splits: True,
-                            preprocessor: znormalizer,
-                            verbose: *verbose,
-                            # use_whole_song: True,
+                            <<: *gtzan-params
                           }
             },
         termination_criterion: !obj:pylearn2.termination_criteria.And {
@@ -83,21 +76,29 @@
                 !obj:pylearn2.costs.mlp.Default {},
                 !obj:pylearn2.costs.mlp.FusedLasso {
                     coeffs: {
-                        'h0': .005,
+                        'h0': 0.0005,
                     },
                     axes: {
                         'h0': 0
                     },
-                }
+                },
+                !obj:pylearn2.costs.mlp.FusedLasso {
+                    coeffs: {
+                        'h0': 0.0005,
+                    },
+                    axes: {
+                        'h0': 1
+                    },
+                },
             ]
         },
     },
     extensions: [
         !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
              channel_name: 'valid_y_misclass',
-             save_path: "results/${PYLEARN2_TRAIN_FILE_FULL_STEM}_best.pkl"
+             save_path: "results/gtzan-conv-fl-2d-best.pkl"
         },
     ],
     save_freq: 1,
-    save_path: "results/${PYLEARN2_TRAIN_FILE_FULL_STEM}.pkl"
+    save_path: "results/gtzan-conv-fl-2d-best.pkl"
 }

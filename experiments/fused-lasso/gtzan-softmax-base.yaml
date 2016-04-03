@@ -1,0 +1,60 @@
+gtzan-params: &gtzan-params 
+  seconds: 4.0,
+  seed: 1234,
+  balanced_splits: True,
+  preprocessor: znormalizer,
+  verbose: True,
+  use_whole_song: True
+
+!obj:pylearn2.train.Train {
+    dataset: &train !obj:genretron.gtzan.GTZAN_On_Memory {
+        which_set: "train",
+        <<: *gtzan-params
+    },
+    model: !obj:pylearn2.models.softmax_regression.SoftmaxRegression {
+        nvis: 11286,
+        n_classes: 10,
+        irange: .05
+    },
+    algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
+        learning_rate: .001,
+        batch_size: 10,
+        monitoring_dataset:
+            {
+                'train' : *train,
+                'valid' : !obj:genretron.gtzan.GTZAN_On_Memory {
+                            which_set: "valid",
+                            <<: *gtzan-params
+                          },
+                'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
+                            which_set: "test",
+                            <<: *gtzan-params
+                          }
+            },
+        termination_criterion: !obj:pylearn2.termination_criteria.And {
+            criteria: [
+                !obj:pylearn2.termination_criteria.MonitorBased {
+                    channel_name: "valid_y_misclass",
+                    prop_decrease: 0.001,
+                    N: 100
+                },
+                !obj:pylearn2.termination_criteria.EpochCounter {
+                    max_epochs: 500
+                },
+            ]
+        },
+        cost: !obj:pylearn2.costs.cost.SumOfCosts {
+            costs: [
+                !obj:pylearn2.costs.mlp.Default {},
+            ]
+        },
+    },
+    extensions: [
+        !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
+             channel_name: 'valid_y_misclass',
+             save_path: "results/gtzan-softmax-base-best.pkl"
+        },
+    ],
+    save_freq: 1,
+    save_path: "results/gtzan-softmax-base.pkl"
+}
