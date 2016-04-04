@@ -1,15 +1,16 @@
 !obj:pylearn2.train.Train {
     dataset: &train !obj:genretron.gtzan.GTZAN_On_Memory {
-        which_set: "train"
-        seconds: &seconds 5.0
-        seed: &seed 1234
-        balanced_splits: &balanced_splits True
-        preprocessor: &preprocessor znormalizer
-        verbose: &verbose True
-        use_whole_song: &use_whole_song True
+        which_set: "train",
+        space: &space "vector",
+        seconds: &seconds 5.0,
+        seed: &seed 1234,
+        balanced_splits: &balanced_splits True,
+        preprocessor: &preprocessor znormalizer,
+        verbose: &verbose True,
+        use_whole_song: &use_whole_song True,
     },
     model: !obj:pylearn2.models.softmax_regression.SoftmaxRegression {
-        nvis: 11286,
+        nvis: 216,
         n_classes: 10,
         irange: .05
     },
@@ -21,21 +22,23 @@
                 'train' : *train,
                 'valid' : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: "valid",
-                            seconds: *seconds
-                            seed: *seed
-                            balanced_splits: *balanced_splits
-                            preprocessor: *preprocessor
-                            verbose: *verbose
-                            use_whole_song: *use_whole_song
+                            space: *space,
+                            seconds: *seconds,
+                            seed: *seed,
+                            balanced_splits: *balanced_splits,
+                            preprocessor: *preprocessor,
+                            verbose: *verbose,
+                            use_whole_song: *use_whole_song,
                           },
                 'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: "test",
-                            seconds: *seconds
-                            seed: *seed
-                            balanced_splits: *balanced_splits
-                            preprocessor: *preprocessor
-                            verbose: *verbose
-                            use_whole_song: *use_whole_song
+                            space: *space,
+                            seconds: *seconds,
+                            seed: *seed,
+                            balanced_splits: *balanced_splits,
+                            preprocessor: *preprocessor,
+                            verbose: *verbose,
+                            use_whole_song: *use_whole_song,
                           }
             },
         termination_criterion: !obj:pylearn2.termination_criteria.And {
@@ -46,7 +49,7 @@
                     N: 100
                 },
                 !obj:pylearn2.termination_criteria.EpochCounter {
-                    max_epochs: 500
+                    max_epochs: 500,
                 },
             ]
         },
@@ -58,7 +61,7 @@
                         'y': 0.0005,
                     },
                     axes: {
-                        'y': 0
+                        'y': 0,
                     },
                 },
                 !obj:pylearn2.costs.mlp.FusedLasso {
@@ -66,7 +69,7 @@
                         'y': 0.0005,
                     },
                     axes: {
-                        'y': 1
+                        'y': 1,
                     },
                 },
             ]
@@ -75,7 +78,7 @@
     extensions: [
         !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
              channel_name: 'valid_y_misclass',
-             save_path: "results/gtzan-softmax-base-best.pkl"
+             save_path: "results/gtzan-softmax-fl-2d.pkl",
         },
     ],
     save_freq: 1,
