@@ -7,10 +7,10 @@
         balanced_splits: &balanced_splits True,
         preprocessor: &preprocessor znormalizer,
         verbose: &verbose True,
-        use_whole_song: &use_whole_song True
+        use_whole_song: &use_whole_song False
     },
     model: !obj:pylearn2.models.softmax_regression.SoftmaxRegression {
-        nvis: 11286,
+        nvis: 216,
         n_classes: 10,
         irange: .05,
     },
