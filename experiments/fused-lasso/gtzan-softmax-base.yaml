@@ -1,15 +1,12 @@
-gtzan-params: &gtzan-params 
-  seconds: 4.0,
-  seed: 1234,
-  balanced_splits: True,
-  preprocessor: znormalizer,
-  verbose: True,
-  use_whole_song: True
-
 !obj:pylearn2.train.Train {
     dataset: &train !obj:genretron.gtzan.GTZAN_On_Memory {
         which_set: "train",
-        <<: *gtzan-params
+        seconds: &seconds 5.0,
+        seed: &seed 1234,
+        balanced_splits: &balanced_splits True,
+        preprocessor: &preprocessor znormalizer,
+        verbose: &verbose True,
+        use_whole_song: &use_whole_song True
     },
     model: !obj:pylearn2.models.softmax_regression.SoftmaxRegression {
         nvis: 11286,
@@ -24,11 +21,21 @@ gtzan-params: &gtzan-params
                 'train' : *train,
                 'valid' : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: "valid",
-                            <<: *gtzan-params
+                            seconds: *seconds,
+                            seed: *seed,
+                            balanced_splits: *balanced_splits,
+                            preprocessor: *preprocessor,
+                            verbose: *verbose,
+                            use_whole_song: *use_whole_song
                           },
                 'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: "test",
-                            <<: *gtzan-params
+                            seconds: *seconds,
+                            seed: *seed,
+                            balanced_splits: *balanced_splits,
+                            preprocessor: *preprocessor,
+                            verbose: *verbose,
+                            use_whole_song: *use_whole_song
                           }
             },
         termination_criterion: !obj:pylearn2.termination_criteria.And {

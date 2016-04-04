@@ -297,6 +297,9 @@ class AudioDataset(object):
                 kf = KFold(track_ids, n_folds=nfolds)
                 track_ids = kf.runs[run_n][which_set]
 
+
+        if isinstance(track_ids, numpy.ndarray):
+            track_ids = track_ids.tolist()
         if self.use_whole_song:
             for index, track_id in enumerate(track_ids):
                 track_ids[index] = numpy.arange(track_id,
