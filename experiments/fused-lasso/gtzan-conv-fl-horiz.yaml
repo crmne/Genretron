@@ -1,4 +1,4 @@
-gtzan-params: &gtzan-params 
+gtzan-params: &gtzan-params
   seconds: 4.0,
   seed: 1234,
   balanced_splits: True,
@@ -51,12 +51,22 @@ gtzan-params: &gtzan-params
             {
                 'train' : *train,
                 'valid' : !obj:genretron.gtzan.GTZAN_On_Memory {
-                            which_set: "valid",
-                            <<: *gtzan-params
+                            which_set: "valid"
+                            seconds: *seconds
+                            seed: *seed
+                            balanced_splits: *balanced_splits
+                            preprocessor: *preprocessor
+                            verbose: *verbose
+                            use_whole_song: *use_whole_song
                           },
                 'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
-                            which_set: "test",
-                            <<: *gtzan-params
+                            which_set: "test"
+                            seconds: *seconds
+                            seed: *seed
+                            balanced_splits: *balanced_splits
+                            preprocessor: *preprocessor
+                            verbose: *verbose
+                            use_whole_song: *use_whole_song
                           }
             },
         termination_criterion: !obj:pylearn2.termination_criteria.And {
