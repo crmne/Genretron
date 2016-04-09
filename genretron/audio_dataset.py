@@ -25,7 +25,7 @@ class AudioDataset(object):
     params_filter = [
         'params_filter', 'tracks', 'data_x', 'data_y', 'feature_extractors',
         'spaces_converters', 'index_converters', 'view_converters',
-        'view_converter'
+        'view_converter', 'rng'
     ]
 
     def __init__(self,
@@ -114,6 +114,8 @@ class AudioDataset(object):
 
         preprocessor = None if preprocessor == "None" else preprocessor
 
+        rng = make_np_rng(None, seed, which_method="shuffle")
+
         self.__dict__.update(locals())
         del self.self
 
@@ -123,24 +125,24 @@ class AudioDataset(object):
     def process(self):
         if self.preprocessor is not None:
             # preprocess all the tracks
-            all_tracks = self.get_track_ids('all', None, None, None)
+            all_tracks = self.get_track_ids('all')
             self.data_x, self.data_y = \
                 self.spaces_converters[self.converter](
-                    self.feature_extractors[self.feature](all_tracks)
+                    self.feature_extractors[
+                        self.feature](all_tracks)
                 )
             self.preprocess(self.data_x)
             # select only the tracks in the set
-            set_tracks = self.get_track_ids(self.which_set, self.n_folds,
-                                            self.run_n, self.seed)
+            set_tracks = self.get_track_ids(self.which_set)
             set_indexes = self.index_converters[self.converter](set_tracks)
             self.data_x, self.data_y = \
                 self.filter_indexes(set_indexes, self.data_x, self.data_y)
         else:
-            set_tracks = self.get_track_ids(self.which_set, self.n_folds,
-                                            self.run_n, self.seed)
+            set_tracks = self.get_track_ids(self.which_set)
             self.data_x, self.data_y = \
                 self.spaces_converters[self.converter](
-                    self.feature_extractors[self.feature](set_tracks)
+                    self.feature_extractors[
+                        self.feature](set_tracks)
                 )
 
     def __str__(self):
@@ -178,16 +180,16 @@ class AudioDataset(object):
             track = self.tracks[index]
             if self.verbose:
                 print("calculating spectrogram of " + track.path)
-            data_x[data_i], _ = librosa.magphase(track.calc_spectrogram(
-                **utils.filter_null_args(
-                    step_size=self.step_size,
-                    fft_resolution=self.fft_resolution,
-                    scale_factors=self.scale_factors
-                )
-            ).data)
-            data_y[data_i][self.genres.index(track.genre)] = 1
-            track.rm_spectrogram()
-            track.rm_signal()
+                data_x[data_i], _ = librosa.magphase(track.calc_spectrogram(
+                    **utils.filter_null_args(
+                        step_size=self.step_size,
+                        fft_resolution=self.fft_resolution,
+                        scale_factors=self.scale_factors
+                    )
+                ).data)
+                data_y[data_i][self.genres.index(track.genre)] = 1
+                track.rm_spectrogram()
+                track.rm_signal()
         return data_x, data_y
 
     @staticmethod
@@ -232,8 +234,8 @@ class AudioDataset(object):
     def preprocess(self, data_x):
         if self.verbose:
             print("preprocessing with {0}...".format(self.preprocessor))
-        preprocessor = preprocessor_factory(self.preprocessor)
-        preprocessor.fit_transform(data_x)
+            preprocessor = preprocessor_factory(self.preprocessor)
+            preprocessor.fit_transform(data_x)
 
     def tracks_and_genres(self, audio_folder, seconds, use_whole_song):
         """
@@ -253,59 +255,81 @@ class AudioDataset(object):
                         track = AudioTrack(filename,
                                            genre=genre,
                                            seconds=seconds)
+                        tracks.append(track)
+                        genres.add(genre)
+                        self.ntracksegments = 1
                         if use_whole_song:
-                            tracks.append(track)
-                            self.ntracksegments = int(track.seconds_total /
-                                                      seconds)
+                            self.ntracksegments = int(
+                                track.seconds_total / seconds)
                             for i in range(1, self.ntracksegments):
                                 tracks.append(
                                     AudioTrack(filename,
                                                genre=genre,
                                                seconds=seconds,
                                                offset_seconds=seconds * i))
-                        else:
-                            self.ntracksegments = 1
-                            tracks.append(track)
-                        genres.add(genre)
         return tracks, sorted(genres)
 
-    def get_track_ids(self, which_set, nfolds, run_n, seed):
-        """
-        Returns the indexes of the tracks according to the split they are in
-        """
-        track_ids = numpy.arange(len(self.tracks) / self.ntracksegments)
-        rng = make_np_rng(None, seed, which_method="shuffle")
-        if which_set != 'all':
-            if self.balanced_splits:
-                genre_ids = {}
-                for track in track_ids:
-                    index = track * self.ntracksegments
-                    genre = self.tracks[index].genre
-                    if genre in genre_ids:
-                        genre_ids[genre].append(index)
-                    else:
-                        genre_ids[genre] = [index]
-                track_ids = []
-                for genre in self.genres:
-                    idxs = numpy.asarray(genre_ids[genre])
-                    rng.shuffle(idxs)
-                    kf = KFold(idxs, n_folds=nfolds)
-                    track_ids.extend(kf.runs[run_n][which_set])
-                rng.shuffle(track_ids)
+    def get_all_file_ids(self):
+        return numpy.arange(len(self.tracks) / self.ntracksegments)
+
+    def get_all_track_ids(self):
+        return numpy.arange(len(self.tracks))
+
+    def get_unbalanced_file_ids(self):
+        file_ids = self.get_all_file_ids()
+        self.rng.shuffle(file_ids)
+        kf = KFold(file_ids, n_folds=self.n_folds)
+        return kf.runs[self.run_n][self.which_set]
+
+    def get_file_n_by_genre(self):
+        genre_ids = {}
+        for file_n in self.get_all_file_ids():
+            track_n = file_n * self.ntracksegments
+            genre = self.tracks[track_n].genre
+            if genre in genre_ids:
+                genre_ids[genre].append(file_n)
             else:
-                rng.shuffle(track_ids)
-                kf = KFold(track_ids, n_folds=nfolds)
-                track_ids = kf.runs[run_n][which_set]
+                genre_ids[genre] = [file_n]
+        return genre_ids
 
+    def get_balanced_file_ids(self):
+        genre_ids = self.get_file_n_by_genre()
+        file_ids = []
+        for genre in self.genres:
+            idxs = numpy.asarray(genre_ids[genre])
+            self.rng.shuffle(idxs)
+            kf = KFold(idxs, n_folds=self.n_folds)
+            file_ids.extend(kf.runs[self.run_n][self.which_set])
+        self.rng.shuffle(file_ids)
+        return file_ids
 
-        if isinstance(track_ids, numpy.ndarray):
-            track_ids = track_ids.tolist()
+    def file_ids_to_track_ids(self, file_ids):
+        expanded = [numpy.arange(
+            i * self.ntracksegments,
+            (i * self.ntracksegments) + self.ntracksegments)
+            for i in file_ids]
+        return numpy.array(expanded).flatten()
+
+    def get_track_ids(self, which_set):
+        """
+        Returns the indexes of the tracks according to the split they are in,
+        making sure that track segments appear in the same split and when
+        balanced_splits is True, that the number of tracks for each genre is
+        the same across splits.
+        """
+        if which_set == 'all':
+            file_ids = self.get_all_file_ids()
+        else:
+            if self.balanced_splits:
+                file_ids = self.get_balanced_file_ids()
+            else:
+                file_ids = self.get_unbalanced_file_ids()
+
         if self.use_whole_song:
-            for index, track_id in enumerate(track_ids):
-                track_ids[index] = numpy.arange(track_id,
-                                                track_id + self.ntracksegments)
-            track_ids = numpy.array(track_ids).flatten()
-            rng.shuffle(track_ids)
+            track_ids = self.file_ids_to_track_ids(file_ids)
+        else:
+            track_ids = file_ids
+
         return track_ids
 
     def track_ids_to_frame_ids(self, track_ids):

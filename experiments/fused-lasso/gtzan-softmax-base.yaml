@@ -16,7 +16,7 @@
     },
     algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
         learning_rate: .001,
-        batch_size: 10,
+        batch_size: 100,
         monitoring_dataset:
             {
                 'train' : *train,
