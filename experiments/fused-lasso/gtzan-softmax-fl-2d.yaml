@@ -16,7 +16,7 @@
     },
     algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
         learning_rate: .001,
-        batch_size: 10,
+        batch_size: 100,
         monitoring_dataset:
             {
                 'train' : *train,
@@ -78,9 +78,9 @@
     extensions: [
         !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
              channel_name: 'valid_y_misclass',
-             save_path: "results/gtzan-softmax-fl-2d.pkl",
+             save_path: "results/gtzan-softmax-fl-2d-best.pkl",
         },
     ],
     save_freq: 1,
-    save_path: "results/gtzan-softmax-base.pkl"
+    save_path: "results/gtzan-softmax-fl-2d.pkl"
 }

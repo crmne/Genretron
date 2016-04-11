@@ -49,19 +49,32 @@
                     N: 100
                 },
                 !obj:pylearn2.termination_criteria.EpochCounter {
-                    max_epochs: 500
+                    max_epochs: 500,
                 },
             ]
         },
         cost: !obj:pylearn2.costs.cost.SumOfCosts {
             costs: [
                 !obj:pylearn2.costs.mlp.Default {},
+                !obj:pylearn2.costs.mlp.L1WeightDecay {
+                    coeffs: {
+                        'y': 0.0005
+                    },
+                },
                 !obj:pylearn2.costs.mlp.FusedLasso {
                     coeffs: {
                         'y': 0.0005,
                     },
                     axes: {
-                        'y': 1
+                        'y': 0,
+                    },
+                },
+                !obj:pylearn2.costs.mlp.FusedLasso {
+                    coeffs: {
+                        'y': 0.0005,
+                    },
+                    axes: {
+                        'y': 1,
                     },
                 },
             ]
@@ -70,9 +83,9 @@
     extensions: [
         !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
              channel_name: 'valid_y_misclass',
-             save_path: "results/gtzan-softmax-fl-vert-best.pkl"
+             save_path: "results/gtzan-softmax-fl-2d.pkl",
         },
     ],
     save_freq: 1,
-    save_path: "results/gtzan-softmax-fl-vert.pkl"
+    save_path: "results/gtzan-softmax-base.pkl"
 }

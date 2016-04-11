@@ -1,7 +1,6 @@
 !obj:pylearn2.train.Train {
     dataset: &train !obj:genretron.gtzan.GTZAN_On_Memory {
         which_set: "train",
-        space: &space "vector",
         seconds: &seconds 5.0,
         seed: &seed 1234,
         balanced_splits: &balanced_splits True,
@@ -9,20 +8,47 @@
         verbose: &verbose True,
         use_whole_song: &use_whole_song True,
     },
-    model: !obj:pylearn2.models.softmax_regression.SoftmaxRegression {
-        nvis: 216,
-        n_classes: 10,
-        irange: .05
+    model: !obj:pylearn2.models.mlp.MLP {
+        batch_size: 100,
+        seed: *seed,
+        input_space: !obj:pylearn2.space.Conv2DSpace {
+            shape: [513, 173],
+            num_channels: 1,
+        },
+        layers: [
+                    !obj:pylearn2.models.mlp.ConvRectifiedLinear {
+                        layer_name: 'h0',
+                        output_channels: 64,
+                        irange: .05,
+                        kernel_shape: [513, 5],
+                        pool_shape: [1, 8],
+                        pool_stride: [1, 4],
+                        max_kernel_norm: 1.9365,
+                    },
+                    !obj:pylearn2.models.mlp.ConvRectifiedLinear {
+                        layer_name: 'h1',
+                        output_channels: 64,
+                        irange: .05,
+                        kernel_shape: [1, 10],
+                        pool_shape: [1, 8],
+                        pool_stride: [1, 4],
+                        max_kernel_norm: 1.9365,
+                    },
+                    !obj:pylearn2.models.mlp.Softmax {
+                        max_col_norm: 1.9365,
+                        layer_name: 'y',
+                        istdev: .05,
+                        n_classes: 10
+                    }
+                ],
     },
     algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
-        learning_rate: .001,
-        batch_size: 100,
+        learning_rate: 0.01,
         monitoring_dataset:
             {
                 'train' : *train,
                 'valid' : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: "valid",
-                            space: *space,
                             seconds: *seconds,
                             seed: *seed,
                             balanced_splits: *balanced_splits,
@@ -32,7 +58,6 @@
                           },
                 'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: "test",
-                            space: *space,
                             seconds: *seconds,
                             seed: *seed,
                             balanced_splits: *balanced_splits,
@@ -46,7 +71,7 @@
                 !obj:pylearn2.termination_criteria.MonitorBased {
                     channel_name: "valid_y_misclass",
                     prop_decrease: 0.001,
-                    N: 100
+                    N: 20
                 },
                 !obj:pylearn2.termination_criteria.EpochCounter {
                     max_epochs: 500
@@ -56,12 +81,25 @@
         cost: !obj:pylearn2.costs.cost.SumOfCosts {
             costs: [
                 !obj:pylearn2.costs.mlp.Default {},
+                !obj:pylearn2.costs.mlp.L1WeightDecay {
+                    coeffs: {
+                        'h0': 0.0005
+                    },
+                },
                 !obj:pylearn2.costs.mlp.FusedLasso {
                     coeffs: {
-                        'y': 0.0005,
+                        'h0': 0.0005,
                     },
                     axes: {
-                        'y': 1
+                        'h0': 0
+                    },
+                },
+                !obj:pylearn2.costs.mlp.FusedLasso {
+                    coeffs: {
+                        'h0': 0.0005,
+                    },
+                    axes: {
+                        'h0': 1
                     },
                 },
             ]
@@ -70,9 +108,9 @@
     extensions: [
         !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
              channel_name: 'valid_y_misclass',
-             save_path: "results/gtzan-softmax-fl-vert-best.pkl"
+             save_path: "results/gtzan-conv-l1-fl-2d-best.pkl"
         },
     ],
     save_freq: 1,
-    save_path: "results/gtzan-softmax-fl-vert.pkl"
+    save_path: "results/gtzan-conv-l1-fl-2d-best.pkl"
 }

@@ -50,6 +50,18 @@
                               stop: 10000
                           }
             },
+        cost: !obj:pylearn2.costs.cost.SumOfCosts {
+            costs: [
+                !obj:pylearn2.costs.cost.MethodCost {
+                    method: 'cost_from_X'
+                },
+                !obj:pylearn2.costs.mlp.L1WeightDecay {
+                    coeffs: {
+                        'h0': 0.0005
+                    },
+                },
+            ]
+        },
         termination_criterion: !obj:pylearn2.termination_criteria.And {
             criteria: [
                 !obj:pylearn2.termination_criteria.MonitorBased {
@@ -62,34 +74,13 @@
                 },
             ]
         },
-        cost: !obj:pylearn2.costs.cost.SumOfCosts {
-            costs: [
-                !obj:pylearn2.costs.mlp.Default {},
-                !obj:pylearn2.costs.mlp.FusedLasso {
-                    coeffs: {
-                        'h0': 0.0005,
-                    },
-                    axes: {
-                        'h0': 0
-                    },
-                },
-                !obj:pylearn2.costs.mlp.FusedLasso {
-                    coeffs: {
-                        'h0': 0.0005,
-                    },
-                    axes: {
-                        'h0': 1
-                    },
-                },
-            ]
-        },
     },
     extensions: [
         !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
              channel_name: 'valid_y_misclass',
-             save_path: "results/mnist-conv-fl-2d-best.pkl"
+             save_path: "results/mnist-conv-l1-base-best.pkl"
         },
     ],
     save_freq: 1,
-    save_path: "results/mnist-conv-fl-2d.pkl"
+    save_path: "results/mnist-conv-l1-base.pkl"
 }

@@ -4,38 +4,13 @@
         start: 0,
         stop: 50000
     },
-    model: !obj:pylearn2.models.mlp.MLP {
-        batch_size: 100,
-        input_space: !obj:pylearn2.space.Conv2DSpace {
-            shape: [28, 28],
-            num_channels: 1
-        },
-        layers: [ !obj:pylearn2.models.mlp.ConvRectifiedLinear {
-                     layer_name: 'h0',
-                     output_channels: 64,
-                     irange: .05,
-                     kernel_shape: [5, 5],
-                     pool_shape: [4, 4],
-                     pool_stride: [2, 2],
-                     max_kernel_norm: 1.9365
-                 }, !obj:pylearn2.models.mlp.ConvRectifiedLinear {
-                     layer_name: 'h1',
-                     output_channels: 64,
-                     irange: .05,
-                     kernel_shape: [5, 5],
-                     pool_shape: [4, 4],
-                     pool_stride: [2, 2],
-                     max_kernel_norm: 1.9365
-                 }, !obj:pylearn2.models.mlp.Softmax {
-                     max_col_norm: 1.9365,
-                     layer_name: 'y',
-                     n_classes: 10,
-                     istdev: .05
-                 }
-                ],
+    model: !obj:pylearn2.models.softmax_regression.SoftmaxRegression {
+        nvis: 784,
+        n_classes: 10,
+        irange: .05
     },
     algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
-        batch_size: 100,
+        batch_size: 62300,
         learning_rate: .01,
         monitoring_dataset:
             {
@@ -50,12 +25,19 @@
                               stop: 10000
                           }
             },
+        cost: !obj:pylearn2.costs.cost.SumOfCosts {
+            costs: [
+                !obj:pylearn2.costs.cost.MethodCost {
+                    method: 'cost_from_X'
+                },
+            ]
+        },
         termination_criterion: !obj:pylearn2.termination_criteria.And {
             criteria: [
                 !obj:pylearn2.termination_criteria.MonitorBased {
                     channel_name: "valid_y_misclass",
-                    prop_decrease: 0.05,
-                    N: 10
+                    prop_decrease: 0.001,
+                    N: 50
                 },
                 !obj:pylearn2.termination_criteria.EpochCounter {
                     max_epochs: 500
@@ -65,20 +47,25 @@
         cost: !obj:pylearn2.costs.cost.SumOfCosts {
             costs: [
                 !obj:pylearn2.costs.mlp.Default {},
-                !obj:pylearn2.costs.mlp.FusedLasso {
+                !obj:pylearn2.costs.mlp.L1WeightDecay {
                     coeffs: {
-                        'h0': 0.0005,
-                    },
-                    axes: {
-                        'h0': 0
+                        'y': 0.0005
                     },
                 },
                 !obj:pylearn2.costs.mlp.FusedLasso {
                     coeffs: {
-                        'h0': 0.0005,
+                        'y': 0.0005,
                     },
                     axes: {
-                        'h0': 1
+                        'y': 0
+                    },
+                },
+                !obj:pylearn2.costs.mlp.FusedLasso {
+                    coeffs: {
+                        'y': 0.0005,
+                    },
+                    axes: {
+                        'y': 1
                     },
                 },
             ]
@@ -87,9 +74,9 @@
     extensions: [
         !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
              channel_name: 'valid_y_misclass',
-             save_path: "results/mnist-conv-fl-2d-best.pkl"
+             save_path: "results/mnist-softmax-l1-fl-2d-best.pkl"
         },
     ],
     save_freq: 1,
-    save_path: "results/mnist-conv-fl-2d.pkl"
+    save_path: "results/mnist-softmax-l1-fl-2d.pkl"
 }

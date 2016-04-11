@@ -69,9 +69,9 @@
     extensions: [
         !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
              channel_name: 'valid_y_misclass',
-             save_path: "results/mnist-softmax-fl-horiz-best.pkl"
+             save_path: "results/mnist-softmax-fl-2d-best.pkl"
         },
     ],
     save_freq: 1,
-    save_path: "results/mnist-softmax-fl-horiz.pkl"
+    save_path: "results/mnist-softmax-fl-2d.pkl"
 }

@@ -7,12 +7,12 @@
         balanced_splits: &balanced_splits True,
         preprocessor: &preprocessor znormalizer,
         verbose: &verbose True,
-        use_whole_song: &use_whole_song True,
+        use_whole_song: &use_whole_song True
     },
     model: !obj:pylearn2.models.softmax_regression.SoftmaxRegression {
         nvis: 216,
         n_classes: 10,
-        irange: .05
+        irange: .05,
     },
     algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
         learning_rate: .001,
@@ -28,7 +28,7 @@
                             balanced_splits: *balanced_splits,
                             preprocessor: *preprocessor,
                             verbose: *verbose,
-                            use_whole_song: *use_whole_song,
+                            use_whole_song: *use_whole_song
                           },
                 'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
                             which_set: "test",
@@ -38,7 +38,7 @@
                             balanced_splits: *balanced_splits,
                             preprocessor: *preprocessor,
                             verbose: *verbose,
-                            use_whole_song: *use_whole_song,
+                            use_whole_song: *use_whole_song
                           }
             },
         termination_criterion: !obj:pylearn2.termination_criteria.And {
@@ -46,22 +46,19 @@
                 !obj:pylearn2.termination_criteria.MonitorBased {
                     channel_name: "valid_y_misclass",
                     prop_decrease: 0.001,
-                    N: 100
+                    N: 100,
                 },
                 !obj:pylearn2.termination_criteria.EpochCounter {
-                    max_epochs: 500
+                    max_epochs: 500,
                 },
             ]
         },
         cost: !obj:pylearn2.costs.cost.SumOfCosts {
             costs: [
                 !obj:pylearn2.costs.mlp.Default {},
-                !obj:pylearn2.costs.mlp.FusedLasso {
+                !obj:pylearn2.costs.mlp.L1WeightDecay {
                     coeffs: {
-                        'y': 0.0005,
-                    },
-                    axes: {
-                        'y': 1
+                        'y': 0.0005
                     },
                 },
             ]
@@ -70,9 +67,9 @@
     extensions: [
         !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
              channel_name: 'valid_y_misclass',
-             save_path: "results/gtzan-softmax-fl-vert-best.pkl"
+             save_path: "results/gtzan-softmax-l1-base-best.pkl",
         },
     ],
     save_freq: 1,
-    save_path: "results/gtzan-softmax-fl-vert.pkl"
+    save_path: "results/gtzan-softmax-l1-base.pkl",
 }

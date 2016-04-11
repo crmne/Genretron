@@ -11,7 +11,7 @@
             num_channels: 1
         },
         layers: [ !obj:pylearn2.models.mlp.ConvRectifiedLinear {
-                     layer_name: 'h0',
+                     layer_name: 'h2',
                      output_channels: 64,
                      irange: .05,
                      kernel_shape: [5, 5],
@@ -19,7 +19,7 @@
                      pool_stride: [2, 2],
                      max_kernel_norm: 1.9365
                  }, !obj:pylearn2.models.mlp.ConvRectifiedLinear {
-                     layer_name: 'h1',
+                     layer_name: 'h3',
                      output_channels: 64,
                      irange: .05,
                      kernel_shape: [5, 5],
@@ -50,6 +50,13 @@
                               stop: 10000
                           }
             },
+        cost: !obj:pylearn2.costs.cost.SumOfCosts {
+            costs: [
+                !obj:pylearn2.costs.cost.MethodCost {
+                    method: 'cost_from_X'
+                },
+            ]
+        },
         termination_criterion: !obj:pylearn2.termination_criteria.And {
             criteria: [
                 !obj:pylearn2.termination_criteria.MonitorBased {
@@ -65,6 +72,11 @@
         cost: !obj:pylearn2.costs.cost.SumOfCosts {
             costs: [
                 !obj:pylearn2.costs.mlp.Default {},
+                !obj:pylearn2.costs.mlp.L1WeightDecay {
+                    coeffs: {
+                        'h0': 0.0005
+                    },
+                },
                 !obj:pylearn2.costs.mlp.FusedLasso {
                     coeffs: {
                         'h0': 0.0005,
@@ -73,23 +85,15 @@
                         'h0': 0
                     },
                 },
-                !obj:pylearn2.costs.mlp.FusedLasso {
-                    coeffs: {
-                        'h0': 0.0005,
-                    },
-                    axes: {
-                        'h0': 1
-                    },
-                },
             ]
         },
     },
     extensions: [
         !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
              channel_name: 'valid_y_misclass',
-             save_path: "results/mnist-conv-fl-2d-best.pkl"
+             save_path: "results/mnist-conv-l1-fl-horiz-best.pkl"
         },
     ],
     save_freq: 1,
-    save_path: "results/mnist-conv-fl-2d.pkl"
+    save_path: "results/mnist-conv-l1-fl-horiz.pkl"
 }
