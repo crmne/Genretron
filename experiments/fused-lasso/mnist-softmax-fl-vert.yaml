@@ -25,13 +25,6 @@
                               stop: 10000
                           }
             },
-        cost: !obj:pylearn2.costs.cost.SumOfCosts {
-            costs: [
-                !obj:pylearn2.costs.cost.MethodCost {
-                    method: 'cost_from_X'
-                },
-            ]
-        },
         termination_criterion: !obj:pylearn2.termination_criteria.And {
             criteria: [
                 !obj:pylearn2.termination_criteria.MonitorBased {
