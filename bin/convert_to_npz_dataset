@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+import argparse
+import numpy as np
+from pylearn2.utils import serial
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("train_file")
+    parser.add_argument("output_file")
+    return parser.parse_args()
+
+
+def flatten(l):
+    return [i for sl in l for i in sl]
+
+if __name__ == "__main__":
+    args = parse_args()
+    train_obj = serial.load_train_file(args.train_file)
+    npz = {}
+    for which_set, dataset in train_obj.algorithm.monitoring_dataset.items():
+        npz[which_set + "_X"] = dataset.X
+        npz[which_set + "_y"] = dataset.y
+    np.savez(args.output_file, **npz)
