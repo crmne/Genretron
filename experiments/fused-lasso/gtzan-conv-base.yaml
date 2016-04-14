@@ -43,15 +43,15 @@
             {
                 'train' : *train,
                 'valid' : !obj:pylearn2.datasets.npy_npz.NpzDataset {
-                file: "${PYLEARN2_DATA_PATH}/gtzan-conv2d.npz",
-                key: "valid_X",
-                target_key: "valid_y"
-    },
+                  file: "${PYLEARN2_DATA_PATH}/gtzan-conv2d.npz",
+                  key: "valid_X",
+                  target_key: "valid_y"
+                },
                 'test'  : !obj:pylearn2.datasets.npy_npz.NpzDataset {
-                file: "${PYLEARN2_DATA_PATH}/gtzan-conv2d.npz",
-                key: "test_X",
-                target_key: "test_y"
-    },
+                  file: "${PYLEARN2_DATA_PATH}/gtzan-conv2d.npz",
+                  key: "test_X",
+                  target_key: "test_y"
+                },
             },
         termination_criterion: !obj:pylearn2.termination_criteria.And {
             criteria: [

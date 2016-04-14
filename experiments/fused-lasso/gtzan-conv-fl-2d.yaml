@@ -1,12 +1,8 @@
 !obj:pylearn2.train.Train {
-    dataset: &train !obj:genretron.gtzan.GTZAN_On_Memory {
-        which_set: "train",
-        seconds: &seconds 5.0,
-        seed: &seed 1234,
-        balanced_splits: &balanced_splits True,
-        preprocessor: &preprocessor znormalizer,
-        verbose: &verbose True,
-        use_whole_song: &use_whole_song True,
+    dataset: &train !obj:pylearn2.datasets.npy_npz.NpzDataset {
+      file: "${PYLEARN2_DATA_PATH}/gtzan-conv2d.npz",
+      key: "train_X",
+      target_key: "train_y"
     },
     model: !obj:pylearn2.models.mlp.MLP {
         batch_size: 100,
@@ -46,24 +42,16 @@
         monitoring_dataset:
             {
                 'train' : *train,
-                'valid' : !obj:genretron.gtzan.GTZAN_On_Memory {
-                            which_set: "valid",
-                            seconds: *seconds,
-                            seed: *seed,
-                            balanced_splits: *balanced_splits,
-                            preprocessor: *preprocessor,
-                            verbose: *verbose,
-                            use_whole_song: *use_whole_song,
-                          },
-                'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
-                            which_set: "test",
-                            seconds: *seconds,
-                            seed: *seed,
-                            balanced_splits: *balanced_splits,
-                            preprocessor: *preprocessor,
-                            verbose: *verbose,
-                            use_whole_song: *use_whole_song,
-                          }
+                'valid' : !obj:pylearn2.datasets.npy_npz.NpzDataset {
+                  file: "${PYLEARN2_DATA_PATH}/gtzan-conv2d.npz",
+                  key: "valid_X",
+                  target_key: "valid_y"
+                },
+                'test'  : !obj:pylearn2.datasets.npy_npz.NpzDataset {
+                  file: "${PYLEARN2_DATA_PATH}/gtzan-conv2d.npz",
+                  key: "test_X",
+                  target_key: "test_y"
+                },
             },
         termination_criterion: !obj:pylearn2.termination_criteria.And {
             criteria: [
