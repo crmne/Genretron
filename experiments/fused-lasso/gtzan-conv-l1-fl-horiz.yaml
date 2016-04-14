@@ -10,9 +10,8 @@
     },
     model: !obj:pylearn2.models.mlp.MLP {
         batch_size: 100,
-        seed: *seed,
         input_space: !obj:pylearn2.space.Conv2DSpace {
-            shape: [513, 173],
+            shape: [513, 216],
             num_channels: 1,
         },
         layers: [
