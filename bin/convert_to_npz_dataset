@@ -19,6 +19,9 @@ if __name__ == "__main__":
     train_obj = serial.load_train_file(args.train_file)
     npz = {}
     for which_set, dataset in train_obj.algorithm.monitoring_dataset.items():
-        npz[which_set + "_X"] = dataset.X
+        try:
+            npz[which_set + "_X"] = dataset.get_topological_view()
+        except Exception:
+            npz[which_set + "_X"] = dataset.X
         npz[which_set + "_y"] = dataset.y
     np.savez(args.output_file, **npz)
