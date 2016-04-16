@@ -1,21 +1,18 @@
 !obj:pylearn2.train.Train {
-    dataset: &train !obj:genretron.gtzan.GTZAN_On_Memory {
-        which_set: "train",
-        seconds: &seconds 4.0,
-        seed: &seed 1234,
-        balanced_splits: True,
-        use_whole_song: True,
+    dataset: &train !obj:pylearn2.datasets.npy_npz.NpzDataset {
+      file: "${PYLEARN2_DATA_PATH}/gtzan-conv2d.npz",
+      key: "train_X",
+      target_key: "train_y"
     },
     model: !obj:pylearn2.models.mlp.MLP {
-        batch_size: 125,
-        seed: *seed,
+        batch_size: 100,
         input_space: !obj:pylearn2.space.Conv2DSpace {
-            shape: [513, 85],
+            shape: [513, 216],
             num_channels: 1,
         },
         layers: [
                     !obj:pylearn2.models.mlp.ConvRectifiedLinear {
-                        layer_name: 'h2',
+                        layer_name: 'h0',
                         output_channels: 64,
                         irange: .05,
                         kernel_shape: [513, 5],
@@ -24,7 +21,7 @@
                         max_kernel_norm: 1.9365,
                     },
                     !obj:pylearn2.models.mlp.ConvRectifiedLinear {
-                        layer_name: 'h3',
+                        layer_name: 'h1',
                         output_channels: 64,
                         irange: .05,
                         kernel_shape: [1, 10],
@@ -41,56 +38,50 @@
                 ],
     },
     algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
-        learning_rate: .01,
+        learning_rate: 0.01,
         monitoring_dataset:
             {
                 'train' : *train,
-                'valid' : !obj:genretron.gtzan.GTZAN_On_Memory {
-                            which_set: "valid",
-                            seconds: *seconds,
-                            seed: *seed,
-                            balanced_splits: True,
-                            use_whole_song: True,
-                          },
-                'test'  : !obj:genretron.gtzan.GTZAN_On_Memory {
-                            which_set: "test",
-                            seconds: *seconds,
-                            seed: *seed,
-                            balanced_splits: True,
-                            use_whole_song: True,
-                          }
+                'valid' : !obj:pylearn2.datasets.npy_npz.NpzDataset {
+                  file: "${PYLEARN2_DATA_PATH}/gtzan-conv2d.npz",
+                  key: "valid_X",
+                  target_key: "valid_y"
+                },
+                'test'  : !obj:pylearn2.datasets.npy_npz.NpzDataset {
+                  file: "${PYLEARN2_DATA_PATH}/gtzan-conv2d.npz",
+                  key: "test_X",
+                  target_key: "test_y"
+                },
             },
-        termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
-            channel_name: "valid_y_misclass",
-            prop_decrease: 0.001,
-            N: 20
+        termination_criterion: !obj:pylearn2.termination_criteria.And {
+            criteria: [
+                !obj:pylearn2.termination_criteria.MonitorBased {
+                    channel_name: "valid_y_misclass",
+                    prop_decrease: 0.001,
+                    N: 20,
+                },
+                !obj:pylearn2.termination_criteria.EpochCounter {
+                    max_epochs: 500,
+                },
+            ]
         },
         cost: !obj:pylearn2.costs.cost.SumOfCosts {
             costs: [
                 !obj:pylearn2.costs.mlp.Default {},
-                !obj:pylearn2.costs.mlp.WeightDecay {
+                !obj:pylearn2.costs.mlp.L1WeightDecay {
                     coeffs: {
-                        'h2': %(fusedlasso)f,
-                        'h3': %(fusedlasso)f
+                        'h0': %(l1)f
                     },
                 },
-                !obj:pylearn2.costs.mlp.FusedLasso {
-                    coeffs: {
-                        'h2': %(fusedlasso)f,
-                    },
-                    axes: {
-                        'h2': 1
-                    },
-                }
             ]
         },
     },
     extensions: [
         !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
              channel_name: 'valid_y_misclass',
-             save_path: "gtzan-test-ws-wd_best.pkl"
+             save_path: "results/gtzan-conv-l1-base-best.pkl",
         },
     ],
     save_freq: 1,
-    save_path: "gtzan-test-ws-wd.pkl"
+    save_path: "results/gtzan-conv-l1-base.pkl",
 }

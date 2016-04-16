@@ -1,5 +1,0 @@
-yaml_template: experiments/fused-lasso/models/mnist-2d-softmax.yaml
-extract_results: genretron.jobman_utils.results_extractor
-hyper_parameters:
-    # [math.exp(i/2.)/100 for i in xrange(1,10)]
-    fusedlasso: [0.01648721270700128, 0.02718281828459045, 0.044816890703380644, 0.0738905609893065, 0.12182493960703474, 0.2008553692318767, 0.3311545195869231, 0.5459815003314423, 0.9001713130052181]

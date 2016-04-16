@@ -1,37 +1,38 @@
 # Experiments for the thesis
 
 ## Goals
-
 Understand the effect of Fused Lasso on:
 
 * MNIST
 * GTZAN
 * Softmax Regression
 * Convolutional Neural Networks
-* L2
 * L1
-* Alone
 
 Therefore, we need the following experiments:
 
+1) MNIST + l1, MNIST + l1+FL (logistic regression)
+2) GTZAN + L1, GTZAN L1+FL (logistic regression)
+3) GTZAN + L1, GTZAN L1+FL (convnet)
+
+within these I would do something like
+
+a) find best L1 over some range of values
+b) find best lambda FL over range (with 0 <= L1 <= best L1) (i.e. it may prefer a smaller l1 since the FL is also a type of regulariser).
+
 ## Experiments
 
-1. Standard MNIST model, softmax regression. Establish a baseline. Make 5 runs with different seeds.
-2. MNIST with horizontal FL, softmax. See what is the effect of FL on the weights. Multiple experiments with different fl lambdas, consult the already done experiments to see how many.. 1 experiment per model should be enough.
-3. MNIST with vertical FL, softmax. See what is the effect of FL on the weights. Multiple experiments with different FL lambdas, consult the already done experiments to see how many.. 1 experiment per model should be enough.
-4. MNIST with 2d FL, softmax. See what is the effect of FL on the weights. Multiple experiments with different FL lambdas, consult the already done experiments to see how many. 1 experiment per model should be enough.
+1. Standard MNIST model + L1, softmax regression. Find best L1 over some range of values.
+2. MNIST with horizontal FL + L1, softmax. See what is the effect of FL on the weights. Multiple experiments with different fl lambdas, where FL lambda >= L1 lambda.
+3. MNIST with vertical FL + L1, softmax. See what is the effect of FL on the weights. Multiple experiments with different fl lambdas, where FL lambda >= L1 lambda.
+4. MNIST with horizontal FL + L1, softmax. See what is the effect of FL on the weights. Multiple experiments with different fl lambdas, where FL lambda >= L1 lambda.
 
-5. Standard MNIST, convolutional neural networks. Establish a baseline. Make 5 runs with different seeds.
-6. MNIST with horizontal FL, convolutional neural networks. See what is the effect of FL on the weights. Multiple experiments with different fl lambdas, consult the already done experiments to see how many.. 1 experiment per model should be enough.
-7. MNIST with vertical FL, convolutional neural networks. See what is the effect of FL on the weights. Multiple experiments with different FL lambdas, consult the already done experiments to see how many.. 1 experiment per model should be enough.
-8. MNIST with 2d FL, convolutional neural networks. See what is the effect of FL on the weights. Multiple experiments with different FL lambdas, consult the already done experiments to see how many. 1 experiment per model should be enough.
+1. Standard GTZAN model + L1, softmax regression. Find best L1 over some range of values.
+2. GTZAN with horizontal FL + L1, softmax. See what is the effect of FL on the weights. Multiple experiments with different fl lambdas, where FL lambda >= L1 lambda.
+3. GTZAN with vertical FL + L1, softmax. See what is the effect of FL on the weights. Multiple experiments with different fl lambdas, where FL lambda >= L1 lambda.
+4. GTZAN with horizontal FL + L1, softmax. See what is the effect of FL on the weights. Multiple experiments with different fl lambdas, where FL lambda >= L1 lambda.
 
-9. Standard MNIST model, softmax regression. Establish a baseline. Make 5 runs with different seeds.
-10. MNIST with horizontal FL, softmax. See what is the effect of FL on the weights. Multiple experiments with different fl lambdas, consult the already done experiments to see how many.. 1 experiment per model should be enough.
-3. MNIST with vertical FL, softmax. See what is the effect of FL on the weights. Multiple experiments with different FL lambdas, consult the already done experiments to see how many.. 1 experiment per model should be enough.
-4. MNIST with 2d FL, softmax. See what is the effect of FL on the weights. Multiple experiments with different FL lambdas, consult the already done experiments to see how many. 1 experiment per model should be enough.
-
-5. Standard MNIST, convolutional neural networks. Establish a baseline.
-6. MNIST with horizontal FL, convolutional neural networks. See what is the effect of FL on the weights. Multiple experiments with different fl lambdas, consult the already done experiments to see how many.. 1 experiment per model should be enough.
-7. MNIST with vertical FL, convolutional neural networks. See what is the effect of FL on the weights. Multiple experiments with different FL lambdas, consult the already done experiments to see how many.. 1 experiment per model should be enough.
-8. MNIST with 2d FL, convolutional neural networks. See what is the effect of FL on the weights. Multiple experiments with different FL lambdas, consult the already done experiments to see how many. 1 experiment per model should be enough.
+1. Standard GTZAN model + L1, convnets. Find best L1 over some range of values.
+2. GTZAN with horizontal FL + L1, convnets. See what is the effect of FL on the weights. Multiple experiments with different fl lambdas, where FL lambda >= L1 lambda.
+3. GTZAN with vertical FL + L1, convnets. See what is the effect of FL on the weights. Multiple experiments with different fl lambdas, where FL lambda >= L1 lambda.
+4. GTZAN with horizontal FL + L1, convnets. See what is the effect of FL on the weights. Multiple experiments with different fl lambdas, where FL lambda >= L1 lambda.
