@@ -3,7 +3,6 @@
 Make plots from db.
 """
 import argparse
-import matplotlib.pyplot as plt
 from sqlalchemy import create_engine
 from genretron.utils import longest_common_substring
 
@@ -15,6 +14,10 @@ __email__ = "carmine@paolino.me"
 
 
 def plot(results_x, results_y, xlabel, ylabels, log, out):
+    import matplotlib
+    if out:
+        matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
     if log:
         plt.semilogx(results_x, results_y, '.-')
     else:
