@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import argparse
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 from pylearn2.utils import serial
 
 
@@ -20,6 +22,7 @@ if __name__ == "__main__":
     npz = {}
     for which_set, dataset in train_obj.algorithm.monitoring_dataset.items():
         try:
+            import ipdb; ipdb.set_trace()
             npz[which_set + "_X"] = dataset.get_topological_view()
         except Exception:
             npz[which_set + "_X"] = dataset.X
