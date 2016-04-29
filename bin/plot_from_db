@@ -13,7 +13,7 @@ __license__ = "3-clause BSD"
 __email__ = "carmine@paolino.me"
 
 
-def plot(results_x, results_y, xlabel, ylabels, log, out):
+def plot(results_x, results_y, xlabel, ylabels, log, out, title):
     import matplotlib
     if out:
         matplotlib.use('Agg')
@@ -23,16 +23,29 @@ def plot(results_x, results_y, xlabel, ylabels, log, out):
     else:
         plt.plot(results_x, results_y, '.-')
     ylabel = longest_common_substring(ylabels)
-    title = "{0} / {1}".format(ylabel, xlabel)
+    if title is None:
+        title = "{0} / {1}".format(ylabel, xlabel)
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
-    plt.legend(ylabels)
+    plt.legend(ylabels, loc="best")
     if out:
         plt.savefig(out, format='pdf')
     else:
         plt.show()
 
+def to_natural_lang(label):
+    translation = {
+        'hyperparameters_l1': "L1 lambda",
+        "ymisclass": "Misclassification Error",
+        "results_trainymisclass": "Train Misclass. Error",
+        "results_testymisclass": "Test Misclass. Error",
+        "results_validymisclass": "Valid Misclass. Error",
+        "gtzan_conv_l1_base": "GTZAN ConvNet with L1",
+        "mnist_softmax_l1_base": "MNIST Softmax Regression with L1",
+        "gtzan_softmax_l1_base": "GTZAN Softmax Regression with L1",
+    }
+    return translation[label]
 
 def make_query(table, columns, orderby):
     column_string = ", ".join(columns)
@@ -54,7 +67,8 @@ def make_argument_parser():
     parser.add_argument("columns", nargs='+')
     parser.add_argument("orderby")
     parser.add_argument('-l', "--log", action="store_true")
-    parser.add_argument('-o ', "--out", default=None)
+    parser.add_argument('-o', "--out", default=None)
+    parser.add_argument('-t', "--title", default=None)
     return parser
 
 if __name__ == "__main__":
@@ -70,6 +84,12 @@ if __name__ == "__main__":
     print("results: {0}".format(results))
     results_x = [i[-1] for i in results]
     results_y = [tuple(i[:-1]) for i in results]
-    xlabel = args.orderby
-    ylabels = [i for i in args.columns if i != args.orderby]
-    plot(results_x, results_y, xlabel, ylabels, log=args.log, out=args.out)
+    xlabel = to_natural_lang(args.orderby)
+    ylabels = [to_natural_lang(i) for i in args.columns if i != args.orderby]
+    plot(results_x,
+         results_y,
+         xlabel,
+         ylabels,
+         log=args.log,
+         out=args.out,
+         title=to_natural_lang(args.title))
