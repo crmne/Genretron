@@ -81,6 +81,7 @@ class AudioDataset(object):
 
         # init dynamic params
         tracks, genres = self.tracks_and_genres(path, seconds, use_whole_song)
+        assert tracks
         samplerate = tracks[0].samplerate
         seconds = tracks[0].seconds
 
@@ -133,16 +134,16 @@ class AudioDataset(object):
                 )
             self.preprocess(self.data_x)
             # select only the tracks in the set
-            set_tracks = self.get_track_ids(self.which_set)
-            set_indexes = self.index_converters[self.converter](set_tracks)
+            self.set_tracks = self.get_track_ids(self.which_set)
+            self.set_indexes = self.index_converters[self.converter](self.set_tracks)
             self.data_x, self.data_y = \
-                self.filter_indexes(set_indexes, self.data_x, self.data_y)
+                self.filter_indexes(self.set_indexes, self.data_x, self.data_y)
         else:
-            set_tracks = self.get_track_ids(self.which_set)
+            self.set_tracks = self.get_track_ids(self.which_set)
             self.data_x, self.data_y = \
                 self.spaces_converters[self.converter](
                     self.feature_extractors[
-                        self.feature](set_tracks)
+                        self.feature](self.set_tracks)
                 )
 
     def __str__(self):
@@ -180,16 +181,16 @@ class AudioDataset(object):
             track = self.tracks[index]
             if self.verbose:
                 print("calculating spectrogram of " + track.path)
-                data_x[data_i], _ = librosa.magphase(track.calc_spectrogram(
-                    **utils.filter_null_args(
-                        step_size=self.step_size,
-                        fft_resolution=self.fft_resolution,
-                        scale_factors=self.scale_factors
-                    )
-                ).data)
-                data_y[data_i][self.genres.index(track.genre)] = 1
-                track.rm_spectrogram()
-                track.rm_signal()
+            data_x[data_i], _ = librosa.magphase(track.calc_spectrogram(
+                **utils.filter_null_args(
+                    step_size=self.step_size,
+                    fft_resolution=self.fft_resolution,
+                    scale_factors=self.scale_factors
+                )
+            ).data)
+            data_y[data_i][self.genres.index(track.genre)] = 1
+            track.rm_spectrogram()
+            track.rm_signal()
         return data_x, data_y
 
     @staticmethod
@@ -234,8 +235,8 @@ class AudioDataset(object):
     def preprocess(self, data_x):
         if self.verbose:
             print("preprocessing with {0}...".format(self.preprocessor))
-            preprocessor = preprocessor_factory(self.preprocessor)
-            preprocessor.fit_transform(data_x)
+        preprocessor = preprocessor_factory(self.preprocessor)
+        preprocessor.fit_transform(data_x)
 
     def tracks_and_genres(self, audio_folder, seconds, use_whole_song):
         """

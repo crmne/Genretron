@@ -1,6 +1,7 @@
 argparse
 librosa
 matplotlib>=1.4,<1.5
+nose
 numpy
 progressbar
 progressbar
