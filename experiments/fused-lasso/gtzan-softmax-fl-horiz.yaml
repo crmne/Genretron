@@ -5,7 +5,7 @@
       target_key: "train_y"
     },
     model: !obj:pylearn2.models.softmax_regression.SoftmaxRegression {
-        nvis: 216,
+        nvis: 513,
         n_classes: 10,
         irange: .05
     },
