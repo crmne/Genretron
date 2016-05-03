@@ -2,6 +2,7 @@ from genretron.audio_dataset import AudioDataset
 import numpy
 
 def setup():
+    global train, test, valid
     params = {
         'path': '${PYLEARN2_DATA_PATH}/GTZAN',
         'space': 'vector',
@@ -26,8 +27,6 @@ def setup():
     valid = AudioDataset(**params)
     valid.process()
     del valid.data_x, valid.data_y
-
-    global train, test, valid
 
 def test_tracks_dont_appear_twice_in_the_same_split():
     for split in [train, test, valid]:

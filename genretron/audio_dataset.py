@@ -209,11 +209,12 @@ class AudioDataset(object):
 
     @staticmethod
     def x_to_vectorspace(x):
+        x = x.transpose((0, 2, 1))
         return numpy.reshape(x, (x.shape[0] * x.shape[1], x.shape[2]))
 
     @staticmethod
     def y_to_vectorspace(x, y):
-        return numpy.repeat(y, x.shape[1], axis=0)
+        return numpy.repeat(y, x.shape[2], axis=0)
 
     @staticmethod
     def twod_to_vectorspaces(data):
