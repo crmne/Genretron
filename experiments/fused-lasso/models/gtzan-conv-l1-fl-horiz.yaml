@@ -73,15 +73,23 @@
                         'h0': %(l1)f
                     },
                 },
+                !obj:pylearn2.costs.mlp.FusedLasso {
+                    coeffs: {
+                        'h0': %(fl)f,
+                    },
+                    axes: {
+                        'h0': 0
+                    },
+                },
             ]
         },
     },
     extensions: [
         !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
              channel_name: 'valid_y_misclass',
-             save_path: "results/gtzan-conv-l1-base-best.pkl",
+             save_path: "results/gtzan-conv-l1-fl-horiz-best.pkl",
         },
     ],
     save_freq: 1,
-    save_path: "results/gtzan-conv-l1-base.pkl",
+    save_path: "results/gtzan-conv-l1-fl-horiz.pkl",
 }

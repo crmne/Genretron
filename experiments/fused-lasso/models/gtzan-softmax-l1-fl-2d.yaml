@@ -43,12 +43,12 @@
                 !obj:pylearn2.costs.mlp.Default {},
                 !obj:pylearn2.costs.mlp.L1WeightDecay {
                     coeffs: {
-                        'y': 0.001
+                        'y': %(l1)f
                     },
                 },
                 !obj:pylearn2.costs.mlp.FusedLasso {
                     coeffs: {
-                        'y': 0.0005,
+                        'y': %(fl)f,
                     },
                     axes: {
                         'y': 0
@@ -56,7 +56,7 @@
                 },
                 !obj:pylearn2.costs.mlp.FusedLasso {
                     coeffs: {
-                        'y': 0.0005,
+                        'y': %(fl)f,
                     },
                     axes: {
                         'y': 1
