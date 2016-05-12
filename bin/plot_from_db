@@ -37,22 +37,31 @@ def plot(results_x, results_y, xlabel, ylabels, log, out, title):
 def to_natural_lang(label):
     translation = {
         'hyperparameters_l1': "L1 lambda",
+        'hyperparameters_fl': "FL lambda",
         "ymisclass": "Misclassification Error",
         "results_trainymisclass": "Train Misclass. Error",
         "results_testymisclass": "Test Misclass. Error",
         "results_validymisclass": "Valid Misclass. Error",
         "gtzan_conv_l1_base": "GTZAN ConvNet with L1",
-        "mnist_softmax_l1_base": "MNIST Softmax Regression with L1",
+        "gtzan_conv_l1_fl_2d": "GTZAN ConvNet with L1 and 2D FL",
+        "gtzan_conv_l1_fl_horiz": "GTZAN ConvNet with L1 and Horizontal FL",
+        "gtzan_conv_l1_fl_vert": "GTZAN ConvNet with L1 and Vertical FL",
         "gtzan_softmax_l1_base": "GTZAN Softmax Regression with L1",
+        "gtzan_softmax_l1_fl_horiz": "GTZAN Softmax Regression with L1 and Horizontal FL",
+        "mnist_softmax_l1_base": "MNIST Softmax Regression with L1",
+        "mnist_softmax_l1_fl_2d": "MNIST Softmax Regression with L1 and 2D FL"
+
     }
     return translation[label]
 
+
 def make_query(table, columns, orderby):
     column_string = ", ".join(columns)
+    orderby_string = ", ".join(orderby)
     return "select {0} from {1} order by {2}".format(
         column_string,
         table,
-        orderby
+        orderby_string
     )
 
 
@@ -64,8 +73,9 @@ def make_argument_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("db")
     parser.add_argument("table")
-    parser.add_argument("columns", nargs='+')
-    parser.add_argument("orderby")
+    parser.add_argument("-c", "--columns", nargs='+')
+    parser.add_argument("-b", "--orderby", nargs='+')
+    parser.add_argument("-x", "--xcolumn")
     parser.add_argument('-l', "--log", action="store_true")
     parser.add_argument('-o', "--out", default=None)
     parser.add_argument('-t', "--title", default=None)
@@ -78,18 +88,45 @@ if __name__ == "__main__":
     engine = create_engine(args.db)
     conn = engine.connect()
 
-    query = make_query(args.table, args.columns, args.orderby)
+    columns = args.columns + args.orderby
+    query = make_query(args.table, columns, args.orderby)
     print("executing query '{0}'...".format(query))
+
     results = [tuple(i) for i in conn.execute(query).fetchall()]
-    print("results: {0}".format(results))
-    results_x = [i[-1] for i in results]
-    results_y = [tuple(i[:-1]) for i in results]
-    xlabel = to_natural_lang(args.orderby)
-    ylabels = [to_natural_lang(i) for i in args.columns if i != args.orderby]
-    plot(results_x,
-         results_y,
-         xlabel,
-         ylabels,
-         log=args.log,
-         out=args.out,
-         title=to_natural_lang(args.title))
+
+    xcolumn_i = columns.index(args.xcolumn)
+    other_xcolumn_i = 0
+    if xcolumn_i == len(columns) - 1:
+        other_xcolumn_i = xcolumn_i - 1
+    elif xcolumn_i == len(columns) - 2:
+        other_xcolumn_i = xcolumn_i + 1
+
+    other_xvalues = set([i[other_xcolumn_i] for i in results])
+
+    results_x = sorted(list(set([i[xcolumn_i] for i in results])))
+
+    results_y = {}
+    for other in other_xvalues:
+        results_y[other] = []
+        for r in results:
+            if r[other_xcolumn_i] == other:
+                results_y[other].append(tuple(r[:-len(args.orderby)]))
+
+    # results_y = [tuple(i[:-len(args.orderby)]) for i in results]
+    xlabel = to_natural_lang(args.xcolumn)
+    ylabels = [to_natural_lang(i) for i in columns if i not in args.orderby]
+
+    for k, v in results_y.items():
+        if args.out is not None:
+            out = str(k) + args.out
+        else:
+            out = args.out
+        title = to_natural_lang(args.title) + ' (L1 lambda = ' + str(k) + ')'
+        # import ipdb; ipdb.set_trace()
+        plot(results_x,
+            v,
+            xlabel,
+            ylabels,
+            log=args.log,
+            out=out,
+            title=title)
