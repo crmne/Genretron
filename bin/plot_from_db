@@ -3,6 +3,7 @@
 Make plots from db.
 """
 import argparse
+import numpy
 from sqlalchemy import create_engine
 from genretron.utils import longest_common_substring
 
@@ -12,25 +13,41 @@ __credits__ = ["Carmine Paolino"]
 __license__ = "3-clause BSD"
 __email__ = "carmine@paolino.me"
 
+def get_columns():
+    return ['results_trainymisclass', 'results_validymisclass', 'results_testymisclass', 'hyperparameters_l1', 'hyperparameters_fl']
 
-def plot(results_x, results_y, xlabel, ylabels, log, out, title):
+def plot(results_x, results_y, xlabel, ylabels, log, out, title, fill=False):
     import matplotlib
     if out:
         matplotlib.use('Agg')
     import matplotlib.pyplot as plt
-    if log:
-        plt.semilogx(results_x, results_y, '.-')
+    fig = plt.figure(figsize=(12, 10))
+    plot_fn = plt.semilogx if log else plt.plot
+    if fill:
+        plot_fn(results_x, results_y[:,0], '.-', color='blue')
+        plot_fn(results_x, results_y[:,1], '.-', color='green')
+        plot_fn(results_x, results_y[:,2], '.-', color='red')
+        plot_fn(results_x, results_y[:,3], '.-', color='cyan')
+        plot_fn(results_x, results_y[:,4], '.-', color='lime')
+        plot_fn(results_x, results_y[:,5], '.-', color='magenta')
+        plot_fn(results_x, results_y[:,6], '.-', color='darkblue')
+        plot_fn(results_x, results_y[:,7], '.-', color='darkgreen')
+        plot_fn(results_x, results_y[:,8], '.-', color='darkred')
+        plt.fill_between(results_x, results_y[:,0], results_y[:,3], facecolor='blue', alpha=0.5)
+        plt.fill_between(results_x, results_y[:,3], results_y[:,6], facecolor='blue', alpha=0.5)
+        plt.fill_between(results_x, results_y[:,1], results_y[:,4], facecolor='green', alpha=0.5)
+        plt.fill_between(results_x, results_y[:,4], results_y[:,7], facecolor='green', alpha=0.5)
+        plt.fill_between(results_x, results_y[:,2], results_y[:,5], facecolor='red', alpha=0.5)
+        plt.fill_between(results_x, results_y[:,5], results_y[:,8], facecolor='red', alpha=0.5)
     else:
-        plt.plot(results_x, results_y, '.-')
-    ylabel = longest_common_substring(ylabels)
-    if title is None:
-        title = "{0} / {1}".format(ylabel, xlabel)
+        plot_fn(results_x, results_y, '.-')
+    ylabel = "Misclassification Error"
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.legend(ylabels, loc="best")
     if out:
-        plt.savefig(out, format='pdf')
+        plt.savefig(out, format='pdf', dpi=300)
     else:
         plt.show()
 
@@ -38,7 +55,6 @@ def to_natural_lang(label):
     translation = {
         'hyperparameters_l1': "L1 lambda",
         'hyperparameters_fl': "FL lambda",
-        "ymisclass": "Misclassification Error",
         "results_trainymisclass": "Train Misclass. Error",
         "results_testymisclass": "Test Misclass. Error",
         "results_validymisclass": "Valid Misclass. Error",
@@ -55,14 +71,21 @@ def to_natural_lang(label):
     return translation[label]
 
 
-def make_query(table, columns, orderby):
+def make_query(table, columns, orderby, where_clause=None):
     column_string = ", ".join(columns)
-    orderby_string = ", ".join(orderby)
-    return "select {0} from {1} order by {2}".format(
-        column_string,
-        table,
-        orderby_string
-    )
+    if where_clause is not None:
+        return "select {0} from {1} where {2} order by {3}".format(
+            column_string,
+            table,
+            where_clause,
+            orderby
+        )
+    else:
+        return "select {0} from {1} order by {2}".format(
+            column_string,
+            table,
+            orderby
+        )
 
 
 def make_argument_parser():
@@ -73,13 +96,117 @@ def make_argument_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("db")
     parser.add_argument("table")
-    parser.add_argument("-c", "--columns", nargs='+')
-    parser.add_argument("-b", "--orderby", nargs='+')
-    parser.add_argument("-x", "--xcolumn")
+    parser.add_argument("plot_type")
     parser.add_argument('-l', "--log", action="store_true")
     parser.add_argument('-o', "--out", default=None)
-    parser.add_argument('-t', "--title", default=None)
     return parser
+
+
+def get_query_results(conn, query):
+    return numpy.asarray([i for i in conn.execute(query).fetchall()])
+
+
+def plot_l1base(conn, table, log, out):
+    columns = get_columns()[:-1]
+    xcolumn = columns[-1]
+
+    query = make_query(table + 'view', columns, xcolumn)
+
+    results = get_query_results(conn, query)
+
+    results_x = [i[-1] for i in results]
+    results_y = [i[:-1] for i in results]
+
+    label_x = to_natural_lang(xcolumn)
+    labels_y = [to_natural_lang(i) for i in columns[:-1]]
+
+    plot(results_x, results_y, label_x, labels_y, log=log, out=out, title=to_natural_lang(table))
+
+
+def get_l1_values(conn, table):
+    return numpy.sort(get_query_results(conn, "select distinct hyperparameters_l1 from {0}".format(table)).flatten())
+
+
+def plot_fleachl1(conn, table, log, out):
+    l1values = get_l1_values(conn, table + 'view')
+
+    columns = get_columns()
+    xcolumn = columns[-1]
+
+    label_x = to_natural_lang(xcolumn)
+    labels_y = [to_natural_lang(i) for i in columns[:-2]]
+
+    for l1 in l1values:
+        where_clause = "hyperparameters_l1 = {0}".format(l1)
+        query = make_query(table + 'view', columns, xcolumn, where_clause)
+        results = get_query_results(conn, query)
+
+        results_x = [i[-1] for i in results]
+        results_y = [i[:-2] for i in results]
+
+        title = "{0} (L1 lambda = {1})".format(to_natural_lang(table), l1)
+        plot(results_x, results_y, label_x, labels_y, log=log, out=out, title=title)
+
+
+def get_resultsn_per_l1(conn, table, l1value):
+    return int(get_query_results(conn, "select count(results_trainymisclass) from {0} where hyperparameters_l1 = {1}".format(table, l1value)))
+
+
+def fl_l1_combined_results(conn, table):
+    l1values = get_l1_values(conn, table + 'view')
+    resultsn_per_l1 = get_resultsn_per_l1(conn, table + 'view', l1values[0])
+
+    columns = get_columns()
+    xcolumn = columns[-1]
+    result_columns = columns[:-2]
+    param_columns = columns[-2:]
+
+    label_x = to_natural_lang(xcolumn)
+    labels_y = ["{0}@{1}".format(to_natural_lang(rc), l1) for l1 in l1values for rc in result_columns]
+    results_x = []
+    results_y = numpy.zeros((resultsn_per_l1, len(result_columns) * len(l1values)))
+
+    for l1_i, l1 in enumerate(l1values):
+        where_clause = "hyperparameters_l1 = {0}".format(l1)
+        query = make_query(table + 'view', columns, xcolumn, where_clause)
+        results = get_query_results(conn, query)
+
+        results_x = [i[-1] for i in results]
+
+        start_i = l1_i*len(result_columns)
+        end_i = start_i + len(result_columns)
+        results_y[:,start_i:end_i] = [i[:-2] for i in results]
+
+    return results_x, results_y, label_x, labels_y
+
+
+def plot_fll1combined(conn, table, log, out):
+    title = to_natural_lang(table)
+    results_x, results_y, label_x, labels_y = fl_l1_combined_results(conn, table)
+
+    plot(results_x, results_y, label_x, labels_y, log=log, out=out, title=title)
+
+
+def plot_fll1fillbetween(conn, table, log, out):
+    title = to_natural_lang(table)
+    results_x, results_y, label_x, labels_y = fl_l1_combined_results(conn, table)
+
+    plot(results_x, results_y, label_x, labels_y, log=log, out=out, title=title, fill=True)
+
+
+def plot_fll1errorbars(conn, table, log, out):
+    title = to_natural_lang(table)
+    results_x, results_y, label_x, labels_y = fl_l1_combined_results(conn, table)
+
+    plot(results_x, results_y, label_x, labels_y, log=log, out=out, title=title)
+
+plot_types = {
+    'l1base': plot_l1base,
+    'fleachl1': plot_fleachl1,
+    'fll1combined': plot_fll1combined,
+    'fll1fillbetween': plot_fll1fillbetween,
+    'fll1errorbars': plot_fll1errorbars
+}
 
 if __name__ == "__main__":
     parser = make_argument_parser()
@@ -88,45 +215,4 @@ if __name__ == "__main__":
     engine = create_engine(args.db)
     conn = engine.connect()
 
-    columns = args.columns + args.orderby
-    query = make_query(args.table, columns, args.orderby)
-    print("executing query '{0}'...".format(query))
-
-    results = [tuple(i) for i in conn.execute(query).fetchall()]
-
-    xcolumn_i = columns.index(args.xcolumn)
-    other_xcolumn_i = 0
-    if xcolumn_i == len(columns) - 1:
-        other_xcolumn_i = xcolumn_i - 1
-    elif xcolumn_i == len(columns) - 2:
-        other_xcolumn_i = xcolumn_i + 1
-
-    other_xvalues = set([i[other_xcolumn_i] for i in results])
-
-    results_x = sorted(list(set([i[xcolumn_i] for i in results])))
-
-    results_y = {}
-    for other in other_xvalues:
-        results_y[other] = []
-        for r in results:
-            if r[other_xcolumn_i] == other:
-                results_y[other].append(tuple(r[:-len(args.orderby)]))
-
-    # results_y = [tuple(i[:-len(args.orderby)]) for i in results]
-    xlabel = to_natural_lang(args.xcolumn)
-    ylabels = [to_natural_lang(i) for i in columns if i not in args.orderby]
-
-    for k, v in results_y.items():
-        if args.out is not None:
-            out = str(k) + args.out
-        else:
-            out = args.out
-        title = to_natural_lang(args.title) + ' (L1 lambda = ' + str(k) + ')'
-        # import ipdb; ipdb.set_trace()
-        plot(results_x,
-            v,
-            xlabel,
-            ylabels,
-            log=args.log,
-            out=out,
-            title=title)
+    plot_types[args.plot_type](conn, args.table, args.log, args.out)

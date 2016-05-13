@@ -163,7 +163,7 @@ def play_weights(out, model_path=None, model=None, repetitions=1):
 def plot_weights(args, model=None):
     title = args.title if args.title is not None else args.model_path
     weights = get_weights(model=model)
-    rows = math.sqrt(int(len(weights)))
+    rows = math.sqrt(math.sqrt(int(len(weights))))
     rows = int(rows) if math.floor(rows) == rows else args.rows
     import matplotlib.pyplot as plt
     fig, axes = plt.subplots(
