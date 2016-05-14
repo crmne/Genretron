@@ -7,10 +7,10 @@
     model: !obj:pylearn2.models.softmax_regression.SoftmaxRegression {
         nvis: 784,
         n_classes: 10,
-        irange: .05
+        irange: 0.
     },
     algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
-        batch_size: 62300,
+        batch_size: 100,
         learning_rate: .001,
         monitoring_dataset:
             {
