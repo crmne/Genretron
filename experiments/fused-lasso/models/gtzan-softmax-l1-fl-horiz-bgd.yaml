@@ -9,9 +9,10 @@
         n_classes: 10,
         irange: 0.,
     },
-    algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
-        learning_rate: .001,
-        batch_size: 100,
+    algorithm: !obj:pylearn2.training_algorithms.bgd.BGD {
+        batch_size: 10000,
+        line_search_mode: 'exhaustive',
+        conjugate: 1,
         monitoring_dataset:
             {
                 'train' : *train,
@@ -60,9 +61,9 @@
     extensions: [
         !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
              channel_name: 'valid_y_misclass',
-             save_path: "results/gtzan-softmax-l1-fl-horiz-best.pkl",
+             save_path: "results/gtzan-softmax-l1-fl-horiz-bgd-best.pkl",
         },
     ],
     save_freq: 1,
-    save_path: "results/gtzan-softmax-l1-fl-horiz.pkl",
+    save_path: "results/gtzan-softmax-l1-fl-horiz-bgd.pkl",
 }

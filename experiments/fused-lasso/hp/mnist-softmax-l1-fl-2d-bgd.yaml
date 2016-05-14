@@ -1,4 +1,4 @@
-yaml_template: experiments/fused-lasso/models/mnist-softmax-l1-fl-2d.yaml
+yaml_template: experiments/fused-lasso/models/mnist-softmax-l1-fl-2d-bgd.yaml
 extract_results: genretron.jobman_utils.results_extractor
 hyper_parameters:
   l1: [0.01, 0.02, 0.04]
