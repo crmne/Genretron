@@ -53,19 +53,19 @@ def plot(results_x, results_y, xlabel, ylabels, log, out, title, fill=False):
 
 def to_natural_lang(label):
     translation = {
-        'hyperparameters_l1': "L1 lambda",
-        'hyperparameters_fl': "FL lambda",
-        "results_trainymisclass": "Train Misclass. Error",
-        "results_testymisclass": "Test Misclass. Error",
-        "results_validymisclass": "Valid Misclass. Error",
+        'hyperparameters_l1': r"L1 $\lambda$",
+        'hyperparameters_fl': r"Fused Lasso $\lambda$",
+        "results_trainymisclass": "Training",
+        "results_testymisclass": "Test",
+        "results_validymisclass": "Validation",
         "gtzan_conv_l1_base": "GTZAN ConvNet with L1",
-        "gtzan_conv_l1_fl_2d": "GTZAN ConvNet with L1 and 2D FL",
-        "gtzan_conv_l1_fl_horiz": "GTZAN ConvNet with L1 and Horizontal FL",
-        "gtzan_conv_l1_fl_vert": "GTZAN ConvNet with L1 and Vertical FL",
+        "gtzan_conv_l1_fl_2d": "GTZAN ConvNet with L1 and 2D Fused Lasso",
+        "gtzan_conv_l1_fl_horiz": "GTZAN ConvNet with L1 and Horizontal Fused Lasso",
+        "gtzan_conv_l1_fl_vert": "GTZAN ConvNet with L1 and Vertical Fused Lasso",
         "gtzan_softmax_l1_base": "GTZAN Softmax Regression with L1",
-        "gtzan_softmax_l1_fl_horiz": "GTZAN Softmax Regression with L1 and Horizontal FL",
+        "gtzan_softmax_l1_fl_horiz": "GTZAN Softmax Regression with L1 and Horizontal Fused Lasso",
         "mnist_softmax_l1_base": "MNIST Softmax Regression with L1",
-        "mnist_softmax_l1_fl_2d": "MNIST Softmax Regression with L1 and 2D FL"
+        "mnist_softmax_l1_fl_2d": "MNIST Softmax Regression with L1 and 2D Fused Lasso"
 
     }
     return translation[label]
@@ -144,7 +144,7 @@ def plot_fleachl1(conn, table, log, out):
         results_x = [i[-1] for i in results]
         results_y = [i[:-2] for i in results]
 
-        title = "{0} (L1 lambda = {1})".format(to_natural_lang(table), l1)
+        title = r"{0} (L1 $\lambda$ = {1})".format(to_natural_lang(table), l1)
         plot(results_x, results_y, label_x, labels_y, log=log, out=out, title=title)
 
 
@@ -162,7 +162,7 @@ def fl_l1_combined_results(conn, table):
     param_columns = columns[-2:]
 
     label_x = to_natural_lang(xcolumn)
-    labels_y = ["{0}@{1}".format(to_natural_lang(rc), l1) for l1 in l1values for rc in result_columns]
+    labels_y = [r"{0} (L1 $\lambda$ = {1})".format(to_natural_lang(rc), l1) for l1 in l1values for rc in result_columns]
     results_x = []
     results_y = numpy.zeros((resultsn_per_l1, len(result_columns) * len(l1values)))
 
