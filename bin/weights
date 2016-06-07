@@ -169,6 +169,9 @@ def plot_weights(args, model=None):
     weights = get_weights(model=model)
     rows = math.sqrt(math.sqrt(int(len(weights))))
     rows = int(rows) if math.floor(rows) == rows else args.rows
+    import matplotlib
+    if args.out is not None:
+        matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     fig, axes = plt.subplots(
         rows, int(len(weights) / rows), subplot_kw={'xticks': [], 'yticks': []})
