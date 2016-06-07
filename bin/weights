@@ -162,7 +162,7 @@ def play_weights(out, model_path=None, model=None, repetitions=1):
 
 def get_title(model_path):
     # assuming it ends with -best.pkl
-    return to_natural_lang(os.path.basename(path).split('-best.pkl')[0].replace('-', '_'))
+    return to_natural_lang(os.path.basename(model_path).split('-best.pkl')[0].replace('-', '_'))
 
 def plot_weights(args, model=None):
     title = args.title if args.title is not None else get_title(args.model_path)
