@@ -63,9 +63,11 @@ def to_natural_lang(label):
         "gtzan_conv_l1_fl_horiz": "GTZAN ConvNet with L1 and Horizontal Fused Lasso",
         "gtzan_conv_l1_fl_vert": "GTZAN ConvNet with L1 and Vertical Fused Lasso",
         "gtzan_softmax_l1_base": "GTZAN Softmax Regression with L1",
+        "gtzan_softmax_l1_base_bgd": "GTZAN Softmax Regression with L1",
         "gtzan_softmax_l1_fl_horiz": "GTZAN Softmax Regression with L1 and Horizontal Fused Lasso",
         "gtzan_softmax_l1_fl_horiz_bgd": "GTZAN Softmax Regression with L1 and Horizontal Fused Lasso",
         "mnist_softmax_l1_base": "MNIST Softmax Regression with L1",
+        "mnist_softmax_l1_base_bgd": "MNIST Softmax Regression with L1",
         "mnist_softmax_l1_fl_2d": "MNIST Softmax Regression with L1 and 2D Fused Lasso",
         "mnist_softmax_l1_fl_2d_bgd": "MNIST Softmax Regression with L1 and 2D Fused Lasso"
     }
