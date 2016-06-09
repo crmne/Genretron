@@ -3,6 +3,8 @@
 Plays the weight matrices of a pickled model
 """
 from __future__ import division
+import matplotlib
+matplotlib.use('Agg')
 from genretron.gtzan import GTZAN, GTZAN_On_Memory
 from genretron.spectrogram import Spectrogram
 from pylearn2.datasets import control
@@ -159,19 +161,22 @@ def play_weights(out, model_path=None, model=None, repetitions=1):
         librosa.output.write_wav(filename, normalized_signal,
                                  sr=dataset.samplerate)
 
+def get_normalized_model_name(model_path):
+    return os.path.basename(model_path).split('-best.pkl')[0].replace('-', '_')
 
 def get_title(model_path):
     # assuming it ends with -best.pkl
-    return to_natural_lang(os.path.basename(model_path).split('-best.pkl')[0].replace('-', '_'))
+    return to_natural_lang(get_normalized_model_name(model_path))
+
+def get_output_path(model_path):
+    return "{0}.png".format(get_normalized_model_name(model_path))
 
 def plot_weights(args, model=None):
+    out = args.out if args.out is not None else get_output_path(args.model_path)
     title = args.title if args.title is not None else get_title(args.model_path)
     weights = get_weights(model=model)
     rows = math.sqrt(math.sqrt(int(len(weights))))
     rows = int(rows) if math.floor(rows) == rows else args.rows
-    import matplotlib
-    if args.out is not None:
-        matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     fig, axes = plt.subplots(
         rows, int(len(weights) / rows), subplot_kw={'xticks': [], 'yticks': []})
