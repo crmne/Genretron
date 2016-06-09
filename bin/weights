@@ -15,6 +15,7 @@ import argparse
 import logging
 import numpy as np
 import os
+import re
 import math
 import pylearn2.config.yaml_parse
 import librosa.output
@@ -162,14 +163,69 @@ def play_weights(out, model_path=None, model=None, repetitions=1):
                                  sr=dataset.samplerate)
 
 def get_normalized_model_name(model_path):
+    # assuming it ends with -best.pkl
     return os.path.basename(model_path).split('-best.pkl')[0].replace('-', '_')
 
+def get_currentconf(model_path):
+    return os.path.join(os.path.dirname(os.path.dirname(model_path)), 'current.conf')
+
 def get_title(model_path):
-    # assuming it ends with -best.pkl
     return to_natural_lang(get_normalized_model_name(model_path))
 
 def get_output_path(model_path):
     return "{0}.png".format(get_normalized_model_name(model_path))
+
+def get_valid_misclass(model):
+    result = model.monitor.channels.get('valid_y_misclass')
+    return None if result is None else result.val_record[-1]
+
+def get_train_misclass(model):
+    result = model.monitor.channels.get('train_y_misclass')
+    return None if result is None else result.val_record[-1]
+
+def get_test_misclass(model):
+    result = model.monitor.channels.get('test_y_misclass')
+    return None if result is None else result.val_record[-1]
+
+def get_fl1_obj(model):
+    result = model.monitor.channels.get('train_term_2_fused_lasso')
+    return None if result is None else result.val_record[-1]
+
+def get_fl2_obj(model):
+    result = model.monitor.channels.get('train_term_3_fused_lasso')
+    return None if result is None else result.val_record[-1]
+
+def get_l1_obj(model):
+    result = model.monitor.channels.get('train_term_1_l1_penalty')
+    return None if result is None else result.val_record[-1]
+
+
+def get_hyperparameters(currentconf):
+    hp = {}
+    for line in open(currentconf, 'r'):
+        match = re.match(r"^hyper_parameters\.(.+) = (.+)$", line)
+        if match:
+            hp[match.group(1)] = float(match.group(2))
+    return hp
+
+def get_textbox_str(model, currentconf):
+    hyperparam_str = "\n".join(["{0} = {1:.7f}".format(to_natural_lang(k), v) for k, v in get_hyperparameters(currentconf).items()])
+
+    l1_obj = get_l1_obj(model)
+    fl1_obj = get_fl1_obj(model)
+    fl2_obj = get_fl2_obj(model)
+    l1_string = "$L_1 obj$ = {0:.7f}".format(float(l1_obj)) if l1_obj is not None else ""
+    fl1_string = "$FL_1 obj$ = {0:.7f}".format(float(fl1_obj)) if fl1_obj is not None else ""
+    fl2_string = "$FL_2 obj$ = {0:.7f}".format(float(fl2_obj)) if fl2_obj is not None else ""
+    param_str = "\n{0}\n{1}\n{2}".format(l1_string, fl1_string, fl2_string)
+
+    return "{0:.2f}% Train err.\n{1:.2f}% Valid err.\n{2:.2f}% Test err.\n\n{3}\n{4}".format(
+        get_train_misclass(model)*100,
+        get_valid_misclass(model)*100,
+        get_test_misclass(model)*100,
+        hyperparam_str,
+        param_str)
+
 
 def plot_weights(args, model=None):
     out = args.out if args.out is not None else get_output_path(args.model_path)
@@ -178,11 +234,14 @@ def plot_weights(args, model=None):
     rows = math.sqrt(math.sqrt(int(len(weights))))
     rows = int(rows) if math.floor(rows) == rows else args.rows
     import matplotlib.pyplot as plt
+    fontdict = { 'fontsize': 7 }
     fig, axes = plt.subplots(
         rows, int(len(weights) / rows), subplot_kw={'xticks': [], 'yticks': []})
-    for ax, patch in zip(axes.flat, weights):
+    for index, (ax, patch) in enumerate(zip(axes.flat, weights)):
         ax.imshow(np.squeeze(patch), interpolation='none')
+        ax.set_title(index, fontdict=fontdict)
     plt.suptitle(title)
+    plt.figtext(0.005, 0.9, get_textbox_str(model, get_currentconf(args.model_path)), fontdict=fontdict, va='top')
     if args.tight:
         plt.tight_layout()
     if args.out is None:
@@ -193,8 +252,10 @@ def plot_weights(args, model=None):
 
 def to_natural_lang(label):
     translation = {
-        'hyperparameters_l1': r"L1 $\lambda$",
-        'hyperparameters_fl': r"Fused Lasso $\lambda$",
+        'l1': r"$L_1 \lambda$",
+        'hyperparameters_l1': r"$L_1 \lambda$",
+        'fl': r"$FL \lambda$",
+        'hyperparameters_fl': r"$FL \lambda$",
         "results_trainymisclass": "Training",
         "results_testymisclass": "Test",
         "results_validymisclass": "Validation",
