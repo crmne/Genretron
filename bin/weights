@@ -214,9 +214,9 @@ def get_textbox_str(model, currentconf):
     l1_obj = get_l1_obj(model)
     fl1_obj = get_fl1_obj(model)
     fl2_obj = get_fl2_obj(model)
-    l1_string = "$L_1 obj$ = {0:.7f}".format(float(l1_obj)) if l1_obj is not None else ""
-    fl1_string = "$FL_1 obj$ = {0:.7f}".format(float(fl1_obj)) if fl1_obj is not None else ""
-    fl2_string = "$FL_2 obj$ = {0:.7f}".format(float(fl2_obj)) if fl2_obj is not None else ""
+    l1_string = "$L_1 obj$ = {0:10.4f}".format(float(l1_obj)) if l1_obj is not None else ""
+    fl1_string = "$FL_1 obj$ = {0:10.4f}".format(float(fl1_obj)) if fl1_obj is not None else ""
+    fl2_string = "$FL_2 obj$ = {0:10.4f}".format(float(fl2_obj)) if fl2_obj is not None else ""
     param_str = "\n{0}\n{1}\n{2}".format(l1_string, fl1_string, fl2_string)
 
     return "{0:.2f}% Train err.\n{1:.2f}% Valid err.\n{2:.2f}% Test err.\n\n{3}\n{4}".format(
