@@ -91,7 +91,7 @@ class AudioDataset(object):
                                      fft_resolution=fft_resolution,
                                      scale_factors=scale_factors))
         if feature != "signal":
-            bins_per_track, wins_per_track = spec.spectrogram.data.shape
+            bins_per_track, wins_per_track = tracks[0].spectrogram.data.shape
         step_size = spec.step_size
         fft_resolution = spec.fft_resolution
         del spec
