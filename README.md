@@ -19,6 +19,10 @@ On Ubuntu 14.04 LTS:
 
     sudo apt-get install libsndfile1-dev python-virtualenv python-tables python-matplotlib python-scikits-learn python-sqlalchemy python-psycopg2 python-yaml python-numpy python-scipy python-progressbar procmail
 
+On Fedora 24:
+
+    sudo dnf install gcc-c++ libsndfile-devel python2-virtualenv python-tables python2-matplotlib python2-scikit-learn python-sqlalchemy python-psycopg2 PyYAML python2-numpy python2-scipy python-progressbar Cython procmail
+
 ### Genretron
 
     git clone --recursive https://github.com/crmne/Genretron.git
