@@ -241,7 +241,9 @@ def plot_weights(args, model=None):
         ax.imshow(np.squeeze(patch), interpolation='none')
         ax.set_title(index, fontdict=fontdict)
     plt.suptitle(title)
-    plt.figtext(0.005, 0.9, get_textbox_str(model, get_currentconf(args.model_path)), fontdict=fontdict, va='top')
+    currentconf = get_currentconf(args.model_path)
+    if os.path.isfile(currentconf):
+        plt.figtext(0.005, 0.9, get_textbox_str(model, currentconf), fontdict=fontdict, va='top')
     if args.tight:
         plt.tight_layout()
     if args.out is None:
