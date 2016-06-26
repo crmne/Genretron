@@ -49,7 +49,7 @@
                 },
                 !obj:pylearn2.costs.mlp.FusedLasso {
                     coeffs: {
-                        'y': 0.000448168907033806,
+                        'y': 0.000738905609893065,
                     },
                     axes: {
                         'y': 1
