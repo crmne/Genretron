@@ -238,7 +238,11 @@ def plot_weights(args, model=None):
     fig, axes = plt.subplots(
         rows, int(len(weights) / rows), subplot_kw={'xticks': [], 'yticks': []})
     for index, (ax, patch) in enumerate(zip(axes.flat, weights)):
-        ax.imshow(np.squeeze(patch), interpolation='none')
+        if patch.shape == (513, 1, 1):
+            patch = np.repeat(np.squeeze(patch, axis=(2,)), 50, axis=1)
+        else:
+            patch = np.squeeze(patch)
+        ax.imshow(patch, interpolation='none')
         ax.set_title(index, fontdict=fontdict)
     plt.suptitle(title)
     currentconf = get_currentconf(args.model_path)
