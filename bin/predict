@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 import numpy
 import argparse
-from pylearn2.utils import serial
+from pylearn2.utils import serial, string_utils
 from pylearn2.config import yaml_parse
 from theano import function
 import genretron.utils as utils
+from genretron.audio_dataset import AudioDataset
 from genretron.audio_track import AudioTrack
 from genretron.gtzan import GTZAN
 
@@ -48,36 +49,57 @@ def predict(model_path, track_paths, verbose=False, extended=False):
     if verbose:
         print("loading data and predicting...")
 
-    # load dataset parameters
-    dataset_params = yaml_parse.load(
-        model.dataset_yaml_src, instantiate=False).keywords
-    seconds = dataset_params.get('seconds', None)
-    valid_spectrogram_params = [
-        'step_size', 'fft_resolution'
-    ]
-    spectrogram_params = \
-        {k: dataset_params.get(k, None) for k in valid_spectrogram_params}
-    invalid_dataset_params = ['which_set', 'verbose', 'print_params']
-    for invalid_key in invalid_dataset_params:
-        if dataset_params.get(invalid_key, False):
-            del dataset_params[invalid_key]
-    dataset = GTZAN(which_set='all',
-                    verbose=verbose,
-                    print_params=False,
-                    **utils.filter_null_args(**dataset_params))
+    # load dataset
+    dataset_proxy = yaml_parse.load(model.dataset_yaml_src, instantiate=False)
+    dataset_params = {k: string_utils.preprocess(v) for k, v in dataset_proxy
+                      .keywords.items()}
+    dataset = dataset_proxy.callable(**dataset_params)
+    seconds = 5.0
+
+    genres = [ 'blues', 'classical', 'country', 'disco', 'hiphop', 'jazz', 'metal', 'pop', 'reggae', 'rock']
+
+    spectrogram_params = {}
+
+    converter = 'conv2d' if 'conv2d' in dataset_params['file'] else 'vector'
+
+    # seconds = dataset_params.get('seconds', None)
+    # valid_spectrogram_params = [
+    #     'step_size', 'fft_resolution'
+    # ]
+    # spectrogram_params = \
+    #     {k: dataset_params.get(k, None) for k in valid_spectrogram_params}
+    # invalid_dataset_params = ['which_set', 'verbose', 'print_params','file']
+    # for invalid_key in invalid_dataset_params:
+    #     if dataset_params.get(invalid_key, False):
+    #         del dataset_params[invalid_key]
+    # dataset = GTZAN(which_set='all',
+    #                 verbose=verbose,
+    #                 print_params=False,
+    #                 **utils.filter_null_args(**dataset_params))
 
     def space_converter(x):
-        return dataset.spaces_converters[dataset.converter]((x, []))[0]
+        spaces_converters = {
+            "conv2d": AudioDataset.twod_to_conv2dspaces,
+            "vector": AudioDataset.twod_to_vectorspaces,
+            "signal": lambda x: x
+        }
+        return spaces_converters[converter]((x, []))[0]
 
     def view_converter(x):
-        vc = dataset.view_converters[dataset.converter]
+        from pylearn2.datasets import dense_design_matrix
+        view_converters = {
+            "conv2d": dense_design_matrix.DefaultViewConverter(
+                (513, 216, 1), ('b', 0, 1, 'c')),
+            "vector": dense_design_matrix.DefaultViewConverter(
+                (513, 1, 1), ('b', 0, 1, 'c')),
+            "signal": None
+        }
+        vc = view_converters[converter]
         if vc is None:
             return x
         else:
-            return dataset.view_converters[dataset.converter].\
-                design_mat_to_topo_view(x)
+            return view_converters[converter].design_mat_to_topo_view(x)
 
-    genres = dataset.genres
 
     for track_path in track_paths:
         if extended:
@@ -88,12 +110,12 @@ def predict(model_path, track_paths, verbose=False, extended=False):
                     track = AudioTrack(
                         track_path, seconds=seconds, offset_seconds=offset_seconds)
                     y.append(
-                        track_predict(dataset, track, f, spectrogram_params, view_converter, space_converter))
+                        track_predict(dataset, track, f, spectrogram_params, converter, view_converter, space_converter))
             y = numpy.array(y).mean(axis=0)
         else:
             track = AudioTrack(track_path, seconds=seconds)
             y = track_predict(
-                dataset, track, f, spectrogram_params, view_converter, space_converter)
+                dataset, track, f, spectrogram_params, converter, view_converter, space_converter)
 
         predictions = sorted(
             [(genres[i], v * 100) for i, v in enumerate(y)],
@@ -110,6 +132,7 @@ def track_predict(dataset,
                   track,
                   f,
                   spectrogram_params,
+                  converter,
                   view_converter,
                   space_converter):
 
@@ -124,9 +147,9 @@ def track_predict(dataset,
     x = view_converter(space_converter(spectrogram))
 
     # get the results
-    if dataset.space == "conv2d":
+    if converter == "conv2d":
         return f(x)[0]
-    elif dataset.space == "vector":
+    elif converter == "vector":
         return f(x).mean(axis=0)
     else:
         raise NotImplementedError
