@@ -10,7 +10,7 @@ from sklearn.metrics import confusion_matrix
 from pylearn2.utils import serial, string_utils
 from pylearn2.config import yaml_parse
 
-genres = [ 'blues', 'classical', 'country', 'disco', 'hiphop', 'jazz', 'metal', 'pop', 'reggae', 'rock']
+genres = ['blues', 'classical', 'country', 'disco', 'hiphop', 'jazz', 'metal', 'pop', 'reggae', 'rock']
 
 def get_classifier(model):
     X = model.get_input_space().make_theano_batch()
@@ -18,12 +18,21 @@ def get_classifier(model):
     f = theano.function([X], y, allow_input_downcast=True)
     return f
 
-def get_dataset(model):
+def get_dataset(model, which_set='test'):
     dataset_proxy = yaml_parse.load(model.dataset_yaml_src, instantiate=False)
-    dataset_params = {k: string_utils.preprocess(v) for k, v in dataset_proxy
-                        .keywords.items()}
-    dataset = np.load(dataset_params['file'])
-    return dataset
+    dataset_params = dataset_proxy.keywords
+    if 'file' in dataset_params: # npz dataset
+        dataset_params['file'] = string_utils.preprocess(dataset_params['file'])
+        dataset_params['key'] = which_set + '_X'
+        dataset_params['target_key'] = which_set + '_y'
+    else: # mnist
+        mnist_params = {
+            'train': { which_set: 'train', start: 0, stop: 50000 },
+            'valid': { which_set: 'train', start: 50000, stop:  60000 },
+            'test' : { which_set: 'test' , stop: 10000 }
+        }
+        dataset_params = mnist_params[which_set]
+        return dataset_proxy.callable(**dataset_params)
 
 def one_hot_to_num(y):
     return np.argmax(y, axis=1)
@@ -49,9 +58,8 @@ def make_argument_parser():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("model_path")
-    parser.add_argument("-y", default='test_y')
-    parser.add_argument("-X", default='test_X')
-    parser.add_argument("--splits", default=5)
+    parser.add_argument("--set", default='test')
+    parser.add_argument("--splits", default=5, type=int)
     parser.add_argument("--out", default=None)
 
     return parser
@@ -75,19 +83,28 @@ def to_natural_lang(label):
         "results_trainymisclass": "Training",
         "results_testymisclass": "Test",
         "results_validymisclass": "Validation",
-        "gtzan_conv_l1_base": "GTZAN ConvNet with L1",
-        "gtzan_conv_l1_fl_2d": "GTZAN ConvNet with L1 and 2D Fused Lasso",
-        "gtzan_conv_l1_fl_horiz": "GTZAN ConvNet with L1 and Horizontal Fused Lasso",
-        "gtzan_conv_l1_fl_vert": "GTZAN ConvNet with L1 and Vertical Fused Lasso",
-        "gtzan_softmax_l1_base": "GTZAN Softmax Regression with L1",
-        "gtzan_softmax_l1_fl_horiz": "GTZAN Softmax Regression with L1 and Horizontal Fused Lasso",
-        "gtzan_softmax_l1_fl_horiz_bgd": "GTZAN Softmax Regression with L1 and Horizontal Fused Lasso",
-        "mnist_softmax_l1_base": "MNIST Softmax Regression with L1",
-        "mnist_softmax_l1_base_bgd": "MNIST Softmax Regression with L1",
-        "mnist_softmax_l1_fl_2d": "MNIST Softmax Regression with L1 and 2D Fused Lasso",
-        "mnist_softmax_l1_fl_2d_bgd": "MNIST Softmax Regression with L1 and 2D Fused Lasso"
+        "gtzan_conv_l1_base": "GTZAN ConvNet with $L1$",
+        "gtzan_conv_l1_fl_2d": "GTZAN ConvNet with $L_1$ and 2D Fused Lasso",
+        "gtzan_conv_l1_fl_horiz": "GTZAN ConvNet with $L_1$ and Horizontal Fused Lasso",
+        "gtzan_conv_l1_fl_vert": "GTZAN ConvNet with $L_1$ and Vertical Fused Lasso",
+        "gtzan_softmax_l1_base": "GTZAN Softmax Regression with $L_1$",
+        "gtzan_softmax_l1_base_bgd": "GTZAN Softmax Regression with $L_1$",
+        "gtzan_softmax_l1_fl_horiz": "GTZAN Softmax Regression with $L_1$ and Horizontal Fused Lasso",
+        "gtzan_softmax_l1_fl_horiz_bgd": "GTZAN Softmax Regression with $L_1$ and Horizontal Fused Lasso",
+        "mnist_softmax_l1_base": "MNIST Softmax Regression with $L_1$",
+        "mnist_softmax_l1_base_bgd": "MNIST Softmax Regression with $L_1$",
+        "mnist_softmax_l1_fl_2d": "MNIST Softmax Regression with $L_1$ and 2D Fused Lasso",
+        "mnist_softmax_l1_fl_2d_bgd": "MNIST Softmax Regression with $L_1$ and 2D Fused Lasso"
     }
     return translation[label]
+
+def convert_shape(dataset):
+    shape_converters = {
+        (10,): lambda x: x,
+        (513, 1, 1): lambda x: np.squeeze(x),
+        (513, 216, 1): lambda x: x
+    }
+    return shape_converters[dataset.shape[1:]](dataset)
 
 if __name__ == "__main__":
     parser = make_argument_parser()
@@ -96,20 +113,23 @@ if __name__ == "__main__":
     # don't require X if we are just saving the plots
     if args.out is not None:
         matplotlib.use('Agg')
-    import matplotlib.pyplot as plt
+        import matplotlib.pyplot as plt
 
     # loads model
+    print("loading model...")
     model = serial.load(args.model_path)
 
     # load dataset
-    dataset = get_dataset(model)
+    dataset = get_dataset(model, args.set)
 
     # get ground truth
-    y_test = one_hot_to_num(dataset[args.y])
+    print("loading ground truth...")
+    y_test = one_hot_to_num(dataset.y)
 
     # get predictions
     classifier = get_classifier(model)
-    y_pred = predict(classifier, dataset[args.X], args.splits)
+    print("predicting...")
+    y_pred = predict(classifier, dataset.X, args.splits)
 
     # Compute confusion matrix
     cm = confusion_matrix(y_test, y_pred)
