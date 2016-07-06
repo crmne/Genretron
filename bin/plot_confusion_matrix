@@ -9,8 +9,8 @@ import theano
 from sklearn.metrics import confusion_matrix
 from pylearn2.utils import serial, string_utils
 from pylearn2.config import yaml_parse
-
-genres = ['blues', 'classical', 'country', 'disco', 'hiphop', 'jazz', 'metal', 'pop', 'reggae', 'rock']
+from pylearn2.datasets.npy_npz import NpzDataset
+from pylearn2.datasets.mnist import MNIST
 
 def get_classifier(model):
     X = model.get_input_space().make_theano_batch()
@@ -21,18 +21,27 @@ def get_classifier(model):
 def get_dataset(model, which_set='test'):
     dataset_proxy = yaml_parse.load(model.dataset_yaml_src, instantiate=False)
     dataset_params = dataset_proxy.keywords
-    if 'file' in dataset_params: # npz dataset
-        dataset_params['file'] = string_utils.preprocess(dataset_params['file'])
-        dataset_params['key'] = which_set + '_X'
-        dataset_params['target_key'] = which_set + '_y'
-    else: # mnist
+    if dataset_proxy.callable is NpzDataset: # GTZAN
+        labels = ['blues', 'classical', 'country', 'disco', 'hiphop', 'jazz', 'metal', 'pop', 'reggae', 'rock']
+        dataset_params = {
+            'file': string_utils.preprocess(dataset_params['file']),
+            'key': which_set + '_X',
+            'target_key': which_set + '_y'
+        }
+    elif dataset_proxy.callable is MNIST:
+        labels = [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
         mnist_params = {
-            'train': { which_set: 'train', start: 0, stop: 50000 },
-            'valid': { which_set: 'train', start: 50000, stop:  60000 },
-            'test' : { which_set: 'test' , stop: 10000 }
+            'train': { 'which_set': 'train', 'start': 0, 'stop': 50000 },
+            'valid': { 'which_set': 'train', 'start': 50000, 'stop':  60000 },
+            'test' : { 'which_set': 'test' , 'stop': 10000 }
         }
         dataset_params = mnist_params[which_set]
-        return dataset_proxy.callable(**dataset_params)
+    else:
+        raise NotImplementedError
+    return dataset_proxy.callable(**dataset_params), labels
+
+def is_one_hot(y):
+    return dataset.y.shape[-1] > 1
 
 def one_hot_to_num(y):
     return np.argmax(y, axis=1)
@@ -42,14 +51,14 @@ def predict(classifier, X, splits):
         [np.argmax(classifier(np.split(X, splits)[i]), axis=1) for i in range(splits)]
     )
 
-def plot_confusion_matrix(cm, title, cmap):
+def plot_confusion_matrix(cm, title, labels, cmap):
     import matplotlib.pyplot as plt
     plt.imshow(cm, interpolation='nearest', cmap=cmap)
     plt.title(title)
     plt.colorbar()
-    tick_marks = np.arange(len(genres))
-    plt.xticks(tick_marks, genres, rotation=45)
-    plt.yticks(tick_marks, genres)
+    tick_marks = np.arange(len(labels))
+    plt.xticks(tick_marks, labels, rotation=45)
+    plt.yticks(tick_marks, labels)
     plt.tight_layout()
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
@@ -78,12 +87,12 @@ def to_natural_lang(label):
     translation = {
         'l1': r"$L_1 \lambda$",
         'hyperparameters_l1': r"$L_1 \lambda$",
-        'fl': r"$FL \lambda$",
-        'hyperparameters_fl': r"$FL \lambda$",
+        'fl': r"FL $\lambda$",
+        'hyperparameters_fl': r"FL $\lambda$",
         "results_trainymisclass": "Training",
         "results_testymisclass": "Test",
         "results_validymisclass": "Validation",
-        "gtzan_conv_l1_base": "GTZAN ConvNet with $L1$",
+        "gtzan_conv_l1_base": "GTZAN ConvNet with $L_1$",
         "gtzan_conv_l1_fl_2d": "GTZAN ConvNet with $L_1$ and 2D Fused Lasso",
         "gtzan_conv_l1_fl_horiz": "GTZAN ConvNet with $L_1$ and Horizontal Fused Lasso",
         "gtzan_conv_l1_fl_vert": "GTZAN ConvNet with $L_1$ and Vertical Fused Lasso",
@@ -98,13 +107,13 @@ def to_natural_lang(label):
     }
     return translation[label]
 
-def convert_shape(dataset):
-    shape_converters = {
-        (10,): lambda x: x,
-        (513, 1, 1): lambda x: np.squeeze(x),
-        (513, 216, 1): lambda x: x
-    }
-    return shape_converters[dataset.shape[1:]](dataset)
+def get_X(dataset):
+    if isinstance(dataset, MNIST):
+        return dataset.X
+    X = dataset.view_converter.design_mat_to_topo_view(dataset.X)
+    if X.shape[1:] == (513, 1, 1):
+        X = np.squeeze(X)
+    return X
 
 if __name__ == "__main__":
     parser = make_argument_parser()
@@ -120,16 +129,18 @@ if __name__ == "__main__":
     model = serial.load(args.model_path)
 
     # load dataset
-    dataset = get_dataset(model, args.set)
-
+    dataset, labels = get_dataset(model, args.set)
     # get ground truth
     print("loading ground truth...")
-    y_test = one_hot_to_num(dataset.y)
+    if is_one_hot(dataset.y):
+        y_test = one_hot_to_num(dataset.y)
+    else:
+        y_test = dataset.y
 
     # get predictions
     classifier = get_classifier(model)
     print("predicting...")
-    y_pred = predict(classifier, dataset.X, args.splits)
+    y_pred = predict(classifier, get_X(dataset), args.splits)
 
     # Compute confusion matrix
     cm = confusion_matrix(y_test, y_pred)
@@ -145,7 +156,7 @@ if __name__ == "__main__":
     print('Normalized confusion matrix')
     print(cm_normalized)
     plt.figure()
-    plot_confusion_matrix(cm_normalized, get_title(args.model_path), plt.cm.Blues)
+    plot_confusion_matrix(cm_normalized, get_title(args.model_path), labels, plt.cm.Blues)
 
     if args.out is None:
         plt.show()
