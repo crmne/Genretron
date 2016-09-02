@@ -1,173 +1,213 @@
 #!/usr/bin/env python
-import numpy
+
+import re
+import os
 import argparse
+import numpy
+from progress.bar import Bar
 from pylearn2.utils import serial, string_utils
 from pylearn2.config import yaml_parse
-from theano import function
-import genretron.utils as utils
-from genretron.audio_dataset import AudioDataset
-from genretron.audio_track import AudioTrack
 from genretron.gtzan import GTZAN
+from pylearn2.datasets.npy_npz import NpzDataset
+from pylearn2.datasets.mnist import MNIST
+from sklearn.metrics import *
+from theano import function
 
-__authors__ = "Carmine Paolino"
-__copyright__ = "Copyright 2015, Vrije Universiteit Amsterdam"
-__credits__ = ["Carmine Paolino"]
-__license__ = "3-clause BSD"
-__email__ = "carmine@paolino.me"
+gtzan_params = {
+    "seconds": 5.0,
+    "seed": 1234,
+    "balanced_splits": True,
+    "preprocessor": "znormalizer",
+    "verbose": True,
+    "print_params": False,
+    "use_whole_song": True
+}
+
+mnist_params = {
+    'train': {'which_set': 'train', 'start': 0, 'stop': 50000},
+    'valid': {'which_set': 'train', 'start': 50000, 'stop': 60000},
+    'test': {'which_set': 'test', 'stop': 10000}
+}
 
 
-def predict(model_path, track_paths, verbose=False, extended=False):
-    """
-    Predict from a pkl file.
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('out')
+    parser.add_argument('models', nargs='+')
+    return parser.parse_args()
 
-    Parameters
-    ----------
-    model_path : str
-        The file name of the model file.
-    track_paths : str
-        The file name of the file to test/predict.
-    """
 
-    if verbose:
-        print("loading model...")
-
-    try:
-        model = serial.load(model_path)
-    except Exception as e:
-        print("error loading {}:".format(model_path))
-        print(e)
-        return False
-
-    if verbose:
-        print("setting up symbolic expressions...")
-
-    X = model.get_input_space().make_theano_batch()
-    y = model.fprop(X)
-
-    f = function([X], y, allow_input_downcast=True)
-
-    if verbose:
-        print("loading data and predicting...")
-
-    # load dataset
+def load_dataset(model, which_set):
     dataset_proxy = yaml_parse.load(model.dataset_yaml_src, instantiate=False)
-    dataset_params = {k: string_utils.preprocess(v) for k, v in dataset_proxy
-                      .keywords.items()}
-    dataset = dataset_proxy.callable(**dataset_params)
-    seconds = 5.0
-
-    genres = [ 'blues', 'classical', 'country', 'disco', 'hiphop', 'jazz', 'metal', 'pop', 'reggae', 'rock']
-
-    spectrogram_params = {}
-
-    converter = 'conv2d' if 'conv2d' in dataset_params['file'] else 'vector'
-
-    # seconds = dataset_params.get('seconds', None)
-    # valid_spectrogram_params = [
-    #     'step_size', 'fft_resolution'
-    # ]
-    # spectrogram_params = \
-    #     {k: dataset_params.get(k, None) for k in valid_spectrogram_params}
-    # invalid_dataset_params = ['which_set', 'verbose', 'print_params','file']
-    # for invalid_key in invalid_dataset_params:
-    #     if dataset_params.get(invalid_key, False):
-    #         del dataset_params[invalid_key]
-    # dataset = GTZAN(which_set='all',
-    #                 verbose=verbose,
-    #                 print_params=False,
-    #                 **utils.filter_null_args(**dataset_params))
-
-    def space_converter(x):
-        spaces_converters = {
-            "conv2d": AudioDataset.twod_to_conv2dspaces,
-            "vector": AudioDataset.twod_to_vectorspaces,
-            "signal": lambda x: x
-        }
-        return spaces_converters[converter]((x, []))[0]
-
-    def view_converter(x):
-        from pylearn2.datasets import dense_design_matrix
-        view_converters = {
-            "conv2d": dense_design_matrix.DefaultViewConverter(
-                (513, 216, 1), ('b', 0, 1, 'c')),
-            "vector": dense_design_matrix.DefaultViewConverter(
-                (513, 1, 1), ('b', 0, 1, 'c')),
-            "signal": None
-        }
-        vc = view_converters[converter]
-        if vc is None:
-            return x
-        else:
-            return view_converters[converter].design_mat_to_topo_view(x)
-
-
-    for track_path in track_paths:
-        if extended:
-            track = AudioTrack(track_path)
-            y = []
-            for offset_seconds in numpy.arange(0, track.seconds_total, seconds):
-                if offset_seconds + seconds <= track.seconds_total:
-                    track = AudioTrack(
-                        track_path, seconds=seconds, offset_seconds=offset_seconds)
-                    y.append(
-                        track_predict(dataset, track, f, spectrogram_params, converter, view_converter, space_converter))
-            y = numpy.array(y).mean(axis=0)
-        else:
-            track = AudioTrack(track_path, seconds=seconds)
-            y = track_predict(
-                dataset, track, f, spectrogram_params, converter, view_converter, space_converter)
-
-        predictions = sorted(
-            [(genres[i], v * 100) for i, v in enumerate(y)],
-            key=lambda tup: tup[1],
-            reverse=True
-        )
-
-        print("{}:".format(track.path))
-        for prediction in predictions:
-            print("{:>10}: {:12.8f}%".format(prediction[0], prediction[1]))
-
-
-def track_predict(dataset,
-                  track,
-                  f,
-                  spectrogram_params,
-                  converter,
-                  view_converter,
-                  space_converter):
-
-    # calc spectrogram
-    spectrogram = track.calc_spectrogram(
-        **utils.filter_null_args(**spectrogram_params)).data
-    # add the batch size
-    spectrogram = spectrogram.reshape(
-        (1, spectrogram.shape[0], spectrogram.shape[1]))
-
-    # convert to the format used in training
-    x = view_converter(space_converter(spectrogram))
-
-    # get the results
-    if converter == "conv2d":
-        return f(x)[0]
-    elif converter == "vector":
-        return f(x).mean(axis=0)
+    dataset_params = {k: string_utils.preprocess(str(v))
+                      for k, v in dataset_proxy.keywords.items()}
+    if dataset_proxy.callable is NpzDataset:  # GTZAN
+        dataset_params['key'] = which_set + '_X'
+        dataset_params['target_key'] = which_set + '_y'
+    elif dataset_proxy.callable is MNIST:
+        dataset_params = mnist_params[which_set]
     else:
         raise NotImplementedError
+    return dataset_proxy.callable(**dataset_params)
 
 
-def make_argument_parser():
-    """
-    Creates an ArgumentParser to read the options for this script from
-    sys.argv
-    """
-    parser = argparse.ArgumentParser()
-    parser.add_argument('model')
-    parser.add_argument('tracks', nargs='*')
-    parser.add_argument('-v', '--verbose', action='store_true')
-    parser.add_argument('-e', '--extended', action='store_true')
-    return parser
+def get_space(model):
+    if model.dataset_yaml_src.find('vector') > 0:
+        return 'vector'
+    if model.dataset_yaml_src.find('conv2d') > 0:
+        return 'conv2d'
 
-if __name__ == "__main__":
-    parser = make_argument_parser()
-    args = parser.parse_args()
-    predict(args.model, args.tracks, args.verbose, args.extended)
+
+def get_classifier(model):
+    X = model.get_input_space().make_theano_batch()
+    y = model.fprop(X)
+    f = function([X], y, allow_input_downcast=True)
+    return f
+
+
+def get_X(dataset):
+    if isinstance(dataset, MNIST):
+        return dataset.X
+    X = dataset.view_converter.design_mat_to_topo_view(dataset.X)
+    if X.shape[1:] == (513, 1, 1):
+        X = numpy.squeeze(X)
+    return X
+
+
+def get_y_true(dataset):
+    if isinstance(dataset, NpzDataset):
+        return numpy.argmax(dataset.y, axis=1)
+    elif isinstance(dataset, MNIST):
+        return numpy.squeeze(dataset.y)
+
+
+def get_y_true_mv(dataset, ntracksegnment):
+    return get_y_true(dataset)[::ntracksegnment]
+
+
+def get_normalized_model_name(model_path):
+    # assuming it ends with -best.pkl
+    return os.path.basename(model_path).split('-best.pkl')[0].replace('-', '_')
+
+
+def get_progressive_model_number(model_path):
+    return os.path.basename(os.path.dirname(os.path.dirname(model_path)))
+
+
+def get_segments_ids(gtzan):
+    segments_ids = gtzan.get_track_ids(gtzan.which_set)
+    if gtzan.space == 'vector':
+        segments_ids = gtzan.track_ids_to_frame_ids(segments_ids)
+    return segments_ids
+
+
+def get_ntracksegments(gtzan):
+    if gtzan.space == 'conv2d':
+        return gtzan.ntracksegments
+    if gtzan.space == 'vector':
+        return gtzan.wins_per_track * gtzan.ntracksegments
+
+
+def get_currentconf(model_path):
+    return os.path.join(
+        os.path.dirname(os.path.dirname(model_path)), 'current.conf')
+
+
+def get_hyperparameters(model_path):
+    currentconf = get_currentconf(model_path)
+    hp = {}
+    for line in open(currentconf, 'r'):
+        match = re.match(r"^hyper_parameters\.(.+) = (.+)$", line)
+        if match:
+            hp[match.group(1)] = float(match.group(2))
+    return hp
+
+
+def predict(models):
+    sets = ['train', 'valid', 'test']
+    y_trues = numpy.zeros(
+        (len(args.models), len(sets)), dtype=numpy.ndarray)
+    y_true_mvs = numpy.zeros_like(y_trues)
+    y_preds = numpy.zeros_like(y_trues)
+    y_pred_mvs = numpy.zeros_like(y_trues)
+
+    l1s = numpy.zeros(len(args.models))
+    fls = numpy.zeros(len(args.models))
+
+    labels = ""
+
+    bar = Bar('Processing', max=len(args.models) * len(sets))
+    for mi, model_path in enumerate(args.models):
+        # load learned model
+        model = serial.load(model_path)
+        hyper_parameters = get_hyperparameters(model_path)
+
+        l1s[mi] = hyper_parameters.get('l1', numpy.nan)
+        fls[mi] = hyper_parameters.get('fl', numpy.nan)
+
+        for si, which_set in enumerate(sets):
+            dataset = load_dataset(model, which_set)
+
+            # load GTZAN
+            if isinstance(dataset, NpzDataset):
+                gtzan_params['which_set'] = which_set
+                gtzan_params['space'] = get_space(model)
+                gtzan = GTZAN(**gtzan_params)
+                labels = gtzan.genres
+                ntracksegments = get_ntracksegments(gtzan)
+                segments_ids = get_segments_ids(gtzan)
+            elif isinstance(dataset, MNIST):
+                labels = [str(i) for i in range(10)]
+            else:
+                raise NotImplementedError
+
+            # set up symbolic expressions
+            f = get_classifier(model)
+
+            # get X
+            X = get_X(dataset)
+
+            # get y_true
+            y_true = get_y_true(dataset)
+            y_trues[mi][si] = y_true
+            if isinstance(dataset, NpzDataset):
+                y_true_mv = get_y_true_mv(dataset, ntracksegments)
+                y_true_mvs[mi][si] = y_true_mv
+
+            # get y_pred
+            y_pred = numpy.empty_like(y_true)
+            if isinstance(dataset, NpzDataset):
+                for i, _ in enumerate(segments_ids):
+                    x = numpy.expand_dims(X[i], axis=0)
+                    y_pred[i] = (numpy.argmax(f(x)[0]))
+            elif isinstance(dataset, MNIST):
+                y_pred = numpy.argmax(f(X), axis=1)
+            else:
+                raise NotImplementedError
+            y_preds[mi][si] = y_pred
+
+            # get y_pred_mv
+            if dataset is NpzDataset:
+                y_pred_mv = numpy.apply_along_axis(
+                    lambda x: numpy.argmax(numpy.bincount(x)), 1,
+                    numpy.split(y_pred, len(y_pred) / ntracksegments))
+                y_pred_mvs[mi][si] = y_pred_mv
+
+            bar.next()
+
+    bar.finish()
+    return y_trues, y_true_mvs, y_preds, y_pred_mvs, l1s, fls, labels
+
+if __name__ == '__main__':
+    args = parse_args()
+
+    y_trues, y_true_mvs, y_preds, y_pred_mvs, l1s, fls, labels = predict(
+        args.models)
+    numpy.savez(args.out,
+                y_trues=y_trues,
+                y_true_mvs=y_true_mvs,
+                y_preds=y_preds,
+                y_pred_mvs=y_pred_mvs,
+                l1s=l1s,
+                fls=fls,
+                labels=labels)

@@ -1,0 +1,138 @@
+#!/usr/bin/env python
+
+import os
+import argparse
+import numpy
+from sklearn.metrics import *
+import matplotlib.pyplot as plt
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('predictions')
+    parser.add_argument('--save', action='store_true')
+    parser.add_argument('--mv', action='store_true', help='majority voting')
+    parser.add_argument('--test', action='store_true',
+                        help="plot test set")
+    parser.add_argument('--range', nargs=2, type=float, default=[0., 10.])
+    parser.add_argument('--figsize', nargs=2, type=int, default=[8, 6])
+    return parser.parse_args()
+
+
+def get_save_path(predictions_path):
+    return os.path.basename(predictions_path).split('.npz')[0]
+
+
+def plot(x, y, xlabel, ylabel, ylabels, best_xy, title=""):
+    annotation_text = "{}best = {}\nAccuracy = {}".format(
+        xlabel,
+        *tuple(map(lambda z: round(z, 6), best_xy)))
+
+    plt.plot(x, y, '.-')
+    plt.xscale('symlog', linthreshx=.0001)
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.legend(ylabels, loc='best')
+
+    plt.annotate(
+        annotation_text,
+        xy=best_xy,
+        xytext=(.5, 1),
+        textcoords='axes fraction',
+        arrowprops=dict(arrowstyle="->",
+                        connectionstyle="arc3", ec='k'),
+        horizontalalignment='center', verticalalignment='top')
+
+
+def is_fl_experiment(fls):
+    return not numpy.isnan(fls).any()
+
+
+def get_best_model(sets, x, y):
+    valid = y[:, numpy.where(sets == 'valid')[0][0]]
+    test = y[:, numpy.where(sets == 'test')[0][0]]
+    best_i = numpy.argmax(valid)
+    return x[best_i], test[best_i], best_i
+
+
+def mask_test(accuracy, except_i):
+    mask = numpy.full_like(accuracy, True, bool)
+    mask[:, sets != 'test'] = False
+    mask[except_i, sets == 'test'] = False
+    y = numpy.copy(accuracy)
+    numpy.putmask(
+        y,
+        mask,
+        numpy.nan)
+    return y
+
+
+if __name__ == '__main__':
+    args = parse_args()
+
+    sets = numpy.array(['train', 'valid', 'test'])
+
+    # load predictions
+    npzfile = numpy.load(args.predictions)
+    if args.mv:
+        mv_string = "_mv"
+        y_trues = npzfile['y_true_mvs']
+        y_preds = npzfile['y_pred_mvs']
+    else:
+        mv_string = ""
+        y_trues = npzfile['y_trues']
+        y_preds = npzfile['y_preds']
+    l1s = npzfile['l1s']
+    fls = npzfile['fls']
+
+    # calc accuracy score
+    accuracy = numpy.empty_like(y_trues, dtype=float)
+    for mi, y_true_per_model in enumerate(y_trues):
+        for si, _ in enumerate(y_true_per_model):
+            y_true = y_trues[mi][si]
+            y_pred = y_preds[mi][si]
+            accuracy[mi][si] = accuracy_score(y_true, y_pred)
+
+    if is_fl_experiment(fls):
+        for l1 in numpy.unique(l1s):
+            plt.figure(figsize=tuple(args.figsize))
+            plt.style.use('ggplot')
+
+            l1_string = r"$\lambda_{L_1} = %s$" % str(l1)
+            indexes = numpy.where((l1s == l1) &
+                                  (fls >= args.range[0]) &
+                                  (fls <= args.range[1]))
+            bx, by, bi = get_best_model(sets, fls[indexes], accuracy[indexes])
+            if not args.test:
+                y = mask_test(accuracy[indexes], bi)
+            else:
+                y = accuracy[indexes]
+            plot(fls[indexes], y, r"$\lambda_{FL}$",
+                 "Accuracy", sets, (bx, by), l1_string)
+
+            if args.save:
+                save_path = '{}_l1_{}{}.pdf'.format(
+                    get_save_path(args.predictions), str(l1).replace('.', '_'),
+                    mv_string)
+                plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            else:
+                plt.show()
+    else:
+        plt.figure(figsize=tuple(args.figsize))
+        plt.style.use('ggplot')
+
+        indexes = numpy.where((l1s >= args.range[0]) & (l1s <= args.range[1]))
+        bx, by, bi = get_best_model(sets, l1s[indexes], accuracy[indexes])
+        if not args.test:
+            y = mask_test(accuracy[indexes], bi)
+        else:
+            y = accuracy[indexes]
+        plot(l1s[indexes], y, r"$\lambda_{L_1}$",
+             "Accuracy", sets, (bx, by))
+
+        if args.save:
+            save_path = get_save_path(args.predictions) + mv_string + '.pdf'
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        else:
+            plt.show()

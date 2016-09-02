@@ -5,7 +5,6 @@ Make plots from db.
 import argparse
 import numpy
 from sqlalchemy import create_engine
-from genretron.utils import longest_common_substring
 
 __authors__ = "Carmine Paolino"
 __copyright__ = "Copyright 2015, Vrije Universiteit Amsterdam"
@@ -13,32 +12,43 @@ __credits__ = ["Carmine Paolino"]
 __license__ = "3-clause BSD"
 __email__ = "carmine@paolino.me"
 
+
 def get_columns():
-    return ['results_trainymisclass', 'results_validymisclass', 'results_testymisclass', 'hyperparameters_l1', 'hyperparameters_fl']
+    return ['results_trainymisclass',
+            'results_validymisclass',
+            'results_testymisclass',
+            'hyperparameters_l1',
+            'hyperparameters_fl']
+
 
 def plot(results_x, results_y, xlabel, ylabels, log, out, title, fill=False):
     import matplotlib
     if out:
         matplotlib.use('Agg')
     import matplotlib.pyplot as plt
-    fig = plt.figure(figsize=(12, 10))
     plot_fn = plt.semilogx if log else plt.plot
     if fill:
-        plot_fn(results_x, results_y[:,0], '.-', color='blue')
-        plot_fn(results_x, results_y[:,1], '.-', color='green')
-        plot_fn(results_x, results_y[:,2], '.-', color='red')
-        plot_fn(results_x, results_y[:,3], '.-', color='cyan')
-        plot_fn(results_x, results_y[:,4], '.-', color='lime')
-        plot_fn(results_x, results_y[:,5], '.-', color='magenta')
-        plot_fn(results_x, results_y[:,6], '.-', color='darkblue')
-        plot_fn(results_x, results_y[:,7], '.-', color='darkgreen')
-        plot_fn(results_x, results_y[:,8], '.-', color='darkred')
-        plt.fill_between(results_x, results_y[:,0], results_y[:,3], facecolor='blue', alpha=0.5)
-        plt.fill_between(results_x, results_y[:,3], results_y[:,6], facecolor='blue', alpha=0.5)
-        plt.fill_between(results_x, results_y[:,1], results_y[:,4], facecolor='green', alpha=0.5)
-        plt.fill_between(results_x, results_y[:,4], results_y[:,7], facecolor='green', alpha=0.5)
-        plt.fill_between(results_x, results_y[:,2], results_y[:,5], facecolor='red', alpha=0.5)
-        plt.fill_between(results_x, results_y[:,5], results_y[:,8], facecolor='red', alpha=0.5)
+        plot_fn(results_x, results_y[:, 0], '.-', color='blue')
+        plot_fn(results_x, results_y[:, 1], '.-', color='green')
+        plot_fn(results_x, results_y[:, 2], '.-', color='red')
+        plot_fn(results_x, results_y[:, 3], '.-', color='cyan')
+        plot_fn(results_x, results_y[:, 4], '.-', color='lime')
+        plot_fn(results_x, results_y[:, 5], '.-', color='magenta')
+        plot_fn(results_x, results_y[:, 6], '.-', color='darkblue')
+        plot_fn(results_x, results_y[:, 7], '.-', color='darkgreen')
+        plot_fn(results_x, results_y[:, 8], '.-', color='darkred')
+        plt.fill_between(results_x, results_y[:, 0], results_y[
+                         :, 3], facecolor='blue', alpha=0.5)
+        plt.fill_between(results_x, results_y[:, 3], results_y[
+                         :, 6], facecolor='blue', alpha=0.5)
+        plt.fill_between(results_x, results_y[:, 1], results_y[
+                         :, 4], facecolor='green', alpha=0.5)
+        plt.fill_between(results_x, results_y[:, 4], results_y[
+                         :, 7], facecolor='green', alpha=0.5)
+        plt.fill_between(results_x, results_y[:, 2], results_y[
+                         :, 5], facecolor='red', alpha=0.5)
+        plt.fill_between(results_x, results_y[:, 5], results_y[
+                         :, 8], facecolor='red', alpha=0.5)
     else:
         plot_fn(results_x, results_y, '.-')
     ylabel = "Misclassification Error"
@@ -48,9 +58,10 @@ def plot(results_x, results_y, xlabel, ylabels, log, out, title, fill=False):
     plt.legend(ylabels, loc="best")
     plt.grid()
     if out:
-        plt.savefig(out, format='pdf', dpi=150)
+        plt.savefig(out, format='pdf', dpi=300, bbox_inches='tight')
     else:
         plt.show()
+
 
 def to_natural_lang(label):
     translation = {
@@ -61,16 +72,18 @@ def to_natural_lang(label):
         "results_validymisclass": "Validation",
         "gtzan_conv_l1_base": "GTZAN ConvNet with $L_1$",
         "gtzan_conv_l1_fl_2d": "GTZAN ConvNet with $L_1$ and 2D Fused Lasso",
-        "gtzan_conv_l1_fl_horiz": "GTZAN ConvNet with $L_1$ and Horizontal Fused Lasso",
-        "gtzan_conv_l1_fl_vert": "GTZAN ConvNet with $L_1$ and Vertical Fused Lasso",
+        "gtzan_conv_l1_fl_horiz": "GTZAN ConvNet with $L_1$ and Vertical Fused Lasso",
+        "gtzan_conv_l1_fl_vert": "GTZAN ConvNet with $L_1$ and Horizontal Fused Lasso",
         "gtzan_softmax_l1_base": "GTZAN Softmax Regression with $L_1$",
         "gtzan_softmax_l1_base_bgd": "GTZAN Softmax Regression with $L_1$",
         "gtzan_softmax_l1_fl_horiz": "GTZAN Softmax Regression with $L_1$ and Horizontal Fused Lasso",
-        "gtzan_softmax_l1_fl_horiz_bgd": "GTZAN Softmax Regression with $L_1$ and Horizontal Fused Lasso",
+        "gtzan_softmax_l1_fl_horiz_bgd": "GTZAN Softmax Regression with $L_1$ and Vertical Fused Lasso",
+        "gtzan_softmax_l1_fl_horiz_bgd_real": "GTZAN Softmax Regression with $L_1$ and Horizontal Fused Lasso",
         "mnist_softmax_l1_base": "MNIST Softmax Regression with $L_1$",
         "mnist_softmax_l1_base_bgd": "MNIST Softmax Regression with $L_1$",
         "mnist_softmax_l1_fl_2d": "MNIST Softmax Regression with $L_1$ and 2D Fused Lasso",
-        "mnist_softmax_l1_fl_2d_bgd": "MNIST Softmax Regression with $L_1$ and 2D Fused Lasso"
+        "mnist_softmax_l1_fl_2d_bgd": "MNIST Softmax Regression with $L_1$ and 2D Fused Lasso",
+        "mnist_softmax_l1_fl_2d_bgd_l1": "MNIST Softmax Regression with $L_1$ and 2D Fused Lasso",
     }
     return translation[label]
 
@@ -124,7 +137,8 @@ def plot_l1base(conn, table, log, out):
     label_x = to_natural_lang(xcolumn)
     labels_y = [to_natural_lang(i) for i in columns[:-1]]
 
-    plot(results_x, results_y, label_x, labels_y, log=log, out=out, title=to_natural_lang(table))
+    plot(results_x, results_y, label_x, labels_y,
+         log=log, out=out, title=to_natural_lang(table))
 
 
 def get_l1_values(conn, table):
@@ -149,7 +163,8 @@ def plot_fleachl1(conn, table, log, out):
         results_y = [i[:-2] for i in results]
 
         title = r"{0} ($L_1 \lambda$ = {1})".format(to_natural_lang(table), l1)
-        plot(results_x, results_y, label_x, labels_y, log=log, out=out, title=title)
+        plot(results_x, results_y, label_x,
+             labels_y, log=log, out=out, title=title)
 
 
 def get_resultsn_per_l1(conn, table, l1value):
@@ -166,9 +181,11 @@ def fl_l1_combined_results(conn, table):
     param_columns = columns[-2:]
 
     label_x = to_natural_lang(xcolumn)
-    labels_y = [r"{0} ($L_1 \lambda$ = {1})".format(to_natural_lang(rc), l1) for l1 in l1values for rc in result_columns]
+    labels_y = [r"{0} ($L_1 \lambda$ = {1})".format(to_natural_lang(rc), l1)
+                for l1 in l1values for rc in result_columns]
     results_x = []
-    results_y = numpy.zeros((resultsn_per_l1, len(result_columns) * len(l1values)))
+    results_y = numpy.zeros(
+        (resultsn_per_l1, len(result_columns) * len(l1values)))
 
     for l1_i, l1 in enumerate(l1values):
         where_clause = "hyperparameters_l1 = {0}".format(l1)
@@ -177,30 +194,34 @@ def fl_l1_combined_results(conn, table):
 
         results_x = [i[-1] for i in results]
 
-        start_i = l1_i*len(result_columns)
+        start_i = l1_i * len(result_columns)
         end_i = start_i + len(result_columns)
-        results_y[:,start_i:end_i] = [i[:-2] for i in results]
+        results_y[:, start_i:end_i] = [i[:-2] for i in results]
 
     return results_x, results_y, label_x, labels_y
 
 
 def plot_fll1combined(conn, table, log, out):
     title = to_natural_lang(table)
-    results_x, results_y, label_x, labels_y = fl_l1_combined_results(conn, table)
+    results_x, results_y, label_x, labels_y = fl_l1_combined_results(
+        conn, table)
 
     plot(results_x, results_y, label_x, labels_y, log=log, out=out, title=title)
 
 
 def plot_fll1fillbetween(conn, table, log, out):
     title = to_natural_lang(table)
-    results_x, results_y, label_x, labels_y = fl_l1_combined_results(conn, table)
+    results_x, results_y, label_x, labels_y = fl_l1_combined_results(
+        conn, table)
 
-    plot(results_x, results_y, label_x, labels_y, log=log, out=out, title=title, fill=True)
+    plot(results_x, results_y, label_x, labels_y,
+         log=log, out=out, title=title, fill=True)
 
 
 def plot_fll1errorbars(conn, table, log, out):
     title = to_natural_lang(table)
-    results_x, results_y, label_x, labels_y = fl_l1_combined_results(conn, table)
+    results_x, results_y, label_x, labels_y = fl_l1_combined_results(
+        conn, table)
 
     plot(results_x, results_y, label_x, labels_y, log=log, out=out, title=title)
 

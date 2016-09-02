@@ -1,0 +1,36 @@
+#!/usr/bin/env python
+# saves the list of songs in each split for GTZAN in
+# three different files in the current directory
+
+import numpy
+import argparse
+from genretron.gtzan import GTZAN
+from pylearn2.config import yaml_parse
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("dataset_yaml_src")
+    parser.add_argument("which_sets", nargs='+')
+    return parser.parse_args()
+
+if __name__ == "__main__":
+    args = parse_args()
+
+    dataset_proxy = yaml_parse.load_path(
+        args.dataset_yaml_src, instantiate=False)
+    dataset_params = dataset_proxy.keywords['dataset'].keywords
+    # dataset_callable = dataset_proxy.keywords['dataset'].callable # useful
+    # for non gtzan datasets
+
+    for which_set in args.which_sets:
+        dataset_params['which_set'] = which_set
+        dataset = GTZAN(**dataset_params)
+        set_tracks_id = dataset.get_track_ids(dataset.which_set)
+        set_tracks = numpy.take(dataset.tracks, set_tracks_id).tolist()
+        unique_track_paths = sorted(set([t.path for t in set_tracks]))
+
+        outfile_name = which_set + '.txt'
+        with open(outfile_name, 'w') as outfile:
+            for track_path in unique_track_paths:
+                outfile.write("{}\n".format(track_path))

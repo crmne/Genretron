@@ -5,7 +5,7 @@ nose
 nose-parameterized
 numpy
 psycopg2
-progressbar
+progress
 PyYAML
 scikit-learn
 scikits.audiolab

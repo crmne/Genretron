@@ -3,8 +3,6 @@
 Plays the weight matrices of a pickled model
 """
 from __future__ import division
-import matplotlib
-matplotlib.use('Agg')
 from genretron.gtzan import GTZAN, GTZAN_On_Memory
 from genretron.spectrogram import Spectrogram
 from pylearn2.datasets import control
@@ -162,38 +160,48 @@ def play_weights(out, model_path=None, model=None, repetitions=1):
         librosa.output.write_wav(filename, normalized_signal,
                                  sr=dataset.samplerate)
 
+
 def get_normalized_model_name(model_path):
     # assuming it ends with -best.pkl
     return os.path.basename(model_path).split('-best.pkl')[0].replace('-', '_')
 
+
 def get_currentconf(model_path):
     return os.path.join(os.path.dirname(os.path.dirname(model_path)), 'current.conf')
+
 
 def get_title(model_path):
     return to_natural_lang(get_normalized_model_name(model_path))
 
+
 def get_output_path(model_path):
     return "{0}.png".format(get_normalized_model_name(model_path))
+
 
 def get_valid_misclass(model):
     result = model.monitor.channels.get('valid_y_misclass')
     return None if result is None else result.val_record[-1]
 
+
 def get_train_misclass(model):
     result = model.monitor.channels.get('train_y_misclass')
     return None if result is None else result.val_record[-1]
+
 
 def get_test_misclass(model):
     result = model.monitor.channels.get('test_y_misclass')
     return None if result is None else result.val_record[-1]
 
+
 def get_fl1_obj(model):
     result = model.monitor.channels.get('train_term_2_fused_lasso')
     return None if result is None else result.val_record[-1]
 
+
 def get_fl2_obj(model):
     result = model.monitor.channels.get('train_term_3_fused_lasso')
     return None if result is None else result.val_record[-1]
+
 
 def get_l1_obj(model):
     result = model.monitor.channels.get('train_term_1_l1_penalty')
@@ -208,78 +216,113 @@ def get_hyperparameters(currentconf):
             hp[match.group(1)] = float(match.group(2))
     return hp
 
+
 def get_textbox_str(model, currentconf):
-    hyperparam_str = "\n".join(["{0} = {1:10.7f}".format(to_natural_lang(k), v) for k, v in get_hyperparameters(currentconf).items()])
+    hyperparam_str = "\n".join(["{0} = {1:10.7f}".format(to_natural_lang(
+        k), v) for k, v in get_hyperparameters(currentconf).items()])
 
     l1_obj = get_l1_obj(model)
     fl1_obj = get_fl1_obj(model)
     fl2_obj = get_fl2_obj(model)
-    l1_string = "$L_1 obj$ = {0:10.4f}".format(float(l1_obj)) if l1_obj is not None else ""
-    fl1_string = "$FL_1 obj$ = {0:10.4f}".format(float(fl1_obj)) if fl1_obj is not None else ""
-    fl2_string = "$FL_2 obj$ = {0:10.4f}".format(float(fl2_obj)) if fl2_obj is not None else ""
-    param_str = "\n{0}\n{1}\n{2}".format(l1_string.strip(), fl1_string.strip(), fl2_string.strip())
+    l1_string = "$L_1 obj$ = {0:10.4f}".format(
+        float(l1_obj)) if l1_obj is not None else ""
+    fl1_string = "$FL_1 obj$ = {0:10.4f}".format(
+        float(fl1_obj)) if fl1_obj is not None else ""
+    fl2_string = "$FL_2 obj$ = {0:10.4f}".format(
+        float(fl2_obj)) if fl2_obj is not None else ""
+    param_str = "\n{0}\n{1}\n{2}".format(
+        l1_string.strip(), fl1_string.strip(), fl2_string.strip())
 
     return "{0:.2f}% Train err.\n{1:.2f}% Valid err.\n{2:.2f}% Test err.\n\n{3}\n{4}".format(
-        get_train_misclass(model)*100,
-        get_valid_misclass(model)*100,
-        get_test_misclass(model)*100,
+        get_train_misclass(model) * 100,
+        get_valid_misclass(model) * 100,
+        get_test_misclass(model) * 100,
         hyperparam_str,
         param_str)
 
 
 def plot_weights(args, model=None):
-    out = args.out if args.out is not None else get_output_path(args.model_path)
-    title = args.title if args.title is not None else get_title(args.model_path)
+    title = args.title if args.title is not None else get_title(
+        args.model_path)
     weights = get_weights(model=model)
-    rows = math.sqrt(math.sqrt(int(len(weights))))
-    rows = int(rows) if math.floor(rows) == rows else args.rows
+    cols = math.sqrt(math.sqrt(int(len(weights))))
+    cols = int(cols) if math.floor(cols) == cols else int(args.cols)
+    rows = int(args.rows) if args.rows else int(len(weights) / cols)
     import matplotlib.pyplot as plt
-    fontdict = { 'fontsize': 7 }
+    fontdict = {'fontsize': 4}
     fig, axes = plt.subplots(
-        rows, int(len(weights) / rows), subplot_kw={'xticks': [], 'yticks': []})
+        rows,
+        cols,
+        subplot_kw={'xticks': [], 'yticks': []},
+        figsize=tuple(args.figsize))
+    genres = ['blues', 'classical', 'country', 'disco',
+              'hiphop', 'jazz', 'metal', 'pop', 'reggae', 'rock']
     for index, (ax, patch) in enumerate(zip(axes.flat, weights)):
         if patch.shape == (513, 1, 1):
-            patch = np.repeat(np.squeeze(patch, axis=(2,)), 50, axis=1)
+            patch = np.repeat(np.squeeze(patch, axis=(2,)), 10, axis=1)
+            label = genres[index]
         elif patch.shape == (28, 28, 1):
             patch = np.squeeze(patch)
+            label = index
         else:
             patch = np.repeat(np.squeeze(patch), 10, axis=1)
+            label = index
+        if args.transpose:
+            patch = patch.T
         ax.imshow(patch, interpolation='none')
-        ax.set_title(index, fontdict=fontdict)
+        ax.set_title(label, fontdict=fontdict)#, loc='right', x=1.01, ha='left', y=-0.5)
     plt.suptitle(title)
     currentconf = get_currentconf(args.model_path)
-    if os.path.isfile(currentconf):
-        plt.figtext(0.005, 0.9, get_textbox_str(model, currentconf), fontdict=fontdict, va='top')
+    if os.path.isfile(currentconf) and args.textbox:
+        plt.figtext(0.005, 0.9, get_textbox_str(
+            model, currentconf), fontdict=fontdict, va='top')
     if args.tight:
         plt.tight_layout()
     if args.out is None:
         plt.show()
     else:
-        plt.savefig(args.out, dpi=300)
+        plt.savefig(args.out, dpi=300, bbox_inches='tight')
+
+
+def hist_weights(args, model=None):
+    weights = np.array(get_weights(model=model)).flatten()
+    import matplotlib.pyplot as plt
+    plt.figure(figsize=tuple(args.figsize))
+    plt.style.use('ggplot')
+    n, bins, patches = plt.hist(weights, 100, align='left')
+    plt.plot(bins)
+    plt.axis([np.min(bins), np.max(bins), 0, np.max(n)])
+    if args.out is None:
+        plt.show()
+    else:
+        plt.savefig(args.out, dpi=300, bbox_inches='tight')
 
 
 def to_natural_lang(label):
     translation = {
         'l1': r"$L_1 \lambda$",
         'hyperparameters_l1': r"$L_1 \lambda$",
-        'fl': r"$FL \lambda$",
-        'hyperparameters_fl': r"$FL \lambda$",
+        'fl': r"FL $\lambda$",
+        'hyperparameters_fl': r"FL $\lambda$",
         "results_trainymisclass": "Training",
         "results_testymisclass": "Test",
         "results_validymisclass": "Validation",
-        "gtzan_conv_l1_base": "GTZAN ConvNet with L1",
-        "gtzan_conv_l1_fl_2d": "GTZAN ConvNet with L1 and 2D Fused Lasso",
-        "gtzan_conv_l1_fl_horiz": "GTZAN ConvNet with L1 and Horizontal Fused Lasso",
-        "gtzan_conv_l1_fl_vert": "GTZAN ConvNet with L1 and Vertical Fused Lasso",
-        "gtzan_softmax_l1_base": "GTZAN Softmax Regression with L1",
-        "gtzan_softmax_l1_fl_horiz": "GTZAN Softmax Regression with L1 and Horizontal Fused Lasso",
-        "gtzan_softmax_l1_fl_horiz_bgd": "GTZAN Softmax Regression with L1 and Horizontal Fused Lasso",
-        "mnist_softmax_l1_base": "MNIST Softmax Regression with L1",
-        "mnist_softmax_l1_base_bgd": "MNIST Softmax Regression with L1",
-        "mnist_softmax_l1_fl_2d": "MNIST Softmax Regression with L1 and 2D Fused Lasso",
-        "mnist_softmax_l1_fl_2d_bgd": "MNIST Softmax Regression with L1 and 2D Fused Lasso"
+        "gtzan_conv_l1_base": "GTZAN ConvNet with $L_1$",
+        "gtzan_conv_l1_fl_2d": "GTZAN ConvNet with $L_1$ and 2D Fused Lasso",
+        "gtzan_conv_l1_fl_horiz": "GTZAN ConvNet with $L_1$ and Horizontal Fused Lasso",
+        "gtzan_conv_l1_fl_vert": "GTZAN ConvNet with $L_1$ and Vertical Fused Lasso",
+        "gtzan_softmax_l1_base": "GTZAN Softmax Regression with $L_1$",
+        "gtzan_softmax_l1_base_bgd": "GTZAN Softmax Regression with $L_1$",
+        "gtzan_softmax_l1_fl_horiz": "GTZAN Softmax Regression with $L_1$ and Horizontal Fused Lasso",
+        "gtzan_softmax_l1_fl_horiz_bgd": "GTZAN Softmax Regression with $L_1$ and Horizontal Fused Lasso",
+        "gtzan_softmax_l1_fl_horiz_bgd_real": "GTZAN Softmax Regression with $L_1$ and Horizontal Fused Lasso",
+        "mnist_softmax_l1_base": "MNIST Softmax Regression with $L_1$",
+        "mnist_softmax_l1_base_bgd": "MNIST Softmax Regression with $L_1$",
+        "mnist_softmax_l1_fl_2d": "MNIST Softmax Regression with $L_1$ and 2D Fused Lasso",
+        "mnist_softmax_l1_fl_2d_bgd": "MNIST Softmax Regression with $L_1$ and 2D Fused Lasso"
     }
     return translation[label]
+
 
 def make_argument_parser():
     """
@@ -288,13 +331,18 @@ def make_argument_parser():
     """
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("action", choices=("play", "plot"))
+    parser.add_argument("action", choices=("play", "plot", "hist"))
     parser.add_argument("model_path")
     parser.add_argument("--out", default=None)
     parser.add_argument("--repetitions", default=5)
-    parser.add_argument("--rows", default=2)
+    parser.add_argument("--rows", default=10)
+    parser.add_argument("--cols", default=1)
     parser.add_argument("--title", default=None)
-    parser.add_argument("--tight", dest='tight', action="store_true", default=False)
+    parser.add_argument("--tight", dest='tight',
+                        action="store_true", default=False)
+    parser.add_argument('--transpose', action="store_true", default=False)
+    parser.add_argument("--textbox", action='store_true')
+    parser.add_argument('--figsize', type=int, nargs=2, default=[8, 6])
     return parser
 
 
@@ -313,4 +361,7 @@ if __name__ == "__main__":
                      repetitions=args.repetitions)
     elif args.action == "plot":
         plot_weights(args,
+                     model=model)
+    elif args.action == "hist":
+        hist_weights(args,
                      model=model)

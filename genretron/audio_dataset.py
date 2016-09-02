@@ -128,7 +128,8 @@ class AudioDataset(object):
             self.preprocess(self.data_x)
             # select only the tracks in the set
             self.set_tracks = self.get_track_ids(self.which_set)
-            self.set_indexes = self.index_converters[self.converter](self.set_tracks)
+            self.set_indexes = self.index_converters[
+                self.converter](self.set_tracks)
             self.data_x, self.data_y = \
                 self.filter_indexes(self.set_indexes, self.data_x, self.data_y)
         else:
